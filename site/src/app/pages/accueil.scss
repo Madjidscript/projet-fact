@@ -1,0 +1,446 @@
+:host {
+  display: block;
+}
+
+/* ----------------------------------------------------------------- bandeau */
+.heros {
+  position: relative;
+  overflow: hidden;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: 108px 0 72px;
+  color: #fff;
+  isolation: isolate;
+}
+
+.ciel {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(120% 90% at 78% 8%, #2f5585 0%, #1a2f55 42%, #0b1222 100%);
+  transform-origin: 70% 30%;
+}
+
+.soleil {
+  position: absolute;
+  right: 4%;
+  top: 9%;
+  width: clamp(110px, 16vw, 210px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 40%, rgba(246, 249, 250, 0.55), rgba(180, 194, 208, 0.22) 45%, rgba(47, 85, 133, 0) 70%);
+  opacity: 0.9;
+  filter: blur(1px);
+}
+
+.plan-loin,
+.plan-pres {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 46%;
+}
+
+.plan-pres {
+  height: 34%;
+}
+
+.contenu-heros {
+  position: relative;
+  width: 100%;
+}
+
+.surtitre-heros {
+  display: inline-block;
+  margin: 0 0 16px;
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--rayon-pastille);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #dce4e4;
+}
+
+h1 {
+  margin: 0;
+  font: 700 clamp(38px, 8.4vw, 82px) / 1.02 var(--titre);
+  letter-spacing: -0.025em;
+}
+
+.ligne {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+/* « confiance » en lettres argent chromé, comme « FACT » sur le logo */
+.ligne:nth-child(2) .mot:nth-child(3) {
+  background: linear-gradient(180deg, #f6f9fa 0%, #dce4e4 38%, #97a5b4 55%, #e8eef0 72%, #b4c2d0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mot {
+  display: inline-block;
+  will-change: transform;
+}
+
+.texte-heros {
+  max-width: 54ch;
+  margin: 20px 0 0;
+  color: #dce4e4;
+  font-size: clamp(16px, 2.4vw, 19px);
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------- recherche */
+.recherche {
+  max-width: 1020px;
+  margin-top: 32px;
+  padding: 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--encre);
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.55);
+}
+
+.onglets {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-3);
+}
+
+.onglets button {
+  position: relative;
+  z-index: 1;
+  min-width: 96px;
+  min-height: 40px;
+  border: 0;
+  background: none;
+  color: var(--encre-2);
+  font-weight: 600;
+  transition: color var(--standard) var(--courbe);
+}
+
+.onglets button.actif {
+  color: var(--nuit);
+}
+
+/* Le fond de l'onglet actif glisse de l'un à l'autre (§ 6.2) */
+.curseur {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(11, 18, 34, 0.14);
+  transition: transform 350ms var(--courbe);
+}
+
+.curseur.droite {
+  transform: translateX(100%);
+}
+
+.champs {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.champs .btn {
+  justify-content: center;
+}
+
+.ruban {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 26px 0 0;
+  color: #c5d0de;
+  font-size: 14px;
+}
+
+.ruban span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.defiler {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  width: 26px;
+  height: 42px;
+  margin-left: -13px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 14px;
+}
+
+.defiler span {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 4px;
+  height: 8px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: #fff;
+  animation: molette 1.8s var(--courbe) infinite;
+}
+
+@keyframes molette {
+  0% { opacity: 0; transform: translateY(0); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+
+/* ------------------------------------------------------------- chiffres */
+.chiffres {
+  position: relative;
+  z-index: 2;
+  margin-top: -36px;
+}
+
+.grille-chiffres {
+  display: grid;
+  gap: 12px;
+}
+
+.squelette-bien {
+  aspect-ratio: 4 / 4.4;
+  border-radius: 18px;
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.chiffre {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 22px 24px;
+  border: 1px solid var(--filet);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 20px 40px -30px rgba(11, 18, 34, 0.5);
+}
+
+.chiffre strong {
+  color: var(--nuit);
+  font: 700 clamp(36px, 6vw, 48px) / 1 var(--titre);
+}
+
+.chiffre > span {
+  color: var(--encre-2);
+}
+
+/* -------------------------------------------------------------- métiers */
+.tete {
+  margin-bottom: 36px;
+}
+
+.ligne-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.metiers {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metier {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  height: 100%;
+  padding: 28px 24px;
+  border: 1px solid var(--filet);
+  border-radius: 20px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform 300ms var(--courbe), box-shadow 300ms var(--courbe), border-color 300ms var(--courbe);
+}
+
+.metier::before {
+  content: '';
+  position: absolute;
+  inset: auto -40% -60% auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ocre-clair), transparent 70%);
+  transform: scale(0.6);
+  opacity: 0;
+  transition: transform 500ms var(--courbe), opacity 500ms var(--courbe);
+}
+
+.metier:hover {
+  transform: translateY(-6px);
+  border-color: var(--filet-fort);
+  box-shadow: 0 28px 44px -30px rgba(11, 18, 34, 0.5);
+}
+
+.metier:hover::before {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.numero {
+  position: absolute;
+  right: 22px;
+  top: 18px;
+  color: var(--filet-fort);
+  font: 700 28px var(--titre);
+}
+
+.pictogramme {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--nuit-clair);
+  color: var(--nuit);
+}
+
+.metier h3 {
+  margin: 6px 0 0;
+  font: 700 20px var(--titre);
+  color: var(--nuit);
+}
+
+.metier p {
+  margin: 0;
+  color: var(--encre-2);
+  line-height: 1.55;
+}
+
+.suite {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--ocre-texte);
+  font-weight: 600;
+}
+
+.metier:hover .suite fact-icone {
+  transform: translateX(4px);
+}
+
+.suite fact-icone {
+  transition: transform var(--standard) var(--courbe);
+}
+
+/* -------------------------------------------------------------- à la une */
+.une {
+  background: var(--surface-2);
+}
+
+/* --------------------------------------------------------------- valeurs */
+.deux-colonnes {
+  display: grid;
+  gap: 36px;
+}
+
+.lien-agence {
+  margin-top: 26px;
+}
+
+.liste-valeurs {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liste-valeurs li {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--filet);
+  background: var(--surface);
+}
+
+.rond {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ocre-clair);
+  color: var(--ocre-texte);
+}
+
+.liste-valeurs h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.liste-valeurs p {
+  margin: 0;
+  color: var(--encre-2);
+  line-height: 1.55;
+}
+
+@media (min-width: 640px) {
+  .grille-chiffres {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .grille-chiffres.cinq {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  }
+
+  .metiers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .champs {
+    grid-template-columns: 1fr 1.2fr 1fr auto;
+    align-items: stretch;
+  }
+
+  .deux-colonnes {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 64px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .metiers {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .defiler span {
+    animation: none;
+  }
+}

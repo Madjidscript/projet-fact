@@ -1,0 +1,135 @@
+<section class="bandeau">
+  <div class="conteneur" siteRevele>
+    <nav class="fil" aria-label="Fil d'Ariane"><a routerLink="/">Accueil</a> <span>/</span> <span>{{ louer() ? 'Louer' : 'Acheter' }}</span></nav>
+    <h1>{{ louer() ? 'Biens à louer à Abidjan' : 'Biens à vendre à Abidjan' }}</h1>
+    <p>{{ louer() ? 'Appartements, villas, bureaux et magasins visités et vérifiés par notre équipe.' : 'Maisons, appartements et terrains proposés à la vente par nos propriétaires.' }}</p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ critères -->
+<section class="conteneur filtres-zone">
+  <form class="filtres" (ngSubmit)="appliquer()" aria-label="Affiner la recherche">
+    <div class="ligne-filtres">
+      <fact-choix name="commune" libelle="Commune" vide="Toutes les communes" [seuilRecherche]="0" [options]="optionsCommunes()"
+                  [ngModel]="f.commune" (ngModelChange)="changerCommune($event)" />
+      <fact-choix name="quartier" libelle="Quartier" vide="Tous les quartiers" [seuilRecherche]="0" [options]="quartiers(f.commune)"
+                  [(ngModel)]="f.quartier" (ngModelChange)="appliquer()" [disabled]="!f.commune"
+                  [invite]="f.commune ? 'Tous les quartiers' : 'Choisissez la commune'" />
+      <label class="champ"><input type="number" name="prixMin" placeholder=" " min="0" step="25000" [(ngModel)]="f.prixMin" (change)="appliquer()"><span>{{ louer() ? 'Loyer' : 'Prix' }} minimum (FCFA)</span></label>
+      <label class="champ"><input type="number" name="prixMax" placeholder=" " min="0" step="25000" [(ngModel)]="f.prixMax" (change)="appliquer()"><span>{{ louer() ? 'Loyer' : 'Prix' }} maximum (FCFA)</span></label>
+    </div>
+
+    <div class="types" role="group" aria-label="Type de bien">
+      @for (t of optionsTypes; track t) {
+        <button type="button" class="puce" [class.actif]="f.types.includes(t)" [attr.aria-pressed]="f.types.includes(t)" (click)="basculerType(t)">{{ t }}</button>
+      }
+    </div>
+
+    <button type="button" class="btn discret plus" (click)="plusDeCriteres.set(!plusDeCriteres())" [attr.aria-expanded]="plusDeCriteres()">
+      <fact-icone nom="filtre" [taille]="18" /> {{ plusDeCriteres() ? 'Moins de critères' : 'Plus de critères' }}
+    </button>
+    @if (plusDeCriteres()) {
+      <div class="plus-criteres">
+        <div class="ligne-filtres">
+          <label class="champ">
+            <select name="pieces" [(ngModel)]="f.pieces" (ngModelChange)="appliquer()">
+              <option [ngValue]="null">Indifférent</option>
+              @for (p of piecesPossibles; track p) { <option [ngValue]="p">{{ p }} et plus</option> }
+            </select>
+            <span>Pièces minimum</span>
+          </label>
+          <label class="champ"><input type="number" name="surface" placeholder=" " min="0" step="10" [(ngModel)]="f.surface" (change)="appliquer()"><span>Surface minimum (m²)</span></label>
+        </div>
+        <fieldset class="options">
+          <legend>Équipements</legend>
+          @for (o of ref.equipements(); track o.code) {
+            <label class="case"><input type="checkbox" [checked]="f.options.includes(o.code)" (change)="basculerOption(o.code)"> {{ o.libelle }}</label>
+          }
+        </fieldset>
+      </div>
+    }
+  </form>
+</section>
+
+<!-- --------------------------------------------------------- liste et carte -->
+<section class="conteneur resultats">
+  <div class="barre-resultats">
+    <p class="compte" aria-live="polite">
+      @if (chargement()) { Recherche en cours… }
+      @else { <strong><site-roulette [valeur]="resultats().length" /></strong> bien{{ resultats().length > 1 ? 's' : '' }} {{ louer() ? 'à louer' : 'à vendre' }}@if (zone()) { dans la zone de la carte } }
+    </p>
+    <div class="outils">
+      @if (zone()) { <button type="button" class="btn petit" (click)="touteLaVille()"><fact-icone nom="cible" [taille]="16" /> Toute la ville</button> }
+      @if (nbCriteres()) { <button type="button" class="btn petit discret" (click)="effacer()">Effacer les critères ({{ nbCriteres() }})</button> }
+      <label class="champ tri">
+        <select name="tri" [(ngModel)]="f.tri" (ngModelChange)="appliquer()" aria-label="Trier par">
+          <option value="recent">Les plus récents</option>
+          <option value="prix-croissant">Prix croissant</option>
+          <option value="prix-decroissant">Prix décroissant</option>
+          <option value="surface">Surface</option>
+        </select>
+        <span>Trier par</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="alerte-recherche" siteRevele>
+    @if (!alerteOuverte()) {
+      <button type="button" class="btn" (click)="alerteOuverte.set(true); alerteEtat.set(null)"><fact-icone nom="cloche" [taille]="18" /> Être prévenu des nouveaux biens</button>
+      <span class="aide">pour : {{ resume() }}</span>
+    } @else {
+      <form class="form-alerte" (ngSubmit)="creerAlerte()" novalidate>
+        <p class="titre-alerte"><fact-icone nom="cloche" [taille]="18" /> Recevoir les nouveaux biens : <strong>{{ resume() }}</strong></p>
+        @if (alerteEtat()?.ok) {
+          <p class="ok" role="status"><fact-icone nom="coche" [taille]="18" /> {{ alerteEtat()!.texte }}</p>
+        } @else {
+          <div class="ligne-alerte">
+            <label class="champ"><input type="text" name="contact" placeholder=" " autocomplete="email" [(ngModel)]="alerte.contact"><span>E-mail ou numéro WhatsApp</span></label>
+            <button type="submit" class="btn principal" [class.occupe]="alerteEnvoi()" [disabled]="alerteEnvoi()">M’inscrire</button>
+          </div>
+          <input type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true" [style]="stylePiege" [(ngModel)]="alerte.site">
+          <label class="case"><input type="checkbox" name="accord" [(ngModel)]="alerte.accord"> J’accepte de recevoir ces messages ; chacun contient un lien pour arrêter.</label>
+          @if (alerteEtat(); as e) { <p class="ko" role="alert">{{ e.texte }}</p> }
+        }
+        <button type="button" class="btn discret petit fermer-alerte" (click)="alerteOuverte.set(false)">Fermer</button>
+      </form>
+    }
+  </div>
+
+  <div class="partage" [class.vue-carte]="vueMobile() === 'carte'">
+    <div class="colonne-liste">
+      @if (erreur()) {
+        <p class="ko" role="alert">{{ erreur() }}</p>
+      }
+      @if (chargement() && !resultats().length) {
+        <ul class="grille-biens">@for (i of [1, 2, 3, 4]; track i) { <li class="squelette"></li> }</ul>
+      } @else if (resultats().length) {
+        <ul class="grille-biens" #grille [class.voile]="chargement()">
+          @for (b of resultats(); track b.id) {
+            <li [attr.data-flip-id]="b.id" siteInclinaison="5"><site-vignette-bien [bien]="b" [enAvant]="enAvant() === b.id" (survol)="enAvant.set($event)" /></li>
+          }
+        </ul>
+        @if (horsCarte()) { <p class="aide">{{ horsCarte() }} bien{{ horsCarte() > 1 ? 's' : '' }} sans position ne figure{{ horsCarte() > 1 ? 'nt' : '' }} pas sur la carte.</p> }
+      } @else if (!erreur()) {
+        <div class="vide">
+          <span class="rond"><fact-icone nom="maison" [taille]="34" /></span>
+          <h2>{{ nbCriteres() || zone() ? 'Aucun bien ne correspond pour le moment' : (louer() ? 'Aucun bien à louer en ce moment' : 'Aucun bien à vendre en ce moment') }}</h2>
+          <p>Élargissez la zone ou les critères, ou soyez prévenu dès qu’un bien correspondant est publié.</p>
+          <div class="actions">
+            @if (zone()) { <button type="button" class="btn" (click)="touteLaVille()">Chercher dans toute la ville</button> }
+            @if (nbCriteres()) { <button type="button" class="btn" (click)="effacer()">Effacer les critères</button> }
+            <button type="button" class="btn principal" (click)="alerteOuverte.set(true)"><fact-icone nom="cloche" [taille]="18" /> Être prévenu</button>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="colonne-carte">
+      <site-carte-biens [biens]="resultats()" [enAvant]="enAvant()" (survol)="enAvant.set($event)" (zoneChangee)="zoneChangee($event)" />
+      <p class="aide-carte"><fact-icone nom="info" [taille]="14" /> Déplacez la carte : la liste suit. Un cercle indique une zone approximative.</p>
+    </div>
+  </div>
+
+  <button type="button" class="bascule" (click)="vueMobile.set(vueMobile() === 'liste' ? 'carte' : 'liste')">
+    <fact-icone [nom]="vueMobile() === 'liste' ? 'carte' : 'menu'" [taille]="20" /> {{ vueMobile() === 'liste' ? 'Carte' : 'Liste' }}
+  </button>
+</section>

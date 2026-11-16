@@ -1,0 +1,365 @@
+:host {
+  display: block;
+}
+
+.evitement {
+  position: fixed;
+  left: 12px;
+  top: -60px;
+  z-index: 3000;
+  padding: 10px 16px;
+  border-radius: var(--rayon-2);
+  background: var(--ocre);
+  color: #fff;
+  font-weight: 600;
+  transition: top var(--courte) var(--courbe);
+}
+
+.evitement:focus {
+  top: 12px;
+}
+
+/* ------------------------------------------------------------------- barre */
+.barre {
+  position: fixed;
+  z-index: 1000;
+  inset: 0 0 auto;
+  color: #fff;
+  transition: background var(--standard) var(--courbe), box-shadow var(--standard) var(--courbe),
+    color var(--standard) var(--courbe);
+}
+
+.barre.pleine {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--nuit);
+  box-shadow: 0 10px 30px -18px rgba(11, 18, 34, 0.45);
+  backdrop-filter: blur(10px);
+}
+
+.interieur {
+  max-width: 1240px;
+  margin: 0 auto;
+  height: 76px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transition: height var(--standard) var(--courbe);
+}
+
+.pleine .interieur {
+  height: 62px;
+}
+
+.marque {
+  display: block;
+  width: 116px;
+  flex: none;
+  color: inherit;
+  text-decoration: none;
+  transition: width var(--standard) var(--courbe);
+}
+
+.pleine .marque {
+  width: 100px;
+}
+
+.liens {
+  display: none;
+  margin-left: auto;
+  gap: 4px;
+}
+
+.liens a {
+  position: relative;
+  padding: 8px 12px;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  opacity: 0.88;
+  transition: opacity var(--courte) var(--courbe);
+}
+
+.liens a::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ocre);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--standard) var(--courbe);
+}
+
+.liens a:hover,
+.liens a.actif {
+  opacity: 1;
+}
+
+.liens a:hover::after,
+.liens a.actif::after {
+  transform: scaleX(1);
+}
+
+.cta {
+  display: none;
+}
+
+.favoris-lien {
+  position: relative;
+  margin-left: auto;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: inherit;
+  transition: background var(--courte) var(--courbe);
+}
+
+.favoris-lien:hover,
+.favoris-lien.actif {
+  background: rgba(127, 140, 160, 0.16);
+}
+
+.pastille-nb {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: #d64545;
+  color: #fff;
+  font: 700 11px/1 var(--texte);
+}
+
+.burger {
+  margin-left: 4px;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+}
+
+.burger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform var(--standard) var(--courbe), opacity var(--courte) var(--courbe);
+}
+
+.burger.ouvert span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.burger.ouvert span:nth-child(2) {
+  opacity: 0;
+}
+
+.burger.ouvert span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ----------------------------------------------------------- menu mobile */
+.menu-mobile {
+  position: fixed;
+  z-index: 900;
+  inset: 0;
+  padding: 96px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--surface);
+  clip-path: circle(0 at calc(100% - 38px) 38px);
+  visibility: hidden;
+  transition: clip-path 550ms var(--courbe), visibility 0s linear 550ms;
+}
+
+.menu-mobile.visible {
+  clip-path: circle(150% at calc(100% - 38px) 38px);
+  visibility: visible;
+  transition: clip-path 550ms var(--courbe), visibility 0s;
+}
+
+.menu-mobile nav {
+  display: grid;
+  gap: 4px;
+}
+
+.menu-mobile nav a {
+  padding: 10px 0;
+  color: var(--nuit);
+  font: 700 clamp(26px, 8vw, 34px) / 1.2 var(--titre);
+  text-decoration: none;
+  border-bottom: 1px solid var(--filet);
+}
+
+.coordonnees {
+  display: grid;
+  gap: 10px;
+}
+
+.coordonnees a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--encre-2);
+}
+
+main {
+  display: block;
+  min-height: 70vh;
+  outline: none;
+}
+
+/* ------------------------------------------------------------------- pied */
+.pied {
+  margin-top: 40px;
+  padding: 56px 16px 24px;
+  background: var(--nuit-3);
+  color: #c5d0de;
+}
+
+.colonnes {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  gap: 32px;
+}
+
+.marque.claire {
+  width: 150px;
+  margin-bottom: 18px;
+}
+
+.pied p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+
+.cdaim {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--rayon-pastille);
+  color: #fff;
+  font-size: 14px;
+}
+
+.pied h2 {
+  margin-bottom: 12px;
+  color: #fff;
+  font-size: 15px;
+}
+
+.pied ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.pied a {
+  color: #c5d0de;
+  text-decoration: none;
+  transition: color var(--courte) var(--courbe);
+}
+
+.pied a:hover {
+  color: var(--argent);
+}
+
+address {
+  font-style: normal;
+  line-height: 1.8;
+}
+
+.copyright {
+  max-width: 1240px;
+  margin: 40px auto 0 !important;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: #8f9bb0;
+}
+
+/* --------------------------------------------------------------- WhatsApp */
+.whatsapp {
+  position: fixed;
+  z-index: 800;
+  right: 18px;
+  bottom: 18px;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 12px 28px -10px rgba(37, 211, 102, 0.7);
+  transition: box-shadow var(--courte) var(--courbe);
+}
+
+.whatsapp:hover {
+  box-shadow: 0 16px 34px -10px rgba(37, 211, 102, 0.9);
+}
+
+@media (min-width: 768px) {
+  .colonnes {
+    grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .liens,
+  .cta {
+    display: flex;
+  }
+
+  .favoris-lien {
+    margin-left: 0;
+  }
+
+  .cta {
+    display: inline-flex;
+  }
+
+  .burger,
+  .menu-mobile {
+    display: none;
+  }
+
+  .interieur {
+    padding: 0 28px;
+  }
+
+  .marque {
+    width: 148px;
+  }
+
+  .pleine .marque {
+    width: 124px;
+  }
+
+  .pied {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}

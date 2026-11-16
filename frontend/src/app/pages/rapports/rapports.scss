@@ -1,0 +1,454 @@
+:host {
+  display: block;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 16px 72px;
+}
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  animation: montee var(--longue) var(--courbe) both;
+}
+
+h1 {
+  font-size: clamp(26px, 5vw, 34px);
+  color: var(--marque);
+}
+
+.accroche {
+  margin: 4px 0 0;
+  color: var(--encre-2);
+}
+
+.exports {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------------------------------------------------------------- période */
+.periode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 18px;
+  animation: montee var(--longue) var(--courbe) 80ms both;
+}
+
+.segments {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.segments button {
+  flex: none;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--encre-2);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe);
+}
+
+.segments button.actif {
+  background: var(--surface);
+  color: var(--marque);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--filet);
+}
+
+.libre {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 1 1 300px;
+  max-width: 380px;
+}
+
+.champ.mois input {
+  min-height: 48px;
+}
+
+/* --------------------------------------------------------------- contenu */
+.corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  transition: opacity var(--standard) var(--courbe);
+}
+
+.corps.recharge {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.kpi {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.indicateur {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.indicateur.alerte {
+  border-color: color-mix(in srgb, var(--critique) 40%, var(--filet));
+  background: linear-gradient(180deg, var(--critique-clair), var(--surface) 70%);
+}
+
+.libelle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--encre-2);
+}
+
+.valeur {
+  margin: 0;
+  font: 700 clamp(19px, 4.6vw, 26px) / 1.15 var(--titre);
+  color: var(--marque);
+}
+
+.valeur.bon { color: var(--bon-texte); }
+.valeur.attention { color: var(--attention-texte); }
+.valeur.critique { color: var(--critique-texte); }
+
+.note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+.bloc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  align-content: start;
+  min-width: 0;
+}
+
+.titre-bloc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+h2 {
+  font-size: 16.5px;
+}
+
+h3 {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--encre-2);
+}
+
+.onglets {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--surface-3);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.onglets button {
+  flex: none;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--encre-2);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe);
+}
+
+.onglets button.actif {
+  background: var(--surface);
+  color: var(--marque);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--filet);
+}
+
+.aide,
+.vide {
+  margin: 0;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.phrase {
+  margin: 0;
+  font-size: 14px;
+  color: var(--encre-2);
+}
+
+.phrase strong {
+  color: var(--encre);
+}
+
+.legende {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--encre-2);
+}
+
+.cle {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-left: 8px;
+}
+
+.cle.attendu { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--filet-fort); }
+.cle.regle { background: var(--bon); }
+
+/* ------------------------------------------------- colonnes du recouvrement */
+.colonnes {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(34px, 1fr);
+  gap: 6px;
+  height: 220px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.colonne {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.taux {
+  font: 600 10px var(--donnee);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  color: var(--discret);
+}
+
+.taux.bon { color: var(--bon-texte); }
+.taux.attention { color: var(--attention-texte); }
+.taux.critique { color: var(--critique-texte); }
+
+.piste {
+  position: relative;
+  width: 100%;
+  max-width: 44px;
+  height: 100%;
+}
+
+.barre {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 6px 6px 2px 2px;
+  transform-origin: bottom;
+  animation: monte 700ms var(--courbe) both;
+}
+
+.barre.attendu {
+  background: var(--surface-3);
+  box-shadow: inset 0 0 0 1px var(--filet-fort);
+}
+
+.barre.regle {
+  left: 6px;
+  right: 6px;
+  background: var(--bon);
+}
+
+.barre.regle.attention { background: var(--attention); }
+.barre.regle.critique { background: var(--critique); }
+
+@keyframes monte {
+  from { transform: scaleY(0); }
+}
+
+.mois {
+  font-size: 11.5px;
+  color: var(--encre-2);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ impayés */
+.anciennete {
+  display: grid;
+  gap: 10px;
+}
+
+.tranche {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
+  padding: 12px 14px;
+  border-radius: var(--rayon-2);
+  border: 1px solid var(--filet);
+  border-left: 4px solid var(--attention);
+  background: var(--surface-2);
+}
+
+.tranche.critique {
+  border-left-color: var(--critique);
+}
+
+.duree {
+  font-weight: 600;
+}
+
+.jauge {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.jauge span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--attention);
+  transform-origin: left;
+  animation: pousse 700ms var(--courbe) both;
+}
+
+.tranche.critique .jauge span {
+  background: var(--critique);
+}
+
+@keyframes pousse {
+  from { transform: scaleX(0); }
+}
+
+.tranche small {
+  grid-column: 1 / -1;
+  color: var(--discret);
+  font-size: 12.5px;
+}
+
+.dossiers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.dossiers a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--rayon-2);
+  border: 1px solid var(--filet);
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--courte) var(--courbe), transform var(--courte) var(--courbe);
+}
+
+.dossiers a:hover {
+  background: var(--surface-2);
+  transform: translateX(2px);
+}
+
+.qui,
+.combien {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.combien {
+  text-align: right;
+  flex: none;
+}
+
+.qui small,
+.combien small {
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+.combien strong {
+  color: var(--critique-texte);
+}
+
+.deux {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.attente {
+  align-content: start;
+}
+
+.squelette {
+  height: 104px;
+  border-radius: var(--rayon);
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.squelette.haut {
+  height: 300px;
+  margin-top: 16px;
+}
+
+@media (min-width: 768px) {
+  :host {
+    padding: 32px 28px 72px;
+  }
+
+  .kpi {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .anciennete {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .colonnes {
+    height: 240px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .deux {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barre,
+  .jauge span {
+    animation: none;
+  }
+}

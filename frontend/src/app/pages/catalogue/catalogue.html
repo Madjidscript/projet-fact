@@ -1,0 +1,309 @@
+<header class="entete">
+  <div>
+    <p class="surtitre">Étape 2 · Design system</p>
+    <h1>Composants</h1>
+    <p class="accroche">
+      Les briques communes au site et à l'application, chacune dans tous ses états.
+      Les données affichées sont des exemples fictifs.
+    </p>
+  </div>
+  <button type="button" class="btn" (click)="theme.basculer()">
+    <fact-icone [nom]="theme.theme() === 'clair' ? 'lune' : 'soleil'" />
+    {{ theme.theme() === 'clair' ? 'Voir en thème sombre' : 'Voir en thème clair' }}
+  </button>
+</header>
+
+<nav class="sommaire" aria-label="Sections du catalogue">
+  <a href="catalogue#fondations">Fondations</a>
+  <a href="catalogue#boutons">Boutons</a>
+  <a href="catalogue#champs">Champs</a>
+  <a href="catalogue#statuts">Statuts</a>
+  <a href="catalogue#indicateurs">Indicateurs</a>
+  <a href="catalogue#tableau">Tableau</a>
+  <a href="catalogue#carte">Carte</a>
+  <a href="catalogue#etages">Étages</a>
+  <a href="catalogue#historique">Historique</a>
+  <a href="catalogue#retours">Retours</a>
+  <a href="catalogue#icones">Pictogrammes</a>
+</nav>
+
+<main>
+  <!-- ============================================================ fondations -->
+  <section id="fondations" factApparition>
+    <h2>Fondations</h2>
+    <p class="intro">Couleurs et typographie. Les couleurs d'état sont fixes : elles portent la lecture de la carte.</p>
+    <div class="grille couleurs">
+      @for (c of couleurs; track c.variable; let i = $index) {
+        <article class="carte couleur" [factApparition]="i">
+          <span class="nuance" [style.background]="'var(' + c.variable + ')'"></span>
+          <h3>{{ c.nom }}</h3>
+          <p class="donnee">{{ c.variable }}</p>
+          <p class="note">{{ c.usage }}</p>
+        </article>
+      }
+    </div>
+    <div class="grille deux">
+      <article class="carte">
+        <p class="etiquette">Titres · Sora 600 / 700</p>
+        <p class="demo-titre">Résidence Signadjégou, Angré 9e tranche</p>
+        <p class="etiquette">Texte · Figtree 400 / 500</p>
+        <p>Appartement de trois pièces au deuxième étage, cuisine équipée, parking et gardiennage.</p>
+        <p class="etiquette">Données · JetBrains Mono</p>
+        <p class="donnee">EX-001 · 375 000 FCFA · 5.35160, -3.98690</p>
+      </article>
+      <article class="carte">
+        <p class="etiquette">Mouvement</p>
+        <ul class="durees">
+          <li><span class="donnee">150 ms</span> survol, appui, changement d'état</li>
+          <li><span class="donnee">250 ms</span> panneau, liste, notification</li>
+          <li><span class="donnee">450 ms</span> apparition de section, vol de carte</li>
+          <li><span class="donnee">60 ms</span> décalage en cascade, 8 éléments au plus</li>
+        </ul>
+        <p class="note">
+          Seules l'opacité et la transformation sont animées. Si la réduction des animations est demandée
+          sur l'appareil, tout devient un simple fondu.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- =============================================================== boutons -->
+  <section id="boutons" factApparition>
+    <h2>Boutons</h2>
+    <p class="intro">Une seule action principale par écran. Zone tactile d'au moins 44 pixels.</p>
+    <article class="carte rangee">
+      <button type="button" class="btn principal" [class.occupe]="occupe()" (click)="enregistrer()">Enregistrer</button>
+      <button type="button" class="btn accent">Publier sur le site</button>
+      <button type="button" class="btn">Annuler</button>
+      <button type="button" class="btn discret">Voir la fiche</button>
+      <button type="button" class="btn danger">Archiver</button>
+      <button type="button" class="btn" disabled>Indisponible</button>
+      <button type="button" class="btn petit"><fact-icone nom="telecharger" [taille]="16" /> Exporter</button>
+      <button type="button" class="btn icone-seule" aria-label="Ajouter"><fact-icone nom="plus" /></button>
+    </article>
+    <p class="aide">« Enregistrer » montre l'état occupé : cliquez dessus.</p>
+  </section>
+
+  <!-- ================================================================ champs -->
+  <section id="champs" factApparition>
+    <h2>Champs de formulaire</h2>
+    <p class="intro">Le libellé monte au-dessus du champ à la saisie ; une secousse légère signale l'erreur.</p>
+    <article class="carte">
+      <div class="grille deux formulaire">
+        <label class="champ">
+          <input type="text" placeholder=" " autocomplete="off">
+          <span>Nom du bâtiment</span>
+        </label>
+        <label class="champ">
+          <select>
+            <option>Immeuble</option>
+            <option>Villa</option>
+            <option>Local commercial</option>
+          </select>
+          <span>Type de bâtiment</span>
+        </label>
+        <label class="champ" [class.erreur]="erreurChamp()">
+          <input type="tel" placeholder=" " value="07 00" autocomplete="off" [attr.aria-invalid]="erreurChamp()">
+          <span>Téléphone</span>
+          <small class="aide-champ">
+            {{ erreurChamp() ? 'Le numéro compte 10 chiffres, ou commence par + pour l\'international.' : 'Format ivoirien à 10 chiffres ou international.' }}
+          </small>
+        </label>
+        <label class="champ">
+          <input type="text" placeholder=" " value="375 000 FCFA" disabled>
+          <span>Loyer de référence</span>
+        </label>
+        <label class="champ large">
+          <textarea placeholder=" "></textarea>
+          <span>Description</span>
+        </label>
+      </div>
+      <div class="rangee">
+        <label class="case"><input type="checkbox" checked> Meublé</label>
+        <label class="case"><input type="checkbox"> Parking</label>
+        <label class="case"><input type="checkbox"> Gardiennage</label>
+        <button type="button" class="btn petit" (click)="secouer()">Montrer l'erreur</button>
+      </div>
+      <fact-etapes [etapes]="etapesRecensement" [courante]="etape()" />
+      <div class="rangee centre">
+        <button type="button" class="btn petit" (click)="etape.set(etape() - 1)" [disabled]="etape() === 0">Précédent</button>
+        <button type="button" class="btn petit principal" (click)="etape.set(etape() + 1)" [disabled]="etape() === etapesRecensement.length">Suivant</button>
+      </div>
+    </article>
+  </section>
+
+  <!-- =============================================================== statuts -->
+  <section id="statuts" factApparition>
+    <h2>Pastilles de statut</h2>
+    <p class="intro">La couleur est toujours doublée d'un libellé : elle n'est jamais seule à porter l'information.</p>
+    <article class="carte">
+      <p class="etiquette">Lot</p>
+      <div class="rangee">@for (s of statutsLot; track s.code) { <fact-pastille-statut [code]="s.code" [libelle]="s.libelle" /> }</div>
+      <p class="etiquette">Paiement</p>
+      <div class="rangee">@for (s of statutsPaiement; track s.code) { <fact-pastille-statut [code]="s.code" [libelle]="s.libelle" /> }</div>
+      <p class="etiquette">Intervention</p>
+      <div class="rangee">@for (s of statutsIntervention; track s.code) { <fact-pastille-statut [code]="s.code" [libelle]="s.libelle" /> }</div>
+      <p class="etiquette">Synchronisation terrain</p>
+      <div class="rangee">
+        <fact-synchro etat="a-jour" />
+        <fact-synchro etat="envoi" [enAttente]="3" />
+        <fact-synchro etat="en-attente" [enAttente]="2" />
+        <fact-synchro etat="hors-ligne" [enAttente]="5" />
+      </div>
+    </article>
+  </section>
+
+  <!-- =========================================================== indicateurs -->
+  <section id="indicateurs" factApparition>
+    <h2>Indicateurs et graphiques</h2>
+    <p class="intro">Les compteurs défilent, les anneaux et les barres se remplissent, les courbes se tracent.</p>
+    <div class="grille quatre">
+      <fact-carte-indicateur [factApparition]="0" libelle="Taux d'occupation" valeur="92,5 %" [evolution]="1.8" unite=" pt" note="sur un mois"
+                             [serie]="[88, 89, 91, 90, 91, 92.5]" />
+      <fact-carte-indicateur [factApparition]="1" libelle="Taux de recouvrement" valeur="87 %" [evolution]="-2.4" unite=" pt" note="sur un mois"
+                             [serie]="[91, 90, 92, 89.4, 89, 87]" ton="attention" />
+      <fact-carte-indicateur [factApparition]="2" libelle="Montant des impayés" valeur="4 150 000 FCFA" [evolution]="12" [hausseBonne]="false"
+                             note="sur un mois" [serie]="[2.9, 3.1, 3, 3.6, 3.7, 4.15]" ton="critique" />
+      <fact-carte-indicateur [factApparition]="3" libelle="Interventions ouvertes" valeur="7" [evolution]="0" note="stable" />
+    </div>
+    <div class="grille deux">
+      <article class="carte">
+        <h3>Compteur</h3>
+        <p class="compteur"><fact-compteur [valeur]="periode() === 'mois' ? 38450000 : 112300000" suffixe=" FCFA" /></p>
+        <p class="note">Loyers encaissés (exemple)</p>
+        <div class="rangee">
+          <button type="button" class="btn petit" [class.principal]="periode() === 'mois'" (click)="periode.set('mois')">Ce mois</button>
+          <button type="button" class="btn petit" [class.principal]="periode() === 'trimestre'" (click)="periode.set('trimestre')">Ce trimestre</button>
+        </div>
+      </article>
+      <article class="carte">
+        <h3>Anneau d'occupation</h3>
+        <fact-anneau [parts]="occupation" />
+      </article>
+      <article class="carte large">
+        <h3>Lots vacants par commune</h3>
+        <fact-barres [parts]="vacance" titre="Lots vacants par commune" />
+      </article>
+    </div>
+  </section>
+
+  <!-- =============================================================== tableau -->
+  <section id="tableau" factApparition>
+    <h2>Tableau de données</h2>
+    <p class="intro">
+      Tri d'un clic sur l'en-tête, recherche sans accent, pagination, export, ligne cliquable. Une ligne
+      modifiée clignote brièvement : cliquez sur une ligne.
+    </p>
+    <fact-table-donnees titre="Lots (exemple)" [colonnes]="colonnes" [lignes]="lignes" cleLigne="reference" [parPage]="6"
+                        [exportable]="true" [cliquable]="true" [chargement]="chargementTable()" [surbrillance]="ligneModifiee()"
+                        (ligne)="ouvrirLigne($event)" />
+    <div class="rangee"><button type="button" class="btn petit" (click)="rechargerTable()">Montrer le chargement</button></div>
+  </section>
+
+  <!-- ================================================================= carte -->
+  <section id="carte" factApparition>
+    <h2>Autour de la carte</h2>
+    <p class="intro">
+      La carte est l'élément central : les panneaux se posent dessus sans la masquer entièrement.
+      Le fond ci-dessous est un simple décor ; la vraie carte arrive à l'étape 5.
+    </p>
+    <div class="fausse-carte">
+      <div class="outils-carte">
+        @if (!panneauOuvert()) {
+          <button type="button" class="btn" (click)="panneauOuvert.set(true)"><fact-icone nom="calques" /> Thématique</button>
+        }
+      </div>
+      <span class="marqueur bon" style="left: 22%; top: 38%"></span>
+      <span class="marqueur attention" style="left: 38%; top: 62%"></span>
+      <span class="marqueur critique alerte" style="left: 16%; top: 70%"></span>
+      <span class="marqueur bon" style="left: 46%; top: 30%"></span>
+      <span class="marqueur groupe" style="left: 30%; top: 22%">8</span>
+      <fact-panneau-lateral titre="Thématique" [ouvert]="panneauOuvert()" (fermer)="panneauOuvert.set(false)">
+        <fact-selecteur-thematique [choisie]="thematique()" (choix)="thematique.set($event)" />
+      </fact-panneau-lateral>
+    </div>
+    <p class="aide">Le panneau se pose à droite sur ordinateur et tablette, et glisse depuis le bas sur téléphone. Échap le referme.</p>
+  </section>
+
+  <!-- ================================================================ étages -->
+  <section id="etages" factApparition>
+    <h2>Vue par étage</h2>
+    <p class="intro">Les lots d'un bâtiment, colorés par statut, le dernier étage en haut comme sur la façade.</p>
+    <article class="carte">
+      <fact-vue-etages [lots]="lots" [choisi]="lotChoisi()" (lot)="lotChoisi.set($event.id)" />
+    </article>
+  </section>
+
+  <!-- ============================================================ historique -->
+  <section id="historique" factApparition>
+    <h2>Fil d'historique</h2>
+    <p class="intro">Chaque création ou modification est tracée : auteur, date, ancienne et nouvelle valeur.</p>
+    <article class="carte">
+      <fact-fil-historique [evenements]="evenements" />
+    </article>
+  </section>
+
+  <!-- =============================================================== retours -->
+  <section id="retours" factApparition>
+    <h2>Retours à l'utilisateur</h2>
+    <div class="grille deux">
+      <article class="carte">
+        <h3>Notifications</h3>
+        <p class="note">Elles glissent depuis le bas et s'effacent après 4 secondes ; une erreur reste jusqu'à sa fermeture.</p>
+        <div class="rangee">
+          <button type="button" class="btn petit" (click)="avis.succes('Encaissement enregistré.')">Succès</button>
+          <button type="button" class="btn petit" (click)="avis.info('Trois lots sont en attente de validation.')">Information</button>
+          <button type="button" class="btn petit" (click)="avis.erreur('Le numéro de porte existe déjà dans ce bâtiment.')">Erreur</button>
+        </div>
+      </article>
+      <article class="carte">
+        <h3>Fenêtre de confirmation</h3>
+        <p class="note">Pour toute action sensible. Échap ou un clic sur le fond annule.</p>
+        <div class="rangee">
+          <button type="button" class="btn petit" (click)="confirmation.set('danger')">Action sensible</button>
+          <button type="button" class="btn petit" (click)="confirmation.set('simple')">Action simple</button>
+        </div>
+      </article>
+      <fact-etat-vide icone="batiment" titre="Aucun bâtiment dans ce portefeuille"
+                      message="Importez le fichier de l'agence ou recensez un premier bâtiment sur le terrain.">
+        <button type="button" class="btn principal">Recenser un bâtiment</button>
+        <button type="button" class="btn">Importer un fichier</button>
+      </fact-etat-vide>
+      <div class="pile">
+        <fact-squelette forme="vignette" [lignes]="2" />
+        <fact-squelette forme="carte" [lignes]="3" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ icônes -->
+  <section id="icones" factApparition>
+    <h2>Pictogrammes</h2>
+    <p class="intro">Au trait, dessinés pour l'application ; ils prennent la couleur du texte.</p>
+    <ul class="icones">
+      @for (nom of icones; track nom) {
+        <li><fact-icone [nom]="nom" [taille]="24" /><span class="donnee">{{ nom }}</span></li>
+      }
+    </ul>
+  </section>
+
+  <section class="carte reste" factApparition>
+    <h2>Ce qui viendra avec son étape</h2>
+    <ul>
+      <li><strong>Marqueur de carte, regroupements, fiche résumée</strong> — étape 5, avec la carte Leaflet.</li>
+      <li><strong>Galerie, capture photo, zone de signature</strong> — étape 8, avec la PWA de terrain.</li>
+      <li><strong>Barre de navigation, moteur de recherche, carte de bien, bouton WhatsApp</strong> — étape 13, avec le site.</li>
+    </ul>
+  </section>
+</main>
+
+<fact-confirmation
+  [ouvert]="confirmation() !== null"
+  [danger]="confirmation() === 'danger'"
+  [titre]="confirmation() === 'danger' ? 'Archiver ce bâtiment ?' : 'Réaffecter cinq bâtiments ?'"
+  [message]="confirmation() === 'danger'
+    ? 'Le bâtiment et ses lots ne seront plus proposés, mais resteront consultables. Rien n\'est supprimé définitivement.'
+    : 'Le nouveau gestionnaire sera notifié. La réaffectation est datée et conservée.'"
+  [action]="confirmation() === 'danger' ? 'Archiver' : 'Réaffecter'"
+  (confirmer)="confirmer()"
+  (annuler)="confirmation.set(null)" />

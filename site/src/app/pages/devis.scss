@@ -1,0 +1,174 @@
+:host {
+  display: block;
+}
+
+.zone {
+  max-width: 900px;
+  padding-top: 32px;
+  padding-bottom: 24px;
+}
+
+.carte-form {
+  padding: 22px;
+  border: 1px solid var(--filet);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 24px 50px -38px rgba(11, 18, 34, 0.6);
+}
+
+.metiers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.metiers button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid var(--filet-fort);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--encre-2);
+  font-weight: 600;
+  text-align: left;
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe), border-color var(--courte) var(--courbe),
+    transform var(--courte) var(--courbe);
+}
+
+.metiers button:active {
+  transform: scale(0.98);
+}
+
+.metiers button.actif {
+  border-color: var(--nuit);
+  background: var(--nuit);
+  color: #fff;
+}
+
+.adaptatif {
+  display: grid;
+  gap: 14px;
+  animation: montee var(--standard) var(--courbe) both;
+}
+
+.segments-oui {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segments-oui legend {
+  width: 100%;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--encre-2);
+}
+
+.pieces-jointes {
+  display: grid;
+  gap: 8px;
+}
+
+.depot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border: 2px dashed var(--filet-fort);
+  border-radius: 16px;
+  background: var(--surface-2);
+  color: var(--nuit);
+  cursor: pointer;
+  transition: border-color var(--courte) var(--courbe), background var(--courte) var(--courbe);
+}
+
+.depot:hover {
+  border-color: var(--ocre);
+  background: var(--ocre-clair);
+}
+
+.depot input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.depot span {
+  display: grid;
+  gap: 2px;
+}
+
+.depot small {
+  color: var(--discret);
+}
+
+.liste-fichiers {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liste-fichiers li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--filet);
+  border-radius: 12px;
+  animation: montee var(--standard) var(--courbe) both;
+}
+
+.liste-fichiers .nom {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.liste-fichiers small {
+  color: var(--discret);
+}
+
+.aide {
+  margin: 0;
+  color: var(--discret);
+  font-size: 13.5px;
+}
+
+.ko {
+  margin: 0;
+  color: var(--critique-texte);
+  animation: secousse var(--standard) var(--courbe);
+}
+
+.erreur-case {
+  color: var(--critique-texte);
+  animation: secousse var(--standard) var(--courbe);
+}
+
+.formulaire-site .btn[type='submit'] {
+  justify-self: start;
+}
+
+@media (min-width: 768px) {
+  .carte-form {
+    padding: 36px;
+  }
+
+  .metiers {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

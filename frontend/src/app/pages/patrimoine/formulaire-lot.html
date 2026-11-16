@@ -1,0 +1,92 @@
+<form class="formulaire" (ngSubmit)="enregistrer()" novalidate>
+  <fieldset>
+    <legend>Le lot</legend>
+    <div class="duo">
+      <label class="champ">
+        <input type="text" name="numero" placeholder=" " [(ngModel)]="s.numero" autocomplete="off" required>
+        <span>Numéro de porte</span>
+      </label>
+      <label class="champ">
+        <input type="number" name="etage" placeholder=" " min="-5" max="60" [(ngModel)]="s.etage">
+        <span>Étage (0 : RDC)</span>
+      </label>
+    </div>
+    <div class="duo">
+      <label class="champ">
+        <select name="type" [(ngModel)]="s.type" required>
+          @for (v of ref.liste('TYPE_LOT'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }
+        </select>
+        <span>Type</span>
+      </label>
+      <label class="champ">
+        <select name="statut" [(ngModel)]="s.statut" required>
+          @for (v of statuts(); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }
+        </select>
+        <span>Statut</span>
+        <small class="aide-champ">{{ statutDuBail() ? 'Avec un bail en cours, le statut suit le bail : préavis et sortie se posent depuis la fiche du lot.' : '« Occupé » se pose en signant le bail.' }}</small>
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Composition</legend>
+    <div class="duo">
+      <label class="champ">
+        <input type="number" name="surface" placeholder=" " min="1" step="0.5" [(ngModel)]="s.surface">
+        <span>Surface (m²)</span>
+      </label>
+      <label class="champ">
+        <input type="number" name="pieces" placeholder=" " min="0" [(ngModel)]="s.pieces">
+        <span>Pièces</span>
+      </label>
+    </div>
+    <div class="duo">
+      <label class="champ">
+        <input type="number" name="chambres" placeholder=" " min="0" [(ngModel)]="s.chambres">
+        <span>Chambres</span>
+      </label>
+      <label class="champ">
+        <input type="number" name="sallesEau" placeholder=" " min="0" [(ngModel)]="s.sallesEau">
+        <span>Salles d'eau</span>
+      </label>
+    </div>
+    <div class="cases" role="group" aria-label="Équipements">
+      @for (v of ref.liste('EQUIPEMENT'); track v.code) {
+        <label class="case"><input type="checkbox" [checked]="s.equipements.includes(v.code)" (change)="basculer(v.code)"> {{ v.libelle }}</label>
+      }
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Loyer</legend>
+    <div class="duo">
+      <label class="champ">
+        <input type="number" name="loyer" placeholder=" " min="0" step="5000" [(ngModel)]="s.loyerReference">
+        <span>Loyer de référence (FCFA)</span>
+      </label>
+      <label class="champ">
+        <input type="number" name="charges" placeholder=" " min="0" step="1000" [(ngModel)]="s.charges">
+        <span>Charges (FCFA)</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <label class="champ">
+    <textarea name="description" placeholder=" " [(ngModel)]="s.description"></textarea>
+    <span>Description, remarques</span>
+  </label>
+
+  @if (erreur()) {
+    <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p>
+  }
+
+  <div class="pied">
+    @if (lot() && peutArchiver()) {
+      <button type="button" class="btn discret gauche" (click)="archive.emit(lot()!)"><fact-icone nom="archive" [taille]="16" /> Archiver</button>
+    }
+    <button type="button" class="btn" (click)="annule.emit()">Annuler</button>
+    <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">
+      {{ s.id ? 'Enregistrer' : 'Ajouter le lot' }}
+    </button>
+  </div>
+</form>

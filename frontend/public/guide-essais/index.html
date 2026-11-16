@@ -1,0 +1,817 @@
+<!doctype html>
+<!-- Guide d'utilisation : à retirer à la livraison (avec la route /guide et l'entrée « Guide » du menu). -->
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Guide FACT Immobilier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+
+/* Mise en page : sommaire fixe à gauche sur grand écran, chapitres en colonne de lecture ;
+   chaque démarche = étapes numérotées puis la capture de l'écran (cliquable pour l'agrandir). */
+:root {
+  --fond: #f4f6fa;
+  --surface: #ffffff;
+  --encre: #18202e;
+  --encre-2: #4a5468;
+  --discret: #6b7488;
+  --filet: #dfe4ee;
+  --marque: #1d4a94;
+  --accent: #2f6fd6;
+  --accent-clair: #e6eefb;
+  --nuit: #0f1b33;
+  --bon: #1f8a5b;
+  --bon-clair: #e3f4ec;
+  --attention: #a96308;
+  --attention-clair: #fbf0df;
+  --titre: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  --texte: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+  --rayon: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #11151c; --surface: #1a1f29; --encre: #e8ecf3; --encre-2: #b7c0d0; --discret: #8b95a8; --filet: #2c3443;
+    --marque: #a8c5f2; --accent: #6aa2f5; --accent-clair: #1c2c48; --nuit: #0b1222; --bon: #5fcf9a; --bon-clair: #173326;
+    --attention: #f0b45c; --attention-clair: #3a2c14; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #11151c; --surface: #1a1f29; --encre: #e8ecf3; --encre-2: #b7c0d0; --discret: #8b95a8; --filet: #2c3443;
+  --marque: #a8c5f2; --accent: #6aa2f5; --accent-clair: #1c2c48; --nuit: #0b1222; --bon: #5fcf9a; --bon-clair: #173326;
+  --attention: #f0b45c; --attention-clair: #3a2c14; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--fond); color: var(--encre); font: 16px/1.6 var(--texte); }
+a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--titre); text-wrap: balance; line-height: 1.25; margin: 0; }
+
+/* ----------------------------------------------------------------- bandeau */
+.bandeau { background: var(--nuit); color: #fff; }
+.bandeau-int { max-width: 1240px; margin: 0 auto; padding-block: 44px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 14px; }
+.marque { display: flex; align-items: center; gap: 10px; font: 700 15px var(--titre); letter-spacing: .02em; color: #c9d6ee; }
+.marque svg { width: 30px; height: 30px; }
+.bandeau h1 { font-size: clamp(30px, 6vw, 46px); color: #fff; }
+.bandeau p { margin: 0; max-width: 62ch; color: #c9d6ee; font-size: 17px; }
+.pastilles { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.pastilles span { padding: 5px 12px; border-radius: 99px; background: rgba(255,255,255,.1); color: #e4ecfa; font-size: 13.5px; }
+
+/* ----------------------------------------------------------------- corps */
+.corps { max-width: 1240px; margin: 0 auto; padding-block: 28px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+@media (min-width: 1000px) { .corps { grid-template-columns: 250px minmax(0, 1fr); } }
+
+.sommaire { align-self: start; }
+@media (min-width: 1000px) { .sommaire { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 18px); max-height: calc(100vh - 36px); overflow: auto; } }
+.sommaire details { background: var(--surface); border: 1px solid var(--filet); border-radius: var(--rayon); padding: 12px 14px; }
+.sommaire summary { font: 700 14px var(--titre); cursor: pointer; color: var(--marque); }
+.sommaire ol { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 2px; counter-reset: ch; }
+.sommaire li a { display: flex; gap: 8px; padding: 6px 8px; border-radius: 8px; color: var(--encre-2); text-decoration: none; font-size: 14.5px; }
+.sommaire li a::before { counter-increment: ch; content: counter(ch); min-width: 20px; color: var(--discret); font-variant-numeric: tabular-nums; }
+.sommaire li a:hover, .sommaire li a.actif { background: var(--accent-clair); color: var(--marque); }
+.sommaire li a:focus-visible, .ouvrir:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+main { display: grid; gap: 30px; min-width: 0; }
+.chapitre { background: var(--surface); border: 1px solid var(--filet); border-radius: 18px; padding: clamp(18px, 4vw, 34px); display: grid; gap: 18px; min-width: 0; scroll-margin-top: 16px; }
+.chapitre > header { display: grid; gap: 6px; }
+.numero { font: 600 12.5px var(--texte); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.chapitre h2 { font-size: clamp(22px, 4vw, 28px); color: var(--marque); }
+.chapitre > header p { margin: 0; color: var(--encre-2); max-width: 68ch; }
+.demarche { display: grid; gap: 12px; padding-top: 16px; border-top: 1px solid var(--filet); min-width: 0; }
+.demarche h3 { font-size: 18px; }
+.qui { justify-self: start; font-size: 13.5px; padding: 3px 10px; border-radius: 99px; background: var(--accent-clair); color: var(--marque); font-weight: 600; }
+.demarche p { margin: 0; max-width: 70ch; }
+ol.etapes { margin: 0; padding: 0; list-style: none; counter-reset: e; display: grid; gap: 8px; max-width: 72ch; }
+ol.etapes > li { position: relative; padding-left: 36px; }
+ol.etapes > li::before { counter-increment: e; content: counter(e); position: absolute; left: 0; top: 1px; width: 25px; height: 25px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--accent); color: #fff; font: 700 12.5px var(--titre); }
+ul.points { margin: 0; padding-left: 20px; display: grid; gap: 5px; max-width: 72ch; }
+.bouton { display: inline-block; padding: 0 7px; border-radius: 6px; border: 1px solid var(--filet); background: var(--fond); font-weight: 600; font-size: .93em; white-space: nowrap; }
+.note { padding: 12px 14px; border-radius: 12px; background: var(--attention-clair); color: var(--encre); max-width: 72ch; font-size: 15px; }
+.note.bon { background: var(--bon-clair); }
+.note strong { color: var(--attention); }
+.note.bon strong { color: var(--bon); }
+
+/* ----------------------------------------------------------------- captures */
+figure { margin: 4px 0 0; display: grid; gap: 8px; min-width: 0; }
+figcaption { font-size: 13.5px; color: var(--discret); }
+.ouvrir { display: block; padding: 0; border: 1px solid var(--filet); border-radius: 12px; overflow: hidden; background: var(--fond); cursor: zoom-in;
+  box-shadow: 0 6px 20px -12px rgba(15, 27, 51, .35); transition: transform .2s ease; width: 100%; }
+.ouvrir:hover { transform: translateY(-2px); }
+.ouvrir img { display: block; width: 100%; height: auto; }
+.telephones { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px; align-items: start; }
+.telephones .ouvrir { border-radius: 22px; border: 6px solid var(--nuit); max-width: 300px; }
+.deux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; align-items: start; }
+
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tableau { overflow-x: auto; max-width: 100%; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--filet); vertical-align: top; }
+th { font: 600 13px var(--texte); color: var(--discret); text-transform: uppercase; letter-spacing: .05em; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+
+dl.glossaire { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 10px 22px; }
+dl.glossaire div { padding: 10px 0; border-bottom: 1px solid var(--filet); min-width: 0; }
+dl.glossaire dt { font: 700 15.5px var(--titre); color: var(--marque); }
+dl.glossaire dd { margin: 3px 0 0; color: var(--encre-2); font-size: 15px; }
+code { font: 600 14px ui-monospace, 'Cascadia Mono', Consolas, monospace; padding: 1px 6px; border-radius: 6px; background: var(--accent-clair); color: var(--marque);
+  overflow-wrap: anywhere; user-select: all; }
+table.comptes td:first-child { white-space: normal; }
+dl.faq { margin: 0; display: grid; gap: 14px; }
+dl.faq dt { font-weight: 700; }
+dl.faq dd { margin: 2px 0 0; color: var(--encre-2); max-width: 70ch; }
+
+/* ----------------------------------------------------------------- loupe */
+dialog { border: 0; padding: 0; background: transparent; max-width: min(96vw, 1400px); max-height: 94vh; }
+dialog::backdrop { background: rgba(6, 10, 20, .82); }
+dialog img { display: block; max-width: 100%; max-height: 86vh; border-radius: 10px; margin: 0 auto; }
+dialog p { margin: 10px 0 0; color: #e8ecf3; text-align: center; font-size: 14px; }
+dialog button { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); width: 44px; height: 44px; border-radius: 50%; border: 0;
+  background: #fff; color: #111; font-size: 22px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .ouvrir { transition: none; } }
+</style>
+</head><body>
+
+
+<header class="bandeau">
+  <div class="bandeau-int">
+    <span class="marque"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 28V7l14-3v24" fill="#2f6fd6"/><path d="M22 4l3 2v22h-3z" fill="#1d4a94"/><path d="M11 10h8M11 14h8M11 18h8M11 22h8M15 7v21" stroke="#cfe0fb" stroke-width="1.2"/><path d="M5 28h22" stroke="#c9d6ee" stroke-width="2"/></svg>FACT IMMOBILIER</span>
+    <h1>Guide d'utilisation</h1>
+    <p>Les comptes pour tester, les mots du métier, puis chaque démarche de l'application de gestion, de l'application de terrain sur téléphone, de l'espace propriétaire et du site internet, étape par étape et en images. Les captures montrent les données d'essai, préfixées « ESSAI ».</p>
+    <div class="pastilles"><span>Ordinateur</span><span>Téléphone de l'agent</span><span>Espace propriétaire</span><span>Site public</span></div>
+  </div>
+</header>
+
+<div class="corps">
+  <nav class="sommaire" aria-label="Sommaire">
+    <details open id="sommaire">
+      <summary>Sommaire</summary>
+      <ol>
+        <li><a href="#premiers-pas">Premiers pas</a></li>
+        <li><a href="#comptes-essai">Comptes pour tester</a></li>
+        <li><a href="#mots-du-metier">Les mots du métier</a></li>
+        <li><a href="#profils">Qui voit quoi</a></li>
+        <li><a href="#tableau">Tableau de bord et alertes</a></li>
+        <li><a href="#carte">La carte</a></li>
+        <li><a href="#batiments">Bâtiments et lots</a></li>
+        <li><a href="#proprietaires">Propriétaires et mandats</a></li>
+        <li><a href="#loyers">Baux et loyers</a></li>
+        <li><a href="#travaux">Travaux</a></li>
+        <li><a href="#terrain">Le téléphone de l'agent</a></li>
+        <li><a href="#tournees">Tournées, côté bureau</a></li>
+        <li><a href="#portefeuilles">Portefeuilles</a></li>
+        <li><a href="#annonces">Annonces du site</a></li>
+        <li><a href="#demandes">Demandes et messages</a></li>
+        <li><a href="#rapports">Rapports</a></li>
+        <li><a href="#espace">Espace propriétaire</a></li>
+        <li><a href="#site">Le site public</a></li>
+        <li><a href="#administration">Administration</a></li>
+        <li><a href="#questions">Questions fréquentes</a></li>
+      </ol>
+    </details>
+  </nav>
+
+  <main>
+    <!-- ================================================================ 1 -->
+    <section class="chapitre" id="premiers-pas">
+      <header><span class="numero">Chapitre 1</span><h2>Premiers pas</h2>
+        <p>L'application s'ouvre dans un navigateur, sur ordinateur, tablette ou téléphone. Rien à installer au bureau.</p></header>
+
+      <div class="demarche">
+        <h3>Se connecter</h3>
+        <span class="qui">Tout le monde</span>
+        <ol class="etapes">
+          <li>Ouvrez l'adresse de l'application dans le navigateur.</li>
+          <li>Saisissez votre identifiant (un propriétaire peut saisir son adresse e-mail) et votre mot de passe.</li>
+          <li>Touchez <span class="bouton">Se connecter</span>.</li>
+          <li>À la première connexion, remplacez le mot de passe provisoire remis par l'agence par un mot de passe à vous.</li>
+        </ol>
+        <p class="note"><strong>Sécurité :</strong> après cinq mots de passe erronés en dix minutes, la connexion depuis cet appareil est bloquée cinq minutes.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/connexion.jpg" alt="Écran de connexion : identifiant, mot de passe et bouton Se connecter" loading="lazy"></button>
+          <figcaption>L'écran de connexion.</figcaption></figure>
+      </div>
+
+      <div class="demarche">
+        <h3>Se repérer dans l'écran</h3>
+        <ul class="points">
+          <li><strong>Ordinateur :</strong> le menu est à gauche.</li>
+          <li><strong>Téléphone :</strong> une barre en bas donne quatre rubriques ; <span class="bouton">Plus</span> ouvre toutes les autres, le changement de mot de passe et la déconnexion.</li>
+          <li>La <strong>cloche</strong> montre les alertes qui vous concernent ; le bouton lune ou soleil change le thème.</li>
+          <li>Les longues listes (communes, bâtiments, propriétaires…) ont toutes un <strong>champ de recherche</strong> : tapez quelques lettres.</li>
+        </ul>
+        <div class="telephones">
+          <figure><button class="ouvrir" type="button"><img src="img/tel-tableau.jpg" alt="Tableau de bord sur téléphone avec la barre de navigation en bas" loading="lazy"></button><figcaption>Sur téléphone : la barre du bas.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/tel-menu-plus.jpg" alt="Menu Plus ouvert sur téléphone, avec toutes les rubriques" loading="lazy"></button><figcaption>Le menu « Plus ».</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ======================================================== comptes d'essai -->
+    <section class="chapitre" id="comptes-essai">
+      <header><span class="numero">Chapitre 2</span><h2>Les comptes pour tester</h2>
+        <p>Un compte par profil, avec les données d'essai. Connectez-vous avec l'un, puis avec l'autre, pour voir l'application avec les yeux de chacun. Ces comptes marchent sur l'application de test et sur votre serveur, qui partagent la même base.</p></header>
+      <p class="note"><strong>Avant de partager ce guide avec le client :</strong> ces comptes et leurs mots de passe ne servent qu'aux essais. À la livraison, la base est vidée et ces comptes disparaissent ; retirez aussi ce chapitre.</p>
+      <div class="tableau"><table class="comptes">
+        <thead><tr><th>Profil</th><th>Identifiant</th><th>Mot de passe</th><th>Ce qu'il permet d'essayer</th></tr></thead>
+        <tbody>
+          <tr><td>Administrateur</td><td><code>admin</code></td><td>le vôtre</td><td>Tout, plus les comptes, l'import et le journal.</td></tr>
+          <tr><td>Direction</td><td><code>essai.direction</code></td><td><code>Direction2026</code></td><td>Mandats, réaffectation des bâtiments, validation des annonces, ouverture des espaces propriétaires, annulation d'un encaissement, rapports.</td></tr>
+          <tr><td>Gestionnaire</td><td><code>essai.kouassi</code></td><td><code>Kouassi2026</code></td><td>Son portefeuille seulement : baux, encaissements, travaux, préparation des tournées, publication d'annonces.</td></tr>
+          <tr><td>Gestionnaire</td><td><code>essai.traore</code></td><td><code>Traore2026</code></td><td>Un autre portefeuille, pour comparer ce que chacun voit.</td></tr>
+          <tr><td>Gestionnaire</td><td><code>essai.yao</code></td><td><code>YaoSerge2026</code></td><td>Un troisième portefeuille ; propose une annonce à valider.</td></tr>
+          <tr><td>Agent de terrain</td><td><code>essai.agent</code></td><td><code>AgentKoffi2026</code></td><td>Sur téléphone : tournée, pointage, encaissement, état des lieux, recensement (chapitre « Le téléphone de l'agent »).</td></tr>
+          <tr><td>Responsable travaux</td><td><code>essai.travaux</code></td><td><code>Travaux2026</code></td><td>Pannes, prestataires, constats, validation des devis, clôture.</td></tr>
+          <tr><td>Éditeur web</td><td><code>essai.editeur</code></td><td><code>Editeur2026</code></td><td>Validation des annonces, demandes reçues par le site.</td></tr>
+          <tr><td>Propriétaire</td><td><code>awa.kone@exemple.ci</code></td><td><code>KoneAwa2026</code></td><td>Son espace : ses biens, ses loyers, ses documents, la réponse aux devis.</td></tr>
+          <tr><td>Propriétaire</td><td><code>contact@sci-lagune.exemple.ci</code></td><td><code>jU592LxEzWM9</code></td><td>Mot de passe provisoire : essayez la première connexion, qui oblige à choisir son mot de passe.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="demarche">
+        <h3>Un parcours d'essai conseillé</h3>
+        <ol class="etapes">
+          <li><strong>Gestionnaire</strong> (<code>essai.kouassi</code>) : ouvrez un lot loué, encaissez un loyer, ouvrez la quittance ; préparez la tournée de l'agent pour demain.</li>
+          <li><strong>Agent</strong> (<code>essai.agent</code>, sur téléphone) : faites la tournée, pointez une étape, encaissez un loyer en coupant le réseau, faites un état des lieux et signez au doigt.</li>
+          <li><strong>Responsable travaux</strong> : signalez une panne dans un bâtiment d'ESSAI Koné Awa (par exemple ESSAI Immeuble Koumassi), affectez un prestataire, saisissez un devis au-dessus de 150 000 FCFA.</li>
+          <li><strong>Propriétaire</strong> (<code>awa.kone@exemple.ci</code>) : acceptez ou refusez ce devis, téléchargez le relevé.</li>
+          <li><strong>Direction</strong> : lisez les alertes, validez l'annonce en attente, réaffectez un bâtiment, regardez les rapports.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ======================================================== glossaire -->
+    <section class="chapitre" id="mots-du-metier">
+      <header><span class="numero">Chapitre 3</span><h2>Les mots du métier</h2>
+        <p>Les termes de la gestion immobilière employés dans l'application, expliqués simplement, dans l'ordre où on les rencontre.</p></header>
+      <dl class="glossaire">
+          <div><dt>Lot</dt><dd>Un logement ou un local d'un bâtiment, désigné par son numéro de porte : appartement, studio, bureau, magasin.</dd></div>
+          <div><dt>Studio, F2, F3, F4</dt><dd>Le type d'appartement : « F » suivi du nombre de pièces principales. Un F3 = un séjour et deux chambres. Un studio = une seule pièce.</dd></div>
+          <div><dt>Propriétaire (mandant)</dt><dd>La personne ou la société à qui appartient le bâtiment, et qui en confie la gestion à l'agence.</dd></div>
+          <div><dt>Mandat de gestion</dt><dd>Le contrat par lequel le propriétaire charge l'agence de gérer ses biens : louer, encaisser, suivre les travaux. Il a une durée et peut se reconduire d'office.</dd></div>
+          <div><dt>Honoraires</dt><dd>Ce que l'agence prend pour son travail, en pourcentage des loyers encaissés (par exemple 10 %).</dd></div>
+          <div><dt>Seuil de travaux</dt><dd>Le montant au-delà duquel un devis doit être accepté par le propriétaire avant d'être lancé.</dd></div>
+          <div><dt>Reversement</dt><dd>L'argent que l'agence verse au propriétaire : loyers encaissés, moins les honoraires et les travaux à sa charge.</dd></div>
+          <div><dt>Relevé de gestion</dt><dd>Le document qui détaille, pour une période, les loyers encaissés, les honoraires, les travaux et le montant reversé au propriétaire.</dd></div>
+          <div><dt>Locataire (occupant)</dt><dd>La personne qui loue le lot et y habite ou y travaille.</dd></div>
+          <div><dt>Bail</dt><dd>Le contrat de location entre le propriétaire (représenté par l'agence) et le locataire : quel lot, à partir de quand, pour combien de temps, à quel prix.</dd></div>
+          <div><dt>Loyer</dt><dd>La somme que le locataire paie chaque mois pour occuper le lot.</dd></div>
+          <div><dt>Charges</dt><dd>Ce que le locataire paie en plus du loyer pour les services communs (gardiennage, entretien, eau des parties communes…).</dd></div>
+          <div><dt>Caution (dépôt de garantie)</dt><dd>Une somme versée à l'entrée, gardée par l'agence, et rendue au départ si le logement est rendu en bon état et que tout est payé.</dd></div>
+          <div><dt>Avance</dt><dd>Des mois de loyer payés à l'avance à la signature du bail (couramment deux ou trois mois à Abidjan).</dd></div>
+          <div><dt>Échéance</dt><dd>Le loyer attendu pour un mois donné, à payer à une date fixée (le « jour d'exigibilité », par exemple le 5 du mois).</dd></div>
+          <div><dt>Échéancier</dt><dd>La liste des échéances d'un bail, mois par mois, avec ce qui est payé, payé en partie ou en retard.</dd></div>
+          <div><dt>Encaissement</dt><dd>Un paiement reçu d'un locataire et enregistré : montant, date, mode (espèces, mobile money, chèque, virement).</dd></div>
+          <div><dt>Quittance de loyer</dt><dd>Le document qui prouve qu'un mois de loyer est payé en entier.</dd></div>
+          <div><dt>Reçu de paiement</dt><dd>Le document remis pour un paiement partiel, qui ne solde pas le mois.</dd></div>
+          <div><dt>Impayé</dt><dd>Un loyer dont la date est passée et qui n'est pas réglé, en tout ou en partie.</dd></div>
+          <div><dt>Recouvrement</dt><dd>Le fait de récupérer les loyers impayés : relances, visites, encaissements. Le taux de recouvrement compare ce qui est payé à ce qui était attendu.</dd></div>
+          <div><dt>Préavis</dt><dd>L'annonce du départ du locataire, avant la date de sortie prévue. Le lot passe « En préavis ».</dd></div>
+          <div><dt>État des lieux</dt><dd>La description pièce par pièce de l'état du logement, signée par le locataire et l'agent, à l'entrée et à la sortie. En comparant les deux, on sait ce qui a été abîmé.</dd></div>
+          <div><dt>Vacant</dt><dd>Un lot libre, sans locataire. La durée de vacance est le temps pendant lequel il reste libre.</dd></div>
+          <div><dt>Taux d'occupation</dt><dd>La part des lots loués parmi tous les lots gérés. 71 % = sur 100 lots, 71 sont loués.</dd></div>
+          <div><dt>Intervention</dt><dd>Une panne ou des travaux à faire dans un bâtiment, suivis de leur signalement à leur clôture.</dd></div>
+          <div><dt>Prestataire</dt><dd>L'artisan ou l'entreprise qui fait les travaux : plombier, électricien, peintre…</dd></div>
+          <div><dt>Devis</dt><dd>Le prix proposé par le prestataire avant de faire les travaux.</dd></div>
+          <div><dt>Imputation</dt><dd>Qui paie les travaux à la clôture : le propriétaire, le locataire ou l'agence.</dd></div>
+          <div><dt>Gestionnaire et suppléant</dt><dd>Le gestionnaire suit un groupe de bâtiments, son « portefeuille ». Le suppléant le remplace en son absence.</dd></div>
+          <div><dt>Portefeuille</dt><dd>L'ensemble des bâtiments confiés à un gestionnaire.</dd></div>
+          <div><dt>Réaffectation</dt><dd>Le changement de gestionnaire pour un ou plusieurs bâtiments (congé, départ, nouvelle répartition).</dd></div>
+          <div><dt>Tournée</dt><dd>La liste des bâtiments qu'un agent visite dans la journée, dans un ordre de passage calculé.</dd></div>
+          <div><dt>Pointage</dt><dd>La preuve du passage de l'agent dans un bâtiment : l'heure, la position du téléphone et la distance au bâtiment.</dd></div>
+          <div><dt>Recensement</dt><dd>La première saisie d'un bâtiment sur le terrain : position, photos, lots. La fiche est ensuite contrôlée au bureau (« À valider »).</dd></div>
+          <div><dt>Annonce</dt><dd>La présentation d'un lot à louer ou à vendre sur le site internet, avec photos et prix.</dd></div>
+          <div><dt>Syndic</dt><dd>La gestion des parties communes d'un immeuble pour le compte de ses copropriétaires (un des types de mandat).</dd></div>
+          <div><dt>SODECI, CIE</dt><dd>Les compagnies d'eau (SODECI) et d'électricité (CIE) : leurs compteurs sont relevés à l'état des lieux.</dd></div>
+          <div><dt>Mobile money</dt><dd>Le paiement par téléphone (Orange Money, MTN MoMo, Moov Money, Wave). Le numéro de transaction prouve le paiement.</dd></div>
+          <div><dt>FCFA</dt><dd>Le franc CFA, la monnaie utilisée partout dans l'application.</dd></div>
+      </dl>
+    </section>
+
+    <!-- ================================================================ 2 -->
+    <section class="chapitre" id="profils">
+      <header><span class="numero">Chapitre 4</span><h2>Qui voit quoi : les profils</h2>
+        <p>Chaque compte a un profil. Il décide des menus visibles et de ce qu'on peut modifier. L'administrateur peut accorder un droit en plus à un compte.</p></header>
+      <div class="tableau"><table>
+        <thead><tr><th>Profil</th><th>Ce qu'il fait</th></tr></thead>
+        <tbody>
+          <tr><td>Direction</td><td>Voit tout ; réaffecte les bâtiments, valide les annonces, saisit les mandats, ouvre les espaces propriétaires.</td></tr>
+          <tr><td>Gestionnaire</td><td>Suit son portefeuille : bâtiments, locataires, loyers, travaux ; prépare les tournées.</td></tr>
+          <tr><td>Agent de terrain</td><td>Travaille sur le téléphone : tournée, encaissements, états des lieux, recensements.</td></tr>
+          <tr><td>Responsable travaux</td><td>Traite les pannes, choisit les prestataires, valide les devis.</td></tr>
+          <tr><td>Éditeur web</td><td>Valide les annonces, suit les demandes du site.</td></tr>
+          <tr><td>Administrateur</td><td>Tout, plus les comptes, l'import et le journal.</td></tr>
+          <tr><td>Propriétaire</td><td>Son seul espace : ses biens, loyers, travaux et documents, jamais les noms ni les téléphones de ses locataires.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- ================================================================ 3 -->
+    <section class="chapitre" id="tableau">
+      <header><span class="numero">Chapitre 5</span><h2>Le tableau de bord et les alertes</h2>
+        <p>La page d'accueil du personnel résume le patrimoine et liste ce qui demande une action aujourd'hui.</p></header>
+      <div class="demarche">
+        <h3>Lire le tableau de bord</h3>
+        <ul class="points">
+          <li>Les chiffres clés : bâtiments, lots, occupation, loyers attendus et encaissés, impayés.</li>
+          <li>Le bloc <strong>« À traiter »</strong> : pannes urgentes, retards de loyer, bâtiments à placer sur la carte, fiches à valider… Chaque ligne mène à la liste concernée.</li>
+        </ul>
+        <figure><button class="ouvrir" type="button"><img src="img/tableau-de-bord.jpg" alt="Tableau de bord : chiffres clés, bloc À traiter et occupation des lots" loading="lazy"></button><figcaption>Le tableau de bord de la Direction.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Lire une alerte</h3>
+        <ol class="etapes">
+          <li>Touchez la <strong>cloche</strong> (le chiffre indique les alertes non lues).</li>
+          <li>Touchez une alerte : l'application ouvre directement la fiche concernée.</li>
+          <li><span class="bouton">Tout marquer comme lu</span> vide le compteur.</li>
+        </ol>
+        <p>L'application prévient d'elle-même la bonne personne : bail qui arrive à échéance, loyer en retard, panne urgente, nouvelle demande du site, annonce à valider, devis à approuver, compte rendu de tournée… Les alertes se mettent à jour toutes les dix minutes, et tout de suite après les événements importants.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/alertes.jpg" alt="Panneau des alertes ouvert à droite de l'écran" loading="lazy"></button><figcaption>Le panneau des alertes.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 4 -->
+    <section class="chapitre" id="carte">
+      <header><span class="numero">Chapitre 6</span><h2>La carte</h2>
+        <p>Chaque bâtiment est un point sur la carte d'Abidjan.</p></header>
+      <div class="demarche">
+        <h3>Consulter la carte</h3>
+        <ul class="points">
+          <li><span class="bouton">Couleur des bâtiments</span> change ce que disent les couleurs : occupation, impayés, travaux, gestionnaire ou validation.</li>
+          <li>Touchez un point pour voir le résumé du bâtiment, puis ouvrez sa fiche.</li>
+          <li><span class="bouton">Ma position</span> centre la carte là où vous êtes.</li>
+        </ul>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/carte.jpg" alt="Carte du patrimoine, bâtiments colorés selon leur occupation" loading="lazy"></button><figcaption>Couleur selon l'occupation.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/carte-impayes.jpg" alt="Carte du patrimoine, bâtiments colorés selon leurs impayés" loading="lazy"></button><figcaption>Couleur selon les impayés.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Placer ou corriger un bâtiment</h3>
+        <span class="qui">Gestionnaire, Direction</span>
+        <ol class="etapes">
+          <li>Ouvrez le bâtiment sur la carte.</li>
+          <li>Touchez <span class="bouton">Déplacer</span> et faites glisser le point ; l'image satellite aide.</li>
+          <li>Touchez <span class="bouton">Enregistrer la position</span>.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ================================================================ 5 -->
+    <section class="chapitre" id="batiments">
+      <header><span class="numero">Chapitre 7</span><h2>Les bâtiments et les lots</h2>
+        <p>Un bâtiment a une position, un propriétaire, un gestionnaire et des lots (appartements, bureaux, magasins).</p></header>
+      <div class="demarche">
+        <h3>Trouver un bâtiment</h3>
+        <p>Menu <span class="bouton">Bâtiments</span> : recherche par nom, référence, propriétaire ou quartier ; filtres par commune, validation et gestionnaire ; affichage en cartes ou en tableau.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/batiments.jpg" alt="Liste des bâtiments en cartes, avec recherche et filtres" loading="lazy"></button><figcaption>La liste des bâtiments.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Créer un bâtiment au bureau</h3>
+        <span class="qui">Gestionnaire, Direction, administrateur</span>
+        <ol class="etapes">
+          <li><span class="bouton">Bâtiments</span> → <span class="bouton">Nouveau bâtiment</span>.</li>
+          <li>Nom, type, commune, quartier, repère, niveaux.</li>
+          <li>Choisissez le propriétaire et le gestionnaire.</li>
+          <li>Placez le bâtiment sur la carte : sans position ni propriétaire, il ne s'enregistre pas.</li>
+          <li><span class="bouton">Créer le bâtiment</span>.</li>
+        </ol>
+        <figure><button class="ouvrir" type="button"><img src="img/batiment-nouveau.jpg" alt="Formulaire Nouveau bâtiment, avec la carte pour placer le point" loading="lazy"></button><figcaption>Le formulaire de création, avec la carte.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>La fiche d'un bâtiment</h3>
+        <p>Onglets <strong>Identité</strong>, <strong>Lots</strong>, <strong>Location</strong>, <strong>Interventions</strong>, <strong>Propriétaire</strong>, <strong>Historique</strong> (toutes les modifications, avec qui et quand). L'onglet Lots montre la <strong>vue par étage</strong>, chaque lot coloré selon son statut.</p>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/batiment-fiche.jpg" alt="Fiche d'un bâtiment, onglet Identité et position" loading="lazy"></button><figcaption>L'identité du bâtiment.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/batiment-etages.jpg" alt="Vue par étage des lots d'un bâtiment" loading="lazy"></button><figcaption>La vue par étage.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Ajouter un lot, valider une fiche</h3>
+        <ol class="etapes">
+          <li>Onglet <span class="bouton">Lots</span> → <span class="bouton">Ajouter un lot</span> : numéro de porte (unique dans le bâtiment), étage, type, surface, loyer de référence.</li>
+          <li>Un bâtiment recensé sur le terrain arrive <strong>« À valider »</strong> : contrôlez la position, les photos et les lots, puis <span class="bouton">Valider la fiche</span>.</li>
+        </ol>
+        <p class="note"><strong>À retenir :</strong> un lot occupé a toujours un bail actif, et jamais deux. Un bâtiment ou un propriétaire ne se supprime pas : la Direction l'archive, il reste consultable.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================ 6 -->
+    <section class="chapitre" id="proprietaires">
+      <header><span class="numero">Chapitre 8</span><h2>Les propriétaires et les mandats</h2>
+        <p>La fiche du propriétaire regroupe ses coordonnées, ses bâtiments, son mandat, son relevé et son espace en ligne.</p></header>
+      <div class="demarche">
+        <h3>Créer ou modifier un propriétaire</h3>
+        <span class="qui">Gestionnaire, Direction</span>
+        <p><span class="bouton">Propriétaires</span> → <span class="bouton">Nouveau propriétaire</span> : type, nom, téléphones, <strong>e-mail</strong> (indispensable pour son espace en ligne), pièce d'identité, mode et coordonnées de reversement.</p>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/proprietaires.jpg" alt="Liste des propriétaires" loading="lazy"></button><figcaption>La liste des propriétaires.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/proprietaire-fiche.jpg" alt="Fiche d'un propriétaire ouverte sur le côté" loading="lazy"></button><figcaption>La fiche d'un propriétaire.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Saisir le mandat, déposer le mandat signé</h3>
+        <span class="qui">Direction</span>
+        <ol class="etapes">
+          <li>Fiche → bloc « Mandat de gestion » → <span class="bouton">Nouveau mandat</span>.</li>
+          <li>Type, date de début, durée, reconduction d'office, <strong>honoraires</strong> (% des loyers encaissés).</li>
+          <li><strong>Seuil de travaux</strong> : au-delà, un devis doit être accepté par le propriétaire (vide : 150 000 FCFA, réglage général).</li>
+          <li>Biens couverts : tous ses bâtiments ou certains.</li>
+          <li><span class="bouton">Déposer le mandat signé</span> : PDF ou photo, 10 Mo au plus. Le propriétaire le retrouve dans son espace.</li>
+        </ol>
+        <p>Le bloc « Relevé de gestion » donne, pour les mois choisis, les loyers encaissés, les honoraires, les travaux à sa charge et le montant à lui reverser : <span class="bouton">Voir les montants</span> ou <span class="bouton">Relevé PDF</span>.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/proprietaire-mandat.jpg" alt="Bloc du mandat avec le mandat signé déposé, puis le relevé de gestion" loading="lazy"></button><figcaption>Le mandat, son document signé et le relevé de gestion.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Ouvrir l'espace en ligne d'un propriétaire</h3>
+        <span class="qui">Direction</span>
+        <ol class="etapes">
+          <li>Vérifiez que la fiche porte son e-mail.</li>
+          <li>Bloc « Espace en ligne » → <span class="bouton">Ouvrir son espace</span>.</li>
+          <li>L'identifiant et le <strong>mot de passe provisoire</strong> s'affichent une seule fois : <span class="bouton">Copier le message</span>, puis envoyez-le par WhatsApp ou e-mail.</li>
+          <li><span class="bouton">Voir son espace</span> vous montre son écran tel qu'il le voit.</li>
+        </ol>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/proprietaire-acces.jpg" alt="Espace ouvert : identifiant et mot de passe provisoire affichés, bouton Copier le message" loading="lazy"></button><figcaption>Les accès à transmettre au propriétaire.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/espace-apercu.jpg" alt="Aperçu de l'espace d'un propriétaire vu par la Direction" loading="lazy"></button><figcaption>L'aperçu de son espace.</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ 7 -->
+    <section class="chapitre" id="loyers">
+      <header><span class="numero">Chapitre 9</span><h2>Les baux et les loyers</h2>
+        <p>Tout se fait depuis le lot : fiche du bâtiment → onglet Lots ou Location → le lot.</p></header>
+      <div class="demarche">
+        <h3>Signer un bail</h3>
+        <span class="qui">Gestionnaire, Direction</span>
+        <ol class="etapes">
+          <li>Ouvrez un lot libre → <span class="bouton">Signer le bail</span>.</li>
+          <li>Locataire <span class="bouton">Déjà connu</span> (recherche) ou <span class="bouton">Nouveau locataire</span> : nom, téléphone, e-mail, pièce d'identité, profession, garant.</li>
+          <li>Date d'effet, durée, loyer mensuel, charges, caution, mois d'avance, jour du mois où le loyer est dû.</li>
+          <li>Enregistrez : le lot passe <strong>Occupé</strong>, son annonce quitte le site, et l'avance éventuelle est encaissée avec sa quittance.</li>
+        </ol>
+        <figure><button class="ouvrir" type="button"><img src="img/lot-location.jpg" alt="Fiche d'un lot loué : locataire, solde, boutons Encaisser un loyer, Préavis de départ, Sortie du locataire, et l'échéancier" loading="lazy"></button><figcaption>Un lot loué : le locataire, le solde, l'échéancier mois par mois.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Encaisser un loyer au bureau</h3>
+        <span class="qui">Gestionnaire, agent, administrateur</span>
+        <ol class="etapes">
+          <li>Lot → <span class="bouton">Encaisser un loyer</span>.</li>
+          <li>Montant reçu, date, mode (espèces, mobile money, chèque, virement), référence de la transaction.</li>
+          <li><span class="bouton">Enregistrer l'encaissement</span> → <span class="bouton">Ouvrir la quittance</span>.</li>
+        </ol>
+        <p>Le paiement solde les mois dus, du plus ancien au plus récent. Mois payé en entier : <strong>quittance de loyer</strong> ; sinon <strong>reçu de paiement</strong>. Un encaissement erroné s'annule (Direction seulement), avec un motif ; il reste visible, barré.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/lot-encaisser.jpg" alt="Formulaire d'encaissement d'un loyer dans la fiche du lot" loading="lazy"></button><figcaption>Le formulaire d'encaissement.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Suivre les impayés</h3>
+        <p>Menu <span class="bouton">Loyers</span> : loyers attendus et réglés, taux de recouvrement, impayés en retard, derniers encaissements, et la liste des baux avec le filtre « en retard ».</p>
+        <figure><button class="ouvrir" type="button"><img src="img/loyers.jpg" alt="Page Loyers : chiffres, recouvrement des six derniers mois, derniers encaissements" loading="lazy"></button><figcaption>La page Loyers.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Préavis, sortie et états des lieux</h3>
+        <ol class="etapes">
+          <li>Lot → <span class="bouton">Préavis de départ</span> : date de sortie prévue et motif. Le lot passe « En préavis ».</li>
+          <li>Le jour du départ, l'agent fait l'<strong>état des lieux de sortie</strong> sur son téléphone (chapitre « Le téléphone de l'agent »).</li>
+          <li>Lot → <span class="bouton">Sortie du locataire</span> → <span class="bouton">Enregistrer la sortie</span>. Le lot redevient libre.</li>
+        </ol>
+        <p>Le bloc « États des lieux » du lot liste les états d'entrée et de sortie, chacun avec son PDF.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/lot-etats-des-lieux.jpg" alt="Bloc États des lieux d'un lot avec le bouton du PDF" loading="lazy"></button><figcaption>L'état des lieux d'entrée, signé sur place, avec son PDF.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 8 -->
+    <section class="chapitre" id="travaux">
+      <header><span class="numero">Chapitre 10</span><h2>Les travaux</h2>
+        <p>Le parcours d'une panne : Signalée → Prestataire choisi → En cours (constat et devis) → Devis validé → Travaux terminés → Clôturée.</p></header>
+      <div class="demarche">
+        <h3>Signaler une panne</h3>
+        <ol class="etapes">
+          <li><span class="bouton">Travaux</span> → <span class="bouton">Signaler une panne</span> (ou depuis la fiche du bâtiment).</li>
+          <li>Bâtiment, lot, catégorie, urgence, description, photos.</li>
+          <li><span class="bouton">Signaler</span>. Une panne <strong>urgente</strong> déclenche une alerte immédiate.</li>
+        </ol>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/travaux.jpg" alt="Page Travaux : chiffres et liste des interventions" loading="lazy"></button><figcaption>La liste des interventions.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/travaux-signaler.jpg" alt="Formulaire Signaler une panne" loading="lazy"></button><figcaption>Signaler une panne.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Traiter l'intervention</h3>
+        <span class="qui">Responsable travaux</span>
+        <ol class="etapes">
+          <li><span class="bouton">Affecter à un prestataire</span> avec la date prévue.</li>
+          <li><span class="bouton">Enregistrer le constat</span> et le montant du devis.</li>
+          <li>Au-delà du seuil du mandat, le propriétaire <strong>accepte ou refuse en ligne</strong> depuis son espace.</li>
+          <li><span class="bouton">Valider le devis</span> (impossible si le propriétaire a refusé : demandez un autre devis).</li>
+          <li><span class="bouton">Travaux terminés</span> avec le coût réel et les photos, puis <span class="bouton">Clôturer</span> en précisant qui paie.</li>
+        </ol>
+        <figure><button class="ouvrir" type="button"><img src="img/travaux-fiche.jpg" alt="Fiche d'une intervention : étapes, bouton Valider le devis, historique" loading="lazy"></button><figcaption>Une intervention en cours, avec l'accord du propriétaire.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 9 -->
+    <section class="chapitre" id="terrain">
+      <header><span class="numero">Chapitre 11</span><h2>Le téléphone de l'agent</h2>
+        <p>L'application de terrain s'installe sur le téléphone et fonctionne sans réseau. L'agent arrive directement sur son accueil.</p></header>
+      <div class="demarche">
+        <h3>Installer l'application et travailler sans réseau</h3>
+        <ol class="etapes">
+          <li>Ouvrez l'adresse dans le navigateur du téléphone et connectez-vous.</li>
+          <li><strong>Android :</strong> <span class="bouton">Installer</span> dans le bandeau. <strong>iPhone :</strong> Partager → « Sur l'écran d'accueil ».</li>
+          <li>Autorisez la position et l'appareil photo la première fois.</li>
+        </ol>
+        <p class="note bon"><strong>Sans réseau :</strong> tout ce que vous saisissez est gardé dans le téléphone et part seul au retour du réseau. Le bouton rond en haut à droite compte les saisies en attente. Un envoi repris ne crée jamais de doublon. Avant de partir, ouvrez l'application une fois avec du réseau pour prendre les données à jour.</p>
+        <div class="telephones">
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-accueil.jpg" alt="Accueil du terrain : tournée du jour et quatre gestes" loading="lazy"></button><figcaption>L'accueil : la tournée et les quatre gestes.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Faire sa tournée du jour</h3>
+        <ol class="etapes">
+          <li><span class="bouton">Ma tournée</span> : la carte trace l'itinéraire d'étape en étape, avec la distance et la durée estimées.</li>
+          <li><span class="bouton">Y aller</span> ouvre le trajet dans Google Maps ; <span class="bouton">Itinéraire depuis ma position</span> recalcule l'ordre.</li>
+          <li>Sur place : <span class="bouton">Je suis sur place</span>. Le téléphone affiche la <strong>distance au bâtiment</strong>, qui prouve le passage.</li>
+          <li>Résultat : <span class="bouton">Visite faite</span>, <span class="bouton">Personne</span> ou <span class="bouton">Reportée</span>, et ce que vous avez constaté.</li>
+          <li><span class="bouton">Encaisser ici</span> et <span class="bouton">État des lieux ici</span> ouvrent directement ce bâtiment.</li>
+          <li><span class="bouton">Valider le pointage</span>. En fin de journée, le compte rendu → <span class="bouton">Terminer la tournée</span> : les gestionnaires sont prévenus.</li>
+        </ol>
+        <p>Sans tournée prévue, l'écran propose les bâtiments à visiter en priorité : cochez-les → <span class="bouton">Préparer ma tournée</span>.</p>
+        <div class="telephones">
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-tournee.jpg" alt="Tournée : avancement, distance estimée, carte de l'itinéraire numéroté" loading="lazy"></button><figcaption>L'itinéraire numéroté.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-pointage.jpg" alt="Pointage sur place : à 50 m du bâtiment, résultat et compte rendu" loading="lazy"></button><figcaption>Le pointage sur place.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-tournee-fin.jpg" alt="Tournée terminée avec son compte rendu" loading="lazy"></button><figcaption>La tournée terminée.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Encaisser un loyer sur place</h3>
+        <ol class="etapes">
+          <li><span class="bouton">Encaisser un loyer</span> → le bâtiment → le lot du locataire (ses retards s'affichent).</li>
+          <li>Montant (raccourcis « 1 mois », « Tout l'impayé »), mode, et pour le mobile money le <strong>n° de transaction</strong>.</li>
+          <li><span class="bouton">Encaisser</span>, relisez le résumé avec le locataire → <span class="bouton">Confirmer</span>.</li>
+        </ol>
+        <p>Le <strong>reçu</strong> part au locataire par WhatsApp (et par e-mail s'il en a un), avec un lien vers sa quittance. Sans réseau, tout part plus tard.</p>
+        <div class="telephones">
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-encaisser-lots.jpg" alt="Choix du lot : locataires avec leurs retards" loading="lazy"></button><figcaption>Le choix du locataire.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-encaisser-fini.jpg" alt="Encaissement gardé hors connexion, reçu envoyé au retour du réseau" loading="lazy"></button><figcaption>Encaissé, même hors connexion.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Faire un état des lieux</h3>
+        <ol class="etapes">
+          <li><span class="bouton">État des lieux</span> → bâtiment → lot, puis <span class="bouton">Entrée</span> ou <span class="bouton">Sortie</span>.</li>
+          <li>Pour chaque pièce, l'état de chaque élément : <span class="bouton">Bon</span>, <span class="bouton">Usé</span>, <span class="bouton">Mauvais</span>, <span class="bouton">H.S.</span> ; <span class="bouton">Tout est bon</span> remplit ce qui reste. Décrivez les défauts, prenez des photos.</li>
+          <li>Compteurs d'eau et d'électricité, nombre de clés, observations.</li>
+          <li>Relisez ensemble ; l'occupant signe <strong>avec le doigt</strong>, puis l'agent.</li>
+          <li><span class="bouton">Enregistrer l'état des lieux</span>. L'agence en tire le PDF ; à la sortie, il met en regard l'état noté à l'entrée.</li>
+        </ol>
+        <div class="telephones">
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-edl-logement.jpg" alt="Choix du logement et du type Entrée ou Sortie" loading="lazy"></button><figcaption>Le logement.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-edl-piece.jpg" alt="Une pièce : état de chaque élément, défaut décrit" loading="lazy"></button><figcaption>Pièce par pièce.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/terrain-edl-signatures.jpg" alt="Signatures au doigt de l'occupant et de l'agent" loading="lazy"></button><figcaption>Les deux signatures.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Recenser un bâtiment</h3>
+        <ol class="etapes">
+          <li><span class="bouton">Recenser un bâtiment</span>. Devant l'entrée : <span class="bouton">Ma position</span> (la précision s'affiche ; ajustez sur le satellite).</li>
+          <li>Photos de la façade, de l'entrée, de la rue.</li>
+          <li>Nom, type, commune, quartier, repère, niveaux, propriétaire (« à préciser » si inconnu).</li>
+          <li>Lots : niveaux × portes → <span class="bouton">Créer N lots</span>, puis corrigez.</li>
+          <li><span class="bouton">Enregistrer</span> : la fiche arrive « À valider » chez le gestionnaire.</li>
+        </ol>
+        <div class="telephones">
+          <figure><button class="ouvrir" type="button"><img src="img/tel-recensement.jpg" alt="Recensement : étape Position avec la carte et le bouton Ma position" loading="lazy"></button><figcaption>Le recensement, étape « Position ».</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ 10 -->
+    <section class="chapitre" id="tournees">
+      <header><span class="numero">Chapitre 12</span><h2>Les tournées, côté bureau</h2>
+        <p>Le gestionnaire prépare la tournée de l'agent et suit sa journée.</p></header>
+      <div class="demarche">
+        <h3>Préparer la tournée d'un agent</h3>
+        <span class="qui">Gestionnaire, Direction</span>
+        <ol class="etapes">
+          <li><span class="bouton">Tournées</span> → <span class="bouton">Préparer une tournée</span>.</li>
+          <li>L'agent, le jour, une consigne si besoin.</li>
+          <li>Cochez les bâtiments <strong>« À visiter en priorité »</strong> (avec la raison) ou ajoutez-en ; ajustez le motif de chaque étape.</li>
+          <li><span class="bouton">Enregistrer la tournée</span> : l'ordre de passage le plus court depuis l'agence est calculé.</li>
+        </ol>
+        <figure><button class="ouvrir" type="button"><img src="img/tournees-preparer.jpg" alt="Préparer une tournée : agent, jour, étapes et bâtiments à visiter en priorité" loading="lazy"></button><figcaption>La préparation d'une tournée.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Suivre une tournée</h3>
+        <p>La page montre, jour par jour, chaque tournée et son avancement. Ouvrez-en une : l'itinéraire, l'heure de chaque pointage, la distance au bâtiment (signalée « loin » au-delà de 250 m) et le compte rendu de l'agent.</p>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/tournees.jpg" alt="Page Tournées : une carte par tournée avec l'avancement" loading="lazy"></button><figcaption>Les tournées du jour.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/tournees-detail.jpg" alt="Détail d'une tournée : carte de l'itinéraire et étapes pointées" loading="lazy"></button><figcaption>Le détail, étape par étape.</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ 11 -->
+    <section class="chapitre" id="portefeuilles">
+      <header><span class="numero">Chapitre 13</span><h2>Les portefeuilles des gestionnaires</h2>
+        <p>Chaque gestionnaire, ses bâtiments et leur situation, sur une carte en couleurs.</p></header>
+      <div class="demarche">
+        <h3>Réaffecter des bâtiments (congé, départ, rééquilibrage)</h3>
+        <span class="qui">Direction</span>
+        <ol class="etapes">
+          <li>Sélectionnez les bâtiments sur la carte ou dans la liste.</li>
+          <li><span class="bouton">Réaffecter</span> → « Nouveau gestionnaire », et si besoin « Nouveau suppléant » ; le motif.</li>
+          <li><span class="bouton">Confirmer la réaffectation</span> : les bâtiments prennent la couleur du nouveau gestionnaire, les deux sont prévenus.</li>
+        </ol>
+        <figure><button class="ouvrir" type="button"><img src="img/portefeuilles.jpg" alt="Portefeuilles : un bloc par gestionnaire et la carte des bâtiments" loading="lazy"></button><figcaption>Les portefeuilles. L'historique garde chaque réaffectation.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 12 -->
+    <section class="chapitre" id="annonces">
+      <header><span class="numero">Chapitre 14</span><h2>Les annonces du site</h2>
+        <p>Un lot libre se publie sur le site en quelques minutes, après relecture.</p></header>
+      <div class="demarche">
+        <h3>Publier un lot</h3>
+        <span class="qui">Gestionnaire (proposition), Direction ou éditeur web (validation)</span>
+        <ol class="etapes">
+          <li>Lot libre → <span class="bouton">Publier sur le site</span>.</li>
+          <li><span class="bouton">À louer</span> ou <span class="bouton">À vendre</span>, titre, prix, charges, caution et avance, description, photos.</li>
+          <li>L'annonce part « À valider » ; la Direction la relit → <span class="bouton">Valider et mettre en ligne</span> (ou la renvoie avec un motif).</li>
+        </ol>
+        <p>Une annonce se retire avec <span class="bouton">Retirer</span>, et d'elle-même quand un bail est signé sur le lot. À sa mise en ligne, les visiteurs abonnés à une recherche correspondante sont prévenus.</p>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/annonce-publier.jpg" alt="Formulaire de publication d'un lot sur le site" loading="lazy"></button><figcaption>Publier un lot.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/annonces.jpg" alt="Page Annonces : à valider, en ligne, en préparation, retirées" loading="lazy"></button><figcaption>Toutes les annonces.</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ 13 -->
+    <section class="chapitre" id="demandes">
+      <header><span class="numero">Chapitre 15</span><h2>Les demandes et les messages à envoyer</h2>
+        <p>Les visiteurs du site demandent une visite, confient un bien, demandent un devis ou une estimation.</p></header>
+      <div class="demarche">
+        <h3>Traiter une demande</h3>
+        <ol class="etapes">
+          <li><span class="bouton">Demandes</span> : filtres Nouvelles, En cours, Closes.</li>
+          <li>Ouvrez la demande : coordonnées, bien concerné, pièces jointes.</li>
+          <li>Suivi : <strong>Prise en charge</strong>, <strong>rendez-vous</strong> (date et heure), puis <strong>Conclue</strong> ou <strong>Sans suite</strong> ; une note interne → <span class="bouton">Enregistrer le suivi</span>.</li>
+        </ol>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/demandes.jpg" alt="Liste des demandes reçues par le site" loading="lazy"></button><figcaption>Les demandes.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/demande-fiche.jpg" alt="Fiche d'une demande avec le suivi" loading="lazy"></button><figcaption>Une demande et son suivi.</figcaption></figure>
+        </div>
+      </div>
+      <div class="demarche">
+        <h3>Envoyer les messages préparés</h3>
+        <p>En attendant l'envoi automatique, l'application <strong>rédige</strong> les messages : accusés de réception, alertes « nouveau bien », relevés des propriétaires, reçus de paiement des locataires.</p>
+        <ol class="etapes">
+          <li><span class="bouton">Demandes</span> → <span class="bouton">Messages à envoyer</span>.</li>
+          <li>Le bouton du message ouvre WhatsApp ou la messagerie, texte déjà écrit.</li>
+          <li>Une fois envoyé : <span class="bouton">Envoyé</span> ; sinon <span class="bouton">Inutile</span>.</li>
+        </ol>
+        <figure><button class="ouvrir" type="button"><img src="img/messages.jpg" alt="Messages à envoyer, prêts pour WhatsApp ou e-mail" loading="lazy"></button><figcaption>Les messages prêts à partir.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 14 -->
+    <section class="chapitre" id="rapports">
+      <header><span class="numero">Chapitre 16</span><h2>Les rapports</h2>
+        <p>Pour une période choisie (« Du mois », « Au mois ») : occupation, vacance, loyer moyen au m², loyers attendus et réglés, impayés par ancienneté, délais des pannes, demandes du site. <span class="bouton">Excel</span> et <span class="bouton">PDF</span> exportent le tout.</p></header>
+      <figure><button class="ouvrir" type="button"><img src="img/rapports.jpg" alt="Page Rapports : indicateurs et graphique des loyers mois par mois" loading="lazy"></button><figcaption>Les rapports.</figcaption></figure>
+    </section>
+
+    <!-- ================================================================ 15 -->
+    <section class="chapitre" id="espace">
+      <header><span class="numero">Chapitre 17</span><h2>L'espace propriétaire</h2>
+        <p>Le propriétaire se connecte avec son e-mail et arrive sur « Mon espace ». Il ne voit jamais les noms ni les téléphones de ses locataires.</p></header>
+      <div class="demarche">
+        <h3>Ce que voit le propriétaire</h3>
+        <ul class="points">
+          <li>Ses chiffres : bâtiments, occupation, loyers réglés sur 12 mois, impayés.</li>
+          <li><strong>Les devis qui attendent sa réponse</strong> : <span class="bouton">Donner mon accord</span> ou <span class="bouton">Refuser</span> (avec la raison).</li>
+          <li>Ses biens sur une carte et lot par lot ; les loyers de l'année ; les travaux.</li>
+          <li>Ses documents : relevé de gestion PDF, mandat signé ; le contact de son gestionnaire.</li>
+        </ul>
+        <div class="deux">
+          <figure><button class="ouvrir" type="button"><img src="img/espace.jpg" alt="Espace propriétaire : chiffres et devis à approuver" loading="lazy"></button><figcaption>L'accueil de son espace.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/espace-devis.jpg" alt="Devis à approuver avec les boutons Refuser et Donner mon accord" loading="lazy"></button><figcaption>Répondre à un devis.</figcaption></figure>
+        </div>
+        <div class="telephones">
+          <figure><button class="ouvrir" type="button"><img src="img/espace-tel.jpg" alt="Espace propriétaire sur téléphone" loading="lazy"></button><figcaption>Sur son téléphone.</figcaption></figure>
+          <figure><button class="ouvrir" type="button"><img src="img/espace-documents.jpg" alt="Documents du propriétaire : relevé de gestion et mandat signé" loading="lazy"></button><figcaption>Ses documents.</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ 16 -->
+    <section class="chapitre" id="site">
+      <header><span class="numero">Chapitre 18</span><h2>Le site public</h2>
+        <p>Ce que fait un visiteur. Chaque demande arrive dans « Demandes », et le visiteur reçoit un accusé de réception. Le paiement en ligne n'est pas proposé pour le moment.</p></header>
+      <ul class="points">
+        <li>Chercher un bien à louer ou à acheter (commune, quartier, type, prix), en liste ou sur la carte.</li>
+        <li>Ouvrir la fiche d'un bien et <strong>demander une visite</strong>.</li>
+        <li>Garder des favoris, créer une <strong>alerte</strong> pour être prévenu des nouveaux biens.</li>
+        <li><strong>Confier son bien</strong>, demander un <strong>devis de travaux</strong> (avec plans et photos), une estimation, ou écrire à l'agence.</li>
+      </ul>
+      <div class="deux">
+        <figure><button class="ouvrir" type="button"><img src="img/site-accueil.jpg" alt="Accueil du site avec le moteur de recherche" loading="lazy"></button><figcaption>L'accueil du site.</figcaption></figure>
+        <figure><button class="ouvrir" type="button"><img src="img/site-louer.jpg" alt="Biens à louer avec les filtres" loading="lazy"></button><figcaption>Les biens à louer.</figcaption></figure>
+        <figure><button class="ouvrir" type="button"><img src="img/site-fiche-bien.jpg" alt="Fiche d'un bien avec le bouton Demander une visite" loading="lazy"></button><figcaption>La fiche d'un bien.</figcaption></figure>
+        <figure><button class="ouvrir" type="button"><img src="img/site-confier.jpg" alt="Formulaire Confiez-nous votre bien" loading="lazy"></button><figcaption>Confier son bien à l'agence.</figcaption></figure>
+      </div>
+      <div class="telephones">
+        <figure><button class="ouvrir" type="button"><img src="img/site-tel.jpg" alt="Le site sur téléphone" loading="lazy"></button><figcaption>Le site sur téléphone.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 17 -->
+    <section class="chapitre" id="administration">
+      <header><span class="numero">Chapitre 19</span><h2>Administration</h2>
+        <p>Réservé à l'administrateur (le journal aussi à la Direction).</p></header>
+      <div class="demarche">
+        <h3>Les comptes</h3>
+        <ol class="etapes">
+          <li><span class="bouton">Comptes</span> → <span class="bouton">Nouveau compte</span> : identifiant, nom, fonction, e-mail, téléphone, profil, droits en plus.</li>
+          <li>Le mot de passe provisoire s'affiche une seule fois : remettez-le → <span class="bouton">J'ai noté le mot de passe</span>.</li>
+          <li><span class="bouton">Modifier</span> change le profil ou les droits ; <span class="bouton">Réinitialiser</span> donne un nouveau mot de passe provisoire ; <span class="bouton">Désactiver</span> suspend le compte. Un compte ne se supprime pas.</li>
+        </ol>
+        <figure><button class="ouvrir" type="button"><img src="img/comptes.jpg" alt="Page Comptes : un bloc par compte avec Modifier, Réinitialiser, Désactiver" loading="lazy"></button><figcaption>Les comptes.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Importer le patrimoine existant</h3>
+        <p><span class="bouton">Import</span> : chargez le fichier Excel de l'agence (« Comment faire » explique les colonnes). Les bâtiments importés arrivent « À valider » ; ceux sans coordonnées attendent le passage d'un agent ; la Direction affecte ensuite les gestionnaires.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/import.jpg" alt="Page Import du patrimoine avec la marche à suivre" loading="lazy"></button><figcaption>L'import.</figcaption></figure>
+      </div>
+      <div class="demarche">
+        <h3>Le journal</h3>
+        <p>Toutes les actions importantes avec leur auteur, leur date et le détail avant / après. La liste déroulante filtre par type d'objet.</p>
+        <figure><button class="ouvrir" type="button"><img src="img/journal.jpg" alt="Journal des actions avec date, auteur, objet et action" loading="lazy"></button><figcaption>Le journal.</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ 18 -->
+    <section class="chapitre" id="questions">
+      <header><span class="numero">Chapitre 20</span><h2>Questions fréquentes</h2></header>
+      <dl class="faq">
+        <dt>Je ne vois pas un menu dont un collègue parle.</dt>
+        <dd>Les menus dépendent du profil. Demandez le droit nécessaire à l'administrateur.</dd>
+        <dt>Le téléphone dit « Hors connexion » : ai-je perdu ma saisie ?</dt>
+        <dd>Non. Elle est gardée et part seule au retour du réseau ; le compteur en haut à droite le montre.</dd>
+        <dt>Une saisie de terrain est en rouge, « Refusé ».</dt>
+        <dd>L'agence l'a refusée pour la raison affichée (par exemple, un état des lieux déjà fait pour ce bail). Corrigez ou supprimez-la.</dd>
+        <dt>Le locataire n'a pas reçu son reçu.</dt>
+        <dd>Regardez « Messages à envoyer » : il attend peut-être d'être envoyé. Vous pouvez aussi ouvrir la quittance depuis le lot.</dd>
+        <dt>Pourquoi un pointage est marqué « loin » ?</dt>
+        <dd>Le téléphone était à plus de 250 m du bâtiment. Ce n'est pas bloquant, mais le gestionnaire le voit.</dd>
+        <dt>Un propriétaire a oublié son mot de passe.</dt>
+        <dd>Comptes → son compte → « Réinitialiser » donne un nouveau mot de passe provisoire.</dd>
+        <dt>Le devis ne peut pas être validé.</dt>
+        <dd>Le propriétaire l'a refusé, ou son accord est attendu : le motif est dans la fiche de l'intervention.</dd>
+      </dl>
+    </section>
+  </main>
+</div>
+
+<dialog id="loupe" aria-label="Capture agrandie">
+  <button type="button" id="fermer" aria-label="Fermer">×</button>
+  <img id="loupe-img" alt="">
+  <p id="loupe-legende"></p>
+</dialog>
+
+<script>
+(function () {
+  var loupe = document.getElementById('loupe');
+  var img = document.getElementById('loupe-img');
+  var legende = document.getElementById('loupe-legende');
+  document.querySelectorAll('.ouvrir').forEach(function (b) {
+    b.setAttribute('aria-label', 'Agrandir : ' + b.querySelector('img').alt);
+    b.addEventListener('click', function () {
+      var i = b.querySelector('img');
+      img.src = i.src;
+      img.alt = i.alt;
+      var c = b.parentElement.querySelector('figcaption');
+      legende.textContent = c ? c.textContent : '';
+      if (loupe.showModal) loupe.showModal(); else loupe.setAttribute('open', '');
+    });
+  });
+  document.getElementById('fermer').addEventListener('click', function () { loupe.close(); });
+  loupe.addEventListener('click', function (e) { if (e.target === loupe) loupe.close(); });
+
+  // Sur téléphone, le sommaire se replie ; le chapitre lu est surligné.
+  try { if (window.matchMedia('(max-width: 999px)').matches) document.getElementById('sommaire').removeAttribute('open'); } catch (e) {}
+  var liens = Array.prototype.slice.call(document.querySelectorAll('.sommaire a'));
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function (entrees) {
+      entrees.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        liens.forEach(function (a) { a.classList.toggle('actif', a.getAttribute('href') === '#' + en.target.id); });
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    document.querySelectorAll('.chapitre').forEach(function (s) { obs.observe(s); });
+  }
+})();
+</script>
+
+</body></html>

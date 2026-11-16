@@ -1,0 +1,594 @@
+/* =============================================================================
+   FACT Immobilier — charte graphique commune au site et à l'application SIG
+   Couleurs, typographie et points de rupture du § 5.2 et du § 5.3 des
+   spécifications ; durées et courbes d'animation du § 6.1.
+   Les couleurs principale et d'accent seront ajustées au logo de l'agence lors
+   de la phase de maquettes ; les couleurs d'état restent fixes, car elles
+   portent la lecture de la carte.
+   ============================================================================= */
+
+/* Polices embarquées (SIL OFL) : Sora pour les titres, Figtree pour le texte,
+   JetBrains Mono pour les données. L'application s'affiche sans accès à Internet,
+   ce qu'exige la PWA de terrain. */
+$latin: 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
+$latin-ext: 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF';
+
+@mixin police($famille, $fichier, $graisse, $etendu: true) {
+  @font-face {
+    font-family: $famille;
+    font-style: normal;
+    font-display: swap;
+    font-weight: $graisse;
+    src: url('/polices/#{$fichier}-latin-#{$graisse}-normal.woff2') format('woff2');
+    unicode-range: #{$latin};
+  }
+  @if $etendu {
+    @font-face {
+      font-family: $famille;
+      font-style: normal;
+      font-display: swap;
+      font-weight: $graisse;
+      src: url('/polices/#{$fichier}-latin-ext-#{$graisse}-normal.woff2') format('woff2');
+      unicode-range: #{$latin-ext};
+    }
+  }
+}
+
+@include police('Sora', 'sora', 600);
+@include police('Sora', 'sora', 700);
+@include police('Figtree', 'figtree', 400);
+@include police('Figtree', 'figtree', 500);
+@include police('Figtree', 'figtree', 600);
+@include police('JetBrains Mono', 'jetbrains-mono', 400, false);
+@include police('JetBrains Mono', 'jetbrains-mono', 500, false);
+
+:root {
+  color-scheme: light;
+
+  /* ----------------------------------------------------------- couleurs */
+  /* Charte du logo FACT Immobilier : bleu roi de l'immeuble et du bandeau « IMMOBILIER »,
+     anthracite et argent des lettres « FACT ». */
+  /* Bleu nuit, tiré du bleu roi : fonds de marque (bandeaux, menu, boutons principaux). */
+  --nuit: #1a3f7a;
+  --nuit-2: #2353a6;
+  --nuit-3: #0f1d36;
+  --nuit-clair: #e7eef9;
+  /* La même couleur, employée pour du texte et des liens : s'éclaircit en thème sombre. */
+  --marque: #1d4a94;
+
+  /* Accent (appels à l'action, éléments à la une) : le bleu roi du logo, plus vif.
+     Les noms « ocre » sont gardés pour ne pas toucher tous les écrans. */
+  --ocre: #2f6fd6;
+  --ocre-2: #2358b4;
+  --ocre-clair: #e8f0fd;
+  --ocre-texte: #1d4f9e;
+  /* Argent des lettres du logo */
+  --argent: #c9d3dc;
+  --argent-fonce: #8d99a6;
+  --chrome: linear-gradient(180deg, #ffffff 0%, #dfe6ec 38%, #9eabb8 52%, #e9eef2 68%, #b9c4ce 100%);
+
+  /* États : ils portent la lecture de la carte, ne pas les changer (§ 5.2) */
+  --bon: #2e9e6b;           /* occupé, à jour, validé */
+  --bon-clair: #e6f5ee;
+  --bon-texte: #1d6e49;
+  --attention: #e08a1e;     /* vacance partielle, retard d'un mois, à valider */
+  --attention-clair: #fdf1e0;
+  --attention-texte: #8f5509;
+  --critique: #d64545;      /* impayés, urgence, erreur */
+  --critique-clair: #fbe9e9;
+  --critique-texte: #9b2727;
+  --info: #3a78c2;
+  --info-clair: #e6effa;
+  --info-texte: #245590;
+
+  /* Neutres, du plus clair au plus sombre (§ 5.2) */
+  --fond: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #fafbfc;
+  --surface-3: #eef0f4;
+  --filet: #e2e5eb;
+  --filet-fort: #c9cfd9;
+  --discret: #6c7583;
+  --encre-2: #4a5360;
+  --encre: #1a1d23;
+  --voile: rgba(22, 41, 63, 0.5);
+
+  /* ------------------------------------------------------- typographie */
+  --titre: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  --texte: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+  --donnee: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+  /* --------------------------------------------------------- animations */
+  /* Durées et courbe du § 6.1 : départ franc, arrivée douce. */
+  --courte: 150ms;          /* survol, appui, changement d'état d'un bouton */
+  --standard: 250ms;        /* ouverture d'un panneau, d'une liste, d'une notification */
+  --longue: 450ms;          /* apparition de sections, transition de page, vol de carte */
+  --courbe: cubic-bezier(0.2, 0, 0, 1);
+  --cascade: 60ms;          /* décalage entre les éléments d'une même liste, 8 au plus */
+
+  /* ------------------------------------------------------------ formes */
+  --rayon: 14px;
+  --rayon-2: 10px;
+  --rayon-pastille: 999px;
+  --tactile: 44px;          /* zone tactile minimale (§ 5.1) */
+  --menu-largeur: 248px;
+  --barre-basse: 64px;
+}
+
+/* ------------------------------------------------------------- thème sombre */
+/* Disponible dans l'application de gestion (§ 5.1). Les couleurs d'état gardent
+   leur teinte : seuls leurs fonds et leurs textes s'adaptent. */
+:root[data-theme='sombre'] {
+  color-scheme: dark;
+
+  --nuit: #1a3766;
+  --nuit-2: #24508f;
+  --nuit-3: #0b1528;
+  --nuit-clair: #182945;
+  --marque: #a8c5f2;
+
+  --ocre: #5b95f0;
+  --ocre-2: #7eaaf3;
+  --ocre-clair: #15274a;
+  --ocre-texte: #a9c8fa;
+
+  --bon-clair: #16332a;
+  --bon-texte: #7fd6ab;
+  --attention-clair: #3a2b14;
+  --attention-texte: #f2b866;
+  --critique-clair: #3b1c1e;
+  --critique-texte: #f39a9a;
+  --info-clair: #1a2c44;
+  --info-texte: #9cc3f0;
+
+  --fond: #12151b;
+  --surface: #1a1e26;
+  --surface-2: #1f242d;
+  --surface-3: #262c37;
+  --filet: #2c333f;
+  --filet-fort: #3d4654;
+  --discret: #8f99a8;
+  --encre-2: #b9c1cc;
+  --encre: #eceff3;
+  --voile: rgba(0, 0, 0, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--fond);
+  color: var(--encre);
+  font: 400 15px/1.55 var(--texte);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background var(--standard) var(--courbe), color var(--standard) var(--courbe);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--titre);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--marque);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Les références, montants en tableau et coordonnées GPS en police à chasse fixe (§ 5.2) */
+.donnee,
+code,
+kbd {
+  font-family: var(--donnee);
+  font-variant-numeric: tabular-nums;
+}
+
+button,
+[role='button'],
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ocre);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Réservé aux lecteurs d'écran */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ boutons */
+/* Une seule action principale par écran (§ 5.1) : un seul .btn.principal. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tactile);
+  padding: 0 18px;
+  border-radius: var(--rayon-2);
+  border: 1px solid var(--filet-fort);
+  background: var(--surface);
+  color: var(--encre);
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background var(--courte) var(--courbe), border-color var(--courte) var(--courbe),
+    transform var(--courte) var(--courbe), opacity var(--courte) var(--courbe);
+}
+
+.btn:hover {
+  background: var(--surface-3);
+  text-decoration: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn.principal {
+  background: var(--nuit);
+  border-color: var(--nuit);
+  color: #fff;
+}
+
+.btn.principal:hover {
+  background: var(--nuit-2);
+  border-color: var(--nuit-2);
+}
+
+.btn.accent {
+  background: var(--ocre);
+  border-color: var(--ocre);
+  color: #fff;
+}
+
+.btn.accent:hover {
+  background: var(--ocre-2);
+  border-color: var(--ocre-2);
+}
+
+:root[data-theme='sombre'] .btn.accent {
+  color: #1a1d23;
+}
+
+.btn.danger {
+  background: var(--critique);
+  border-color: var(--critique);
+  color: #fff;
+}
+
+.btn.danger:hover {
+  filter: brightness(0.92);
+}
+
+.btn.discret {
+  background: transparent;
+  border-color: transparent;
+  color: var(--marque);
+}
+
+.btn.discret:hover {
+  background: var(--surface-3);
+}
+
+.btn.petit {
+  min-height: 34px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.btn.icone-seule {
+  width: var(--tactile);
+  padding: 0;
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Bouton occupé : l'action est partie, on attend le serveur. */
+.btn.occupe {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn.occupe::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-color: #fff transparent #fff transparent;
+  animation: tourne 0.8s linear infinite;
+}
+
+.btn.occupe:not(.principal):not(.accent):not(.danger)::after {
+  border-color: var(--marque) transparent var(--marque) transparent;
+}
+
+/* ------------------------------------------------------------------- champs */
+/* Le libellé monte au-dessus du champ à la saisie ; secousse légère en cas
+   d'erreur (§ 6.2, « Formulaires »). Le champ porte placeholder=" ". */
+.champ {
+  position: relative;
+  display: block;
+}
+
+.champ input,
+.champ select,
+.champ textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 20px 14px 6px;
+  border-radius: var(--rayon-2);
+  border: 1px solid var(--filet-fort);
+  background: var(--surface);
+  transition: border-color var(--courte) var(--courbe), box-shadow var(--courte) var(--courbe);
+}
+
+.champ textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.champ > span {
+  position: absolute;
+  left: 14px;
+  top: 16px;
+  color: var(--discret);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform var(--courte) var(--courbe), color var(--courte) var(--courbe);
+}
+
+.champ input:focus + span,
+.champ input:not(:placeholder-shown) + span,
+.champ textarea:focus + span,
+.champ textarea:not(:placeholder-shown) + span,
+.champ select + span {
+  transform: translateY(-11px) scale(0.78);
+}
+
+.champ input:focus,
+.champ select:focus,
+.champ textarea:focus {
+  outline: none;
+  border-color: var(--marque);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--marque) 22%, transparent);
+}
+
+.champ input:focus + span,
+.champ textarea:focus + span {
+  color: var(--marque);
+}
+
+.champ.erreur input,
+.champ.erreur select,
+.champ.erreur textarea {
+  border-color: var(--critique);
+  animation: secousse var(--standard) var(--courbe);
+}
+
+.champ.erreur > span {
+  color: var(--critique-texte);
+}
+
+.champ .aide-champ {
+  display: block;
+  margin: 5px 2px 0;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.champ.erreur .aide-champ {
+  color: var(--critique-texte);
+}
+
+.champ input:disabled,
+.champ select:disabled,
+.champ textarea:disabled {
+  background: var(--surface-3);
+  color: var(--discret);
+  cursor: not-allowed;
+}
+
+.case {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tactile);
+  cursor: pointer;
+}
+
+.case input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--nuit-2);
+}
+
+/* ----------------------------------------------------------------- surfaces */
+.carte {
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  border-radius: var(--rayon);
+  padding: 18px;
+}
+
+/* ------------------------------------------------------------- pastilles d'état */
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--rayon-pastille);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background var(--standard) var(--courbe), color var(--standard) var(--courbe);
+}
+
+.pastille.bon {
+  background: var(--bon-clair);
+  color: var(--bon-texte);
+}
+
+.pastille.attention {
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+}
+
+.pastille.critique {
+  background: var(--critique-clair);
+  color: var(--critique-texte);
+}
+
+.pastille.info {
+  background: var(--info-clair);
+  color: var(--info-texte);
+}
+
+.pastille.accent {
+  background: var(--ocre-clair);
+  color: var(--ocre-texte);
+}
+
+.pastille.neutre {
+  background: var(--surface-3);
+  color: var(--encre-2);
+}
+
+/* ------------------------------------------------------------------- animations */
+@keyframes montee {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@keyframes fondu {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes secousse {
+  20% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  80% {
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* Apparition des sections : montée de 24 px avec fondu (§ 6.2) */
+.apparait {
+  animation: montee var(--longue) var(--courbe) both;
+}
+
+/* Apparition en cascade : 60 ms entre les éléments, 8 au plus (§ 6.1).
+   L'élément porte style="--rang: n". */
+.cascade {
+  animation: montee var(--longue) var(--courbe) both;
+  animation-delay: calc(min(var(--rang, 0), 7) * var(--cascade));
+}
+
+/* Apparition à l'entrée dans l'écran, jouée une fois (directive factApparition). */
+.a-venir {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.venu {
+  animation: montee var(--longue) var(--courbe) both;
+  animation-delay: calc(min(var(--rang, 0), 7) * var(--cascade));
+}
+
+/* Changement de page : fondu enchaîné rapide (§ 6.2), par les transitions de vue du
+   navigateur ; sans elles, la page change simplement sans transition. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--standard);
+  animation-timing-function: var(--courbe);
+}
+
+/* Si l'utilisateur a demandé la réduction des animations, elles deviennent
+   de simples fondus (§ 6.1, accessibilité). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .apparait,
+  .cascade,
+  .venu {
+    animation: fondu var(--courte) both;
+  }
+
+  .a-venir {
+    transform: none;
+  }
+}

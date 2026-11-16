@@ -1,0 +1,143 @@
+@if (chargement() || !i()) {
+  <div class="squelette" aria-busy="true"><span></span><span></span><span></span></div>
+} @else {
+  @let x = i()!;
+  <section class="tete">
+    <p class="ref"><span class="donnee">{{ x.reference }}</span> · {{ x.libelleCategorie }} · signalée {{ f.depuis(x.signaleLe) }}</p>
+    <h3>{{ x.titre }}</h3>
+    <p class="lieu">
+      <fact-icone nom="batiment" [taille]="16" />
+      <a [routerLink]="['/patrimoine', x.idBatiment]">{{ x.batiment }}</a>@if (x.numeroLot) { · lot {{ x.numeroLot }} } · {{ x.quartier ? x.quartier + ', ' : '' }}{{ x.commune }}
+    </p>
+    <div class="etiquettes">
+      <span class="pastille" [class]="tonUrgence(x.urgence)">{{ x.libelleUrgence }}</span>
+      <span class="pastille" [class]="x.statut === 'ANNULEE' ? 'neutre' : x.statut === 'CLOTUREE' ? 'bon' : 'info'">{{ x.libelleStatut }}</span>
+    </div>
+  </section>
+
+  @if (x.statut === 'ANNULEE') {
+    <p class="annulee"><fact-icone nom="fermer" [taille]="16" /> Annulée le {{ f.date(x.annuleLe) }} par {{ x.annulePar }} : {{ x.motifAnnulation }}</p>
+  } @else {
+    <fact-etapes [etapes]="etapes" [courante]="courante()" />
+  }
+
+  <!-- ---------------------------------------------------------- l'étape suivante -->
+  @if (actionsEtape().length && !action()) {
+    <div class="actions">
+      @for (a of actionsEtape(); track a) {
+        <button type="button" class="btn" [class.principal]="a !== 'annuler' && $first" [class.discret]="a === 'annuler'" (click)="ouvrir(a)">
+          {{ libelles[a] }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (action(); as a) {
+    <form class="etape" (ngSubmit)="valider()" novalidate>
+      <h4>{{ libelles[a] }}</h4>
+      @switch (a) {
+        @case ('affecter') {
+          <fact-choix name="prestataire" [seuilRecherche]="0" libelle="Technicien ou entreprise" [options]="prestataires() | options : opt.prestataire"
+                      [(ngModel)]="s.idPrestataire" required />
+          @if (!prestataires().length) { <p class="aide">Aucun prestataire : ajoutez-en depuis l'onglet « Prestataires » de la rubrique Travaux.</p> }
+          <label class="champ"><input type="date" name="datePrevue" placeholder=" " [min]="aujourdhui" [(ngModel)]="s.datePrevue"><span>Date prévue de passage</span></label>
+        }
+        @case ('demarrer') {
+          <label class="champ"><textarea name="constat" placeholder=" " [(ngModel)]="s.constat" required></textarea><span>Constat sur place</span></label>
+          <label class="case"><input type="checkbox" name="avecDevis" [(ngModel)]="s.avecDevis"> Un devis est nécessaire</label>
+          @if (s.avecDevis) {
+            <label class="champ"><input type="number" name="devis" placeholder=" " min="0" step="1000" [(ngModel)]="s.devisMontant"><span>Montant du devis (FCFA)</span></label>
+            <p class="aide">Au-delà de {{ f.fcfa(fiche()!.seuilAccordProprietaire) }}, l'accord du propriétaire sera demandé avant les travaux.</p>
+          }
+        }
+        @case ('valider') {
+          <p class="rappel">Devis : <strong class="donnee">{{ f.fcfa(x.devisMontant) }}</strong>@if (x.prestataire) { · {{ x.prestataire }} }</p>
+          @if (devisAuDela()) {
+            <p class="message attention"><fact-icone nom="alerte" [taille]="18" /> Le devis dépasse {{ f.fcfa(fiche()!.seuilAccordProprietaire) }} : l'accord du propriétaire est requis.</p>
+            <label class="case"><input type="checkbox" name="accord" [(ngModel)]="s.accordProprietaire"> Le propriétaire a donné son accord</label>
+          }
+          <label class="champ"><input type="text" name="note" placeholder=" " [(ngModel)]="s.note" autocomplete="off"><span>Remarque (comment l'accord a été donné…)</span></label>
+        }
+        @case ('terminer') {
+          <label class="champ"><input type="number" name="cout" placeholder=" " min="0" step="1000" [(ngModel)]="s.coutReel" required><span>Coût réel (FCFA)</span></label>
+          <label class="champ"><input type="text" name="note" placeholder=" " [(ngModel)]="s.note" autocomplete="off"><span>Ce qui a été fait</span></label>
+          <p class="aide">Pensez aux photos « après » : elles montrent le travail au propriétaire.</p>
+        }
+        @case ('cloturer') {
+          <p class="rappel">Coût : <strong class="donnee">{{ f.fcfa(x.coutReel) }}</strong></p>
+          <div class="choix" role="radiogroup" aria-label="Imputation">
+            @for (v of ref.liste('IMPUTATION'); track v.code) {
+              <label class="case"><input type="radio" name="imputation" [value]="v.code" [(ngModel)]="s.imputation"> {{ v.libelle }}</label>
+            }
+          </div>
+          <label class="champ"><input type="text" name="note" placeholder=" " [(ngModel)]="s.note" autocomplete="off"><span>Contrôle effectué</span></label>
+        }
+        @case ('annuler') {
+          <label class="champ"><input type="text" name="note" placeholder=" " [(ngModel)]="s.note" autocomplete="off" required><span>Motif de l'annulation</span></label>
+        }
+      }
+      @if (erreur()) { <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+      <div class="boutons">
+        <button type="button" class="btn" (click)="action.set(null)">Retour</button>
+        <button type="submit" class="btn" [class.principal]="a !== 'annuler'" [class.danger]="a === 'annuler'" [class.occupe]="occupe()" [disabled]="occupe()">
+          {{ a === 'annuler' ? 'Annuler l\'intervention' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- ------------------------------------------------------------- le déroulé -->
+  <section class="bloc">
+    <h4>Déroulé</h4>
+    <ol class="deroule">
+      <li><b>Signalée</b> le {{ f.dateHeure(x.signaleLe) }} par {{ x.signalePar }}@if (x.description) { <p>{{ x.description }}</p> }</li>
+      @if (x.affecteLe) {
+        <li><b>Affectée</b> à {{ x.prestataire }}@if (x.telephonePrestataire) { (<a class="donnee" [href]="'tel:' + x.telephonePrestataire">{{ x.telephonePrestataire }}</a>) }@if (x.datePrevue) { · passage prévu le {{ f.date(x.datePrevue) }} }</li>
+      }
+      @if (x.debuteLe) {
+        <li><b>Constat</b> : {{ x.constat }}@if (x.devisMontant !== null) { <p>Devis : <span class="donnee">{{ f.fcfa(x.devisMontant) }}</span></p> }</li>
+      }
+      @if (x.valideLe) {
+        <li><b>Devis validé</b> le {{ f.date(x.valideLe) }} par {{ x.validePar }}@if (x.accordProprietaire) { · accord du propriétaire }@if (x.noteValidation) { <p>{{ x.noteValidation }}</p> }</li>
+      }
+      @if (x.termineLe) {
+        <li><b>Terminée</b> le {{ f.date(x.termineLe) }} · coût <span class="donnee">{{ f.fcfa(x.coutReel) }}</span>@if (x.noteFin) { <p>{{ x.noteFin }}</p> }</li>
+      }
+      @if (x.clotureLe) {
+        <li><b>Clôturée</b> le {{ f.date(x.clotureLe) }} · {{ libelle('IMPUTATION', x.imputation).toLowerCase() }}@if (x.delaiJours !== null) { · traitée en {{ x.delaiJours }} jour(s) }@if (x.noteCloture) { <p>{{ x.noteCloture }}</p> }</li>
+      }
+    </ol>
+  </section>
+
+  <!-- ----------------------------------------------------------------- photos -->
+  <section class="bloc">
+    <h4>Photos</h4>
+    @for (groupe of [{ moment: 'AVANT', titre: 'Avant', photos: photosAvant() }, { moment: 'APRES', titre: 'Après', photos: photosApres() }]; track groupe.moment) {
+      <div class="photos">
+        <p class="sous-titre">{{ groupe.titre }} · {{ groupe.photos.length }}</p>
+        <div class="mosaique">
+          @for (p of groupe.photos; track p.id) {
+            <button type="button" class="vignette" (click)="agrandie.set(p)" [attr.aria-label]="'Agrandir la photo ' + groupe.titre.toLowerCase()">
+              <fact-photo-securisee [idPhoto]="p.id" />
+            </button>
+          }
+          @if (peutPhotos()) {
+            <label class="ajout" [class.occupe]="envoi() === groupe.moment">
+              <fact-icone [nom]="envoi() === groupe.moment ? 'synchro' : 'photo'" [taille]="22" />
+              <span>{{ envoi() === groupe.moment ? 'Envoi…' : 'Ajouter' }}</span>
+              <input type="file" accept="image/*" capture="environment" multiple (change)="envoyer($any(groupe.moment), $event)">
+            </label>
+          }
+        </div>
+      </div>
+    }
+  </section>
+}
+
+<!-- La photo s'ouvre en grand, par agrandissement ; Échap ou un clic la referme. -->
+@if (agrandie(); as p) {
+  <div class="visionneuse" role="dialog" aria-label="Photo agrandie" (click)="agrandie.set(null)" (keydown.escape)="agrandie.set(null)" tabindex="-1">
+    <fact-photo-securisee [idPhoto]="p.id" class="grande" />
+    <button type="button" class="fermer" aria-label="Fermer"><fact-icone nom="fermer" /></button>
+  </div>
+}

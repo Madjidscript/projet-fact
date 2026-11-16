@@ -1,0 +1,105 @@
+<header class="entete">
+  <div>
+    <p class="date">{{ moisCourant() ? f.mois(moisCourant()!.periode) : '' }}</p>
+    <h1>Loyers</h1>
+    <p class="accroche">
+      @if (synthese(); as s) { {{ s.synthese.bauxActifs }} bail(aux) en cours · {{ s.synthese.bauxEnRetard }} en retard }
+    </p>
+  </div>
+</header>
+
+@if (chargement()) {
+  <section class="kpi">@for (i of [1, 2, 3, 4]; track i) { <div class="squelette"></div> }</section>
+} @else if (!baux().length) {
+  <fact-etat-vide icone="cle" titre="Aucun bail en cours"
+                  message="Ouvrez un bâtiment, cliquez sur un lot puis « Signer un bail » : ses loyers seront suivis ici, mois par mois.">
+    <a class="btn principal" routerLink="/patrimoine">Voir les bâtiments</a>
+  </fact-etat-vide>
+} @else {
+  @let m = moisCourant();
+  <section class="kpi" aria-label="Loyers du mois">
+    <article class="carte indicateur" [factApparition]="0">
+      <p class="libelle">Attendu ce mois</p>
+      <p class="valeur"><fact-compteur [valeur]="m?.attendu ?? 0" suffixe=" FCFA" /></p>
+    </article>
+    <article class="carte indicateur" [factApparition]="1">
+      <p class="libelle">Réglé sur ce mois</p>
+      <p class="valeur" [class.bon]="taux() >= 90" [class.attention]="taux() < 90 && taux() >= 70" [class.critique]="taux() < 70">
+        <fact-compteur [valeur]="taux()" [decimales]="1" suffixe=" %" />
+      </p>
+      <p class="note">{{ f.fcfa(m?.regle ?? 0) }} recouvrés</p>
+    </article>
+    <article class="carte indicateur" [factApparition]="2">
+      <p class="libelle">Encaissé ce mois</p>
+      <p class="valeur"><fact-compteur [valeur]="m?.encaisse ?? 0" suffixe=" FCFA" /></p>
+      <p class="note">tous mois confondus</p>
+    </article>
+    <article class="carte indicateur alerte" [factApparition]="3" [class.vide]="!synthese()!.synthese.impaye">
+      <p class="libelle">Impayés en retard</p>
+      <p class="valeur" [class.critique]="synthese()!.synthese.impaye > 0"><fact-compteur [valeur]="synthese()!.synthese.impaye" suffixe=" FCFA" /></p>
+      <p class="note">{{ synthese()!.synthese.bauxEnRetard }} locataire(s) à relancer</p>
+    </article>
+  </section>
+
+  <div class="deux">
+    <section class="carte" factApparition>
+      <h2>Recouvrement des six derniers mois</h2>
+      <div class="histogramme" role="img" [attr.aria-label]="'Loyers attendus et réglés, six derniers mois'">
+        @for (x of histogramme(); track x.periode; let i = $index) {
+          <div class="colonne">
+            <span class="taux donnee">{{ x.taux === null ? '' : x.taux + ' %' }}</span>
+            <div class="barres">
+              <span class="attendu" [style.height.%]="x.hAttendu" [style.animation-delay.ms]="i * 60"></span>
+              <span class="regle" [style.height.%]="x.hRegle" [style.animation-delay.ms]="i * 60 + 120"></span>
+            </div>
+            <span class="mois">{{ x.libelle }}</span>
+          </div>
+        }
+      </div>
+      <p class="legende"><i class="attendu"></i> Attendu <i class="regle"></i> Réglé</p>
+    </section>
+
+    <section class="carte" factApparition>
+      <h2>Derniers encaissements</h2>
+      <ul class="encaissements">
+        @for (e of synthese()!.derniersEncaissements; track e.id) {
+          <li [class.annule]="e.annuleLe">
+            <div>
+              <strong class="donnee">{{ f.fcfa(e.montant) }}</strong>
+              <small>{{ f.date(e.datePaiement) }} · {{ e.occupant }} · {{ e.batiment }}, lot {{ e.numeroLot }}</small>
+            </div>
+            <button type="button" class="btn petit" (click)="quittance(e.id, e.numero)" [attr.aria-label]="'Quittance ' + e.numero">
+              <fact-icone nom="document" [taille]="16" />
+            </button>
+          </li>
+        } @empty {
+          <li class="aide">Aucun encaissement pour le moment.</li>
+        }
+      </ul>
+    </section>
+  </div>
+
+  <section factApparition>
+    <div class="entre">
+      <h2>Baux</h2>
+      <div class="segments" role="group" aria-label="Baux affichés">
+        <button type="button" [class.actif]="vue() === 'retard'" [attr.aria-pressed]="vue() === 'retard'" (click)="vue.set('retard')">
+          En retard <span class="nombre" [class.alerte]="enRetard().length">{{ enRetard().length }}</span>
+        </button>
+        <button type="button" [class.actif]="vue() === 'actifs'" [attr.aria-pressed]="vue() === 'actifs'" (click)="vue.set('actifs')">
+          Tous les baux en cours <span class="nombre">{{ baux().length }}</span>
+        </button>
+      </div>
+    </div>
+    <fact-table-donnees [titre]="vue() === 'retard' ? 'Baux en retard' : 'Baux en cours'" [colonnes]="colonnes()" [lignes]="lignes()" cleLigne="id"
+                        [parPage]="15" [exportable]="true" [cliquable]="true"
+                        [vide]="vue() === 'retard' ? 'Aucun loyer en retard : tous les locataires sont à jour.' : 'Aucun bail en cours.'"
+                        (ligne)="ouvrir($event)" />
+  </section>
+}
+
+<fact-panneau-lateral [page]="true" [titre]="'Lot ' + (lotOuvert()?.numero ?? '')" [ouvert]="!!lotOuvert()" (fermer)="lotOuvert.set(null)">
+  @if (lotOuvert(); as l) {
+    <fact-fiche-lot [idLot]="l.id" (change)="charger()" (ferme)="lotOuvert.set(null)" />
+  }
+</fact-panneau-lateral>

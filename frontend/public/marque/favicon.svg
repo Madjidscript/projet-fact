@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="FACT Immobilier">
+  <!-- Pictogramme tiré du logo de l'agence : l'immeuble bleu roi à fenêtres en grille.
+       Reconstitution à valider avec le fichier original de l'agence. -->
+  <defs>
+    <linearGradient id="bleu" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a6cc4"/>
+      <stop offset="1" stop-color="#1d4a94"/>
+    </linearGradient>
+    <linearGradient id="argent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".5" stop-color="#b9c4ce"/>
+      <stop offset="1" stop-color="#e9eef2"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0f1d36"/>
+  <path d="M19 54V18l26-8v44z" fill="url(#bleu)"/>
+  <path d="M45 10v44h4V13z" fill="#16346b"/>
+  <g stroke="#dfe8f5" stroke-width="1.6" opacity=".9">
+    <path d="M19 24.500 45 18M19 31 45 25.500M19 37.500 45 33M19 44 45 40.500"/>
+    <path d="M25.500 16v38M32 14v40M38.500 12v42"/>
+  </g>
+  <path d="M14 54h36" stroke="url(#argent)" stroke-width="3" stroke-linecap="round"/>
+</svg>

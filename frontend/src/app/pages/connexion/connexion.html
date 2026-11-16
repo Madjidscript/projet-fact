@@ -1,0 +1,68 @@
+<div class="ecran">
+  <!-- Volet de marque : masqué sur téléphone, où le formulaire prend tout l'écran -->
+  <aside class="marque" aria-hidden="true">
+    <div class="plan">
+      <span class="point bon" style="left: 18%; top: 30%; --rang: 0"></span>
+      <span class="point bon" style="left: 62%; top: 22%; --rang: 1"></span>
+      <span class="point attention" style="left: 40%; top: 48%; --rang: 2"></span>
+      <span class="point bon" style="left: 78%; top: 12%; --rang: 3"></span>
+      <span class="point critique" style="left: 30%; top: 14%; --rang: 4"></span>
+      <span class="point bon" style="left: 84%; top: 38%; --rang: 5"></span>
+    </div>
+    <fact-logo class="logo-volet" variante="sombre" [largeur]="230" />
+    <div class="texte">
+      <h2>
+        <span class="ligne">Tout le patrimoine,</span>
+        <span class="ligne">sur une seule carte.</span>
+      </h2>
+      <ul>
+        <li><fact-icone nom="carte" /> Qui gère quoi, bâtiment par bâtiment</li>
+        <li><fact-icone nom="cle" /> Lots, baux et loyers à jour</li>
+        <li><fact-icone nom="outils" /> Interventions suivies jusqu'à la clôture</li>
+      </ul>
+    </div>
+    <p class="pied">Agence immobilière agréée · membre de la CDAIM · Abidjan</p>
+  </aside>
+
+  <main class="volet">
+    <form class="formulaire" (ngSubmit)="connecter()" novalidate>
+      <fact-logo class="logo" [variante]="theme.theme() === 'sombre' ? 'sombre' : 'clair'" [largeur]="170" />
+      <h1>Connexion</h1>
+      <p class="intro">Application de gestion du patrimoine</p>
+
+      @if (auth.motifFermeture(); as motif) {
+        <p class="message info" role="status"><fact-icone nom="info" [taille]="18" /> {{ motif }}</p>
+      }
+
+      <!-- La clé @for recrée le bloc à chaque refus : la secousse se rejoue. -->
+      @for (n of [secousse()]; track n) {
+        <div class="champs" [class.refus]="n > 0">
+          <label class="champ">
+            <input type="text" name="identifiant" placeholder=" " [(ngModel)]="identifiant" autocomplete="username"
+                   autocapitalize="none" spellcheck="false" required>
+            <span>Identifiant</span>
+          </label>
+          <div class="avec-oeil">
+            <label class="champ">
+              <input [type]="visible() ? 'text' : 'password'" name="motDePasse" placeholder=" " [(ngModel)]="motDePasse"
+                     autocomplete="current-password" required>
+              <span>Mot de passe</span>
+            </label>
+            <button type="button" class="oeil" (click)="visible.set(!visible())" [attr.aria-pressed]="visible()"
+                    [attr.aria-label]="visible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+              <fact-icone [nom]="visible() ? 'fermer' : 'oeil'" />
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (erreur()) {
+        <p class="message erreur" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p>
+      }
+
+      <button type="submit" class="btn principal large" [class.occupe]="occupe()" [disabled]="occupe()">Se connecter</button>
+
+      <p class="aide">Mot de passe oublié ? Adressez-vous à l'administrateur de l'agence, qui vous en remettra un provisoire.</p>
+    </form>
+  </main>
+</div>

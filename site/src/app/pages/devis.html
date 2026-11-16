@@ -1,0 +1,116 @@
+<section class="bandeau">
+  <div class="conteneur" siteRevele>
+    <nav class="fil" aria-label="Fil d'Ariane"><a routerLink="/">Accueil</a> <span>/</span> <a routerLink="/services">Nos services</a> <span>/</span> <span>Devis et estimation</span></nav>
+    <h1>{{ estimation() ? 'Faire estimer votre bien' : 'Demander un devis' }}</h1>
+    <p>Décrivez votre projet en quelques lignes, joignez vos plans ou photos : un conseiller vous rappelle avec une première réponse.</p>
+  </div>
+</section>
+
+<section class="conteneur zone">
+  <div class="carte-form" siteRevele>
+    @if (accuse(); as a) {
+      <site-accuse [reference]="a.reference" [message]="a.message" (nouvelle)="nouvelle()" />
+    } @else {
+      <form class="formulaire-site" (ngSubmit)="envoyer()" novalidate>
+        <div class="metiers" role="radiogroup" aria-label="Votre demande concerne">
+          @for (m of metiers; track m.code) {
+            <button type="button" role="radio" [attr.aria-checked]="metier() === m.code" [class.actif]="metier() === m.code" (click)="metier.set(m.code)">
+              <fact-icone [nom]="m.icone" [taille]="22" /><span>{{ libelleMetier(m) }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="adaptatif">
+          @switch (metier()) {
+            @case ('CONSTRUCTION') {
+              <div class="duo-site">
+                <label class="champ" [class.erreur]="erreurs().includes('projet')">
+                  <select name="projet" [(ngModel)]="s.projet"><option value="" disabled>Choisir…</option>
+                    @for (p of projets; track p) { <option [value]="p">{{ p }}</option> }</select>
+                  <span>Type de projet</span>
+                </label>
+                <fieldset class="segments-oui" aria-label="Terrain disponible">
+                  <legend>Avez-vous déjà le terrain ?</legend>
+                  @for (t of ['Oui', 'Non', 'En cours d’achat']; track t) {
+                    <label class="case"><input type="radio" name="terrain" [value]="t" [(ngModel)]="s.terrain"> {{ t }}</label>
+                  }
+                </fieldset>
+              </div>
+              <div class="duo-site">
+                <label class="champ"><input type="number" name="surface" placeholder=" " min="0" [(ngModel)]="s.surface"><span>Surface envisagée ou du terrain (m²)</span></label>
+                <label class="champ"><input type="number" name="budget" placeholder=" " min="0" step="500000" [(ngModel)]="s.budget"><span>Budget envisagé (FCFA)</span></label>
+              </div>
+            }
+            @case ('TRAVAUX') {
+              <div class="duo-site">
+                <label class="champ" [class.erreur]="erreurs().includes('nature')">
+                  <select name="nature" [(ngModel)]="s.nature"><option value="" disabled>Choisir…</option>
+                    @for (n of natures; track n) { <option [value]="n">{{ n }}</option> }</select>
+                  <span>Nature des travaux</span>
+                </label>
+                <label class="champ"><input type="number" name="budget" placeholder=" " min="0" step="50000" [(ngModel)]="s.budget"><span>Budget indicatif (FCFA, facultatif)</span></label>
+              </div>
+            }
+            @case ('TRANSACTION') {
+              <div class="duo-site">
+                <fact-choix name="typeBien" libelle="Type de bien" [options]="typesBien" [(ngModel)]="s.typeBien" [class.erreur]="erreurs().includes('typeBien')" />
+                <label class="champ"><input type="number" name="surface" placeholder=" " min="0" [(ngModel)]="s.surface"><span>Surface (m²)</span></label>
+              </div>
+              <label class="champ"><input type="number" name="pieces" placeholder=" " min="0" [(ngModel)]="s.pieces"><span>Nombre de pièces</span></label>
+            }
+            @case ('GESTION') {
+              <div class="duo-site">
+                <fact-choix name="typeBien" libelle="Type de bien" [options]="typesBien" [(ngModel)]="s.typeBien" />
+                <label class="champ"><input type="number" name="lots" placeholder=" " min="1" [(ngModel)]="s.lots"><span>Nombre de logements ou locaux</span></label>
+              </div>
+              <p class="aide">Pour confier la gestion d’un bien, le formulaire <a routerLink="/confier-mon-bien">Confier mon bien</a> permet aussi de le placer sur une carte.</p>
+            }
+          }
+        </div>
+
+        <div class="duo-site">
+          <fact-choix name="commune" libelle="Commune" [seuilRecherche]="0" [options]="optionsCommunes()" [(ngModel)]="s.commune" [class.erreur]="erreurs().includes('commune')" />
+          <label class="champ"><input type="text" name="localisation" placeholder=" " [(ngModel)]="s.localisation" autocomplete="off"><span>Quartier ou repère</span></label>
+        </div>
+
+        <!-- Pièces jointes -->
+        <div class="pieces-jointes">
+          <label class="depot">
+            <input type="file" multiple accept="application/pdf,image/jpeg,image/png" (change)="ajouter($event)">
+            <fact-icone nom="telecharger" [taille]="22" />
+            <span><strong>Ajouter des plans ou des photos</strong><small>PDF, JPEG ou PNG · 10 Mo au total · 8 fichiers au plus</small></span>
+          </label>
+          @if (fichiers().length) {
+            <ul class="liste-fichiers">
+              @for (f of fichiers(); track f) {
+                <li><fact-icone [nom]="f.type === 'application/pdf' ? 'document' : 'photo'" [taille]="18" /><span class="nom">{{ f.name }}</span>
+                  <small>{{ taille(f.size) }}</small>
+                  <button type="button" class="btn discret petit" (click)="retirer(f)" [attr.aria-label]="'Retirer ' + f.name"><fact-icone nom="fermer" [taille]="16" /></button></li>
+              }
+            </ul>
+            <p class="aide">{{ fichiers().length }} fichier{{ fichiers().length > 1 ? 's' : '' }} · {{ taille(poids()) }} sur 10 Mo</p>
+          }
+          @if (erreurFichiers()) { <p class="ko" role="alert">{{ erreurFichiers() }}</p> }
+        </div>
+
+        <div class="duo-site">
+          <label class="champ" [class.erreur]="erreurs().includes('nom')"><input type="text" name="nom" placeholder=" " autocomplete="name" [(ngModel)]="s.nom"><span>Nom et prénoms</span></label>
+          <label class="champ" [class.erreur]="erreurs().includes('telephone')"><input type="tel" name="telephone" placeholder=" " autocomplete="tel" [(ngModel)]="s.telephone"><span>Téléphone</span>
+            @if (erreurs().includes('telephone')) { <small class="aide-champ">10 chiffres, par exemple 07 01 02 03 04.</small> }</label>
+        </div>
+        <label class="champ" [class.erreur]="erreurs().includes('email')"><input type="email" name="email" placeholder=" " autocomplete="email" [(ngModel)]="s.email"><span>E-mail (facultatif)</span></label>
+        <label class="champ"><textarea name="message" placeholder=" " rows="4" [(ngModel)]="s.message"></textarea><span>Votre projet en quelques mots</span></label>
+        <input type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true" [style]="stylePiege" [(ngModel)]="s.site">
+        @if (erreurs().includes('projet') || erreurs().includes('nature') || erreurs().includes('typeBien') || erreurs().includes('commune')) {
+          <p class="ko" role="alert">Complétez les informations sur votre projet et sa commune.</p>
+        }
+        <label class="case" [class.erreur-case]="erreurs().includes('accord')"><input type="checkbox" name="accord" [(ngModel)]="s.accord">
+          J’accepte que l’agence utilise ces informations et ces fichiers pour étudier ma demande.</label>
+        @if (erreurApi()) { <p class="ko" role="alert">{{ erreurApi() }}</p> }
+        <button type="submit" class="btn accent grand" [class.occupe]="envoi()" [disabled]="envoi()" siteAimant>
+          {{ estimation() ? 'Demander mon estimation' : 'Demander mon devis' }} <fact-icone nom="droite" [taille]="18" />
+        </button>
+      </form>
+    }
+  </div>
+</section>

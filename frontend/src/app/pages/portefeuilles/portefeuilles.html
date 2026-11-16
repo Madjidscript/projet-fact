@@ -1,0 +1,157 @@
+<div class="pf">
+  <header class="pf-entete">
+    <div>
+      <h1>Portefeuilles</h1>
+      <p class="pf-accroche">Qui gère quoi : les bâtiments confiés à chaque gestionnaire.</p>
+    </div>
+  </header>
+
+  @if (chargement()) {
+    <section class="pf-cartes">@for (i of [1, 2, 3, 4]; track i) { <div class="pf-squelette"></div> }</section>
+  } @else {
+    <!-- -------------------------------------------------------- un portefeuille par gestionnaire -->
+    <section class="pf-cartes" aria-label="Portefeuilles des gestionnaires">
+      @for (p of portefeuilles(); track p.id; let n = $index) {
+        <button type="button" class="carte pf-carte" [class.sans]="p.id === null" [class.actif]="filtreGestionnaire() === (p.id ?? 'sans')"
+                [style.--teinte]="couleur(p.id)" [factApparition]="n" (click)="filtrerPar(p)"
+                [attr.aria-pressed]="filtreGestionnaire() === (p.id ?? 'sans')">
+          <span class="pf-qui">
+            <span class="pf-pastille" aria-hidden="true">{{ p.id === null ? '!' : p.nom.replace('ESSAI ', '').slice(0, 1) }}</span>
+            <span><strong>{{ p.nom }}</strong>@if (p.fonction) { <small>{{ p.fonction }}</small> }</span>
+          </span>
+          <span class="pf-chiffres">
+            <span><b><fact-compteur [valeur]="p.batiments" /></b> bâtiment{{ p.batiments > 1 ? 's' : '' }}</span>
+            <span><b><fact-compteur [valeur]="p.lots" /></b> lot{{ p.lots > 1 ? 's' : '' }}</span>
+            @if (p.supplees) { <span><b>{{ p.supplees }}</b> en suppléance</span> }
+          </span>
+          @if (p.lots) {
+            <span class="pf-occupation">
+              <span class="pf-barre"><span [style.width.%]="p.taux ?? 0"></span></span>
+              <small>{{ (p.taux ?? 0).toString().replace('.', ',') }} % occupés</small>
+            </span>
+          }
+          <span class="pf-etats">
+            @if (p.impaye) { <span class="pastille critique">{{ f.fcfa(p.impaye) }} d'impayés</span> } @else { <span class="pastille bon">À jour</span> }
+            @if (p.interventions) { <span class="pastille attention">{{ p.interventions }} intervention(s)</span> }
+          </span>
+        </button>
+      }
+    </section>
+
+    <!-- ------------------------------------------------------------- réaffecter -->
+    <section class="pf-bloc" id="reaffecter">
+      <div class="pf-titre-bloc">
+        <h2>{{ peutReaffecter() ? 'Réaffecter des bâtiments' : 'Les bâtiments et leur gestionnaire' }}</h2>
+        @if (peutReaffecter()) { <p>Cochez des bâtiments dans la liste ou touchez-les sur la carte, puis choisissez leur nouveau gestionnaire.</p> }
+      </div>
+
+      <div class="pf-filtres">
+        <label class="pf-cherche">
+          <fact-icone nom="recherche" [taille]="18" />
+          <input type="search" placeholder="Bâtiment, quartier, propriétaire…" [ngModel]="recherche()" (ngModelChange)="recherche.set($event)" aria-label="Rechercher un bâtiment">
+        </label>
+        <fact-choix vide="Tous les gestionnaires" invite="Tous les gestionnaires" [seuilRecherche]="0" [options]="optionsGestionnaires()"
+                    [ngModel]="filtreGestionnaire()" (ngModelChange)="filtreGestionnaire.set($event)" />
+        <fact-choix vide="Toutes les communes" invite="Toutes les communes" [options]="communes() | options : optionCommune"
+                    [ngModel]="filtreCommune()" (ngModelChange)="filtreCommune.set($event)" />
+      </div>
+
+      <div class="pf-deux">
+        <div class="pf-liste carte">
+          <div class="pf-liste-tete">
+            @if (peutReaffecter()) {
+              <label class="case"><input type="checkbox" [checked]="toutCoche()" (change)="toutBasculer()"> Tout cocher</label>
+            }
+            <span>{{ visibles().length }} bâtiment{{ visibles().length > 1 ? 's' : '' }}</span>
+          </div>
+          <ul>
+            @for (b of visibles(); track b.id) {
+              <li [class.choisi]="selection().has(b.id)">
+                <label>
+                  @if (peutReaffecter()) { <input type="checkbox" [checked]="selection().has(b.id)" (change)="basculer(b.id)" [attr.aria-label]="'Choisir ' + b.nom"> }
+                  <span class="pf-point" [style.background]="couleur(b.idGestionnaire)" aria-hidden="true"></span>
+                  <span class="pf-texte">
+                    <strong>{{ b.nom }}</strong>
+                    <small>{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }} · {{ b.occupes }}/{{ b.lots }} lots</small>
+                    <small class="pf-gest">{{ b.gestionnaire ?? 'Sans gestionnaire' }}@if (b.suppleant) { · suppléant {{ b.suppleant }} }</small>
+                  </span>
+                </label>
+                <a class="pf-voir" [routerLink]="['/patrimoine', b.id]" [attr.aria-label]="'Ouvrir ' + b.nom"><fact-icone nom="droite" [taille]="16" /></a>
+              </li>
+            } @empty {
+              <li class="pf-vide">Aucun bâtiment ne correspond.</li>
+            }
+          </ul>
+        </div>
+        <div class="pf-carte-sel carte">
+          <div #carte class="pf-leaflet"></div>
+          <ul class="pf-legende">
+            @for (g of gestionnaires(); track g.id) { <li><span [style.background]="couleur(g.id)"></span>{{ g.nom }}</li> }
+            <li><span [style.background]="couleur(null)"></span>Sans gestionnaire</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------- historique -->
+    <section class="pf-bloc">
+      <div class="pf-titre-bloc"><h2>Historique des réaffectations</h2></div>
+      <ol class="pf-historique">
+        @for (o of operations(); track o.cle; let n = $index) {
+          <li [factApparition]="n">
+            <p class="pf-quand">{{ f.dateHeure(o.le) }}@if (o.par) { · {{ o.par }} }</p>
+            <p><strong>{{ o.lignes.length }} bâtiment{{ o.lignes.length > 1 ? 's' : '' }}</strong>
+              @if (o.lignes[0].nouveauGestionnaire) { confié{{ o.lignes.length > 1 ? 's' : '' }} à <strong>{{ o.lignes[0].nouveauGestionnaire }}</strong> }
+              @else { sans gestionnaire désormais }
+              @if (o.motif) { — {{ o.motif }} }</p>
+            <p class="pf-detail">
+              @for (l of o.lignes.slice(0, 6); track l.id; let dernier = $last) {
+                {{ l.batiment }} <small>({{ l.ancienGestionnaire ?? 'aucun' }} → {{ l.nouveauGestionnaire ?? 'aucun' }}@if (l.nouveauSuppleant !== l.ancienSuppleant) { ; suppléant : {{ l.nouveauSuppleant ?? 'aucun' }} })</small>@if (!dernier) { , }
+              }
+              @if (o.lignes.length > 6) { et {{ o.lignes.length - 6 }} autre(s) }
+            </p>
+          </li>
+        } @empty {
+          <li><fact-etat-vide icone="comptes" titre="Aucune réaffectation pour l'instant" message="Chaque changement de gestionnaire sera gardé ici, daté, avec son auteur." /></li>
+        }
+      </ol>
+    </section>
+  }
+
+  <!-- ---------------------------------------------------------------- barre de sélection -->
+  @if (selection().size > 0) {
+    <div class="pf-barre-sel" role="region" aria-label="Sélection">
+      <span><strong>{{ selection().size }}</strong> bâtiment{{ selection().size > 1 ? 's' : '' }} sélectionné{{ selection().size > 1 ? 's' : '' }}</span>
+      <button type="button" class="btn discret" (click)="vider()">Vider</button>
+      <button type="button" class="btn principal" (click)="ouvrir()"><fact-icone nom="comptes" [taille]="18" /> Réaffecter</button>
+    </div>
+  }
+
+  <fact-panneau-lateral [page]="true" titre="Réaffecter" [ouvert]="panneau()" (fermer)="panneau.set(false)">
+    @if (panneau()) {
+      <form class="pf-form" (ngSubmit)="confirmer()" novalidate>
+        <p class="pf-resume"><strong>{{ choisis().length }} bâtiment{{ choisis().length > 1 ? 's' : '' }}</strong>, aujourd'hui gérés par :
+          @for (p of provenances(); track p.nom; let dernier = $last) { {{ p.nom }} ({{ p.n }})@if (!dernier) { , } }</p>
+        <fact-choix name="gestionnaire" libelle="Nouveau gestionnaire" vide="Aucun (sans gestionnaire)" [seuilRecherche]="0"
+                    [options]="gestionnaires() | options : optionGestionnaire : null" [(ngModel)]="saisie.idGestionnaire" />
+        <label class="case"><input type="checkbox" name="changer" [(ngModel)]="saisie.changerSuppleant" [disabled]="saisie.idGestionnaire === null">
+          Changer aussi le suppléant <small>Sinon, chaque bâtiment garde le sien.</small></label>
+        @if (saisie.changerSuppleant && saisie.idGestionnaire !== null) {
+          <fact-choix name="suppleant" libelle="Nouveau suppléant" vide="Aucun suppléant" [seuilRecherche]="0"
+                      [options]="gestionnaires() | options : optionGestionnaire : saisie.idGestionnaire" [(ngModel)]="saisie.idSuppleant" />
+        }
+        <label class="champ"><input type="text" name="motif" placeholder=" " maxlength="250" [(ngModel)]="saisie.motif" autocomplete="off"><span>Motif (départ, congé, nouvelle répartition…)</span></label>
+        <ul class="pf-recap">
+          @for (b of choisis().slice(0, 8); track b.id) { <li>{{ b.nom }} <small>{{ b.gestionnaire ?? 'sans gestionnaire' }}</small></li> }
+          @if (choisis().length > 8) { <li class="discret">et {{ choisis().length - 8 }} autre(s)</li> }
+        </ul>
+        <p class="pf-aide">Le nouveau gestionnaire est prévenu par une alerte. Le changement est gardé dans l'historique.</p>
+        @if (erreur()) { <p class="pf-erreur" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+        <div class="pf-pied">
+          <button type="button" class="btn" (click)="panneau.set(false)">Annuler</button>
+          <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">Confirmer la réaffectation</button>
+        </div>
+      </form>
+    }
+  </fact-panneau-lateral>
+</div>

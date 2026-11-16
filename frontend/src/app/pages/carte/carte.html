@@ -1,0 +1,178 @@
+<div class="scene" [class.placement]="!!aPlacer()">
+  <div #carte class="carte" role="application" aria-label="Carte du patrimoine"></div>
+
+  <!-- ------------------------------------------------------------ barre haute -->
+  <div class="barre-haute">
+    <label class="cherche">
+      <fact-icone nom="recherche" [taille]="18" />
+      <input type="search" placeholder="Bâtiment, propriétaire, quartier…" [ngModel]="recherche()" (ngModelChange)="recherche.set($event)"
+             aria-label="Rechercher sur la carte">
+    </label>
+    <button type="button" class="btn rond-carte" (click)="basculerFond()" [attr.aria-pressed]="satellite()"
+            [attr.title]="satellite() ? 'Fond plan' : 'Fond satellite'" [attr.aria-label]="satellite() ? 'Fond plan' : 'Fond satellite'">
+      <fact-icone nom="calques" />
+    </button>
+  </div>
+
+  <!-- ------------------------------------------------------- placement en cours -->
+  @if (aPlacer(); as b) {
+    <div class="bandeau-placement" role="status">
+      <fact-icone nom="cible" />
+      <p>
+        @if (pointPropose()) {
+          Position choisie pour <strong>{{ b.nom }}</strong>. Faites glisser le repère pour l'ajuster, puis enregistrez.
+        } @else {
+          Cliquez sur la carte à l'emplacement de <strong>{{ b.nom }}</strong>.
+        }
+      </p>
+      <div class="boutons">
+        <button type="button" class="btn petit" (click)="maPosition()"><fact-icone nom="cible" [taille]="16" /> Ma position</button>
+        <button type="button" class="btn petit" (click)="annulerPlacement()">Annuler</button>
+        <button type="button" class="btn petit accent" [class.occupe]="enregistrement()" [disabled]="!pointPropose() || enregistrement()"
+                (click)="enregistrerPosition()">Enregistrer la position</button>
+      </div>
+    </div>
+  }
+
+  <!-- ------------------------------------------------------------------ volet -->
+  <aside class="volet" [class.ouvert]="voletOuvert()" aria-label="Thématique et liste des bâtiments">
+    <button type="button" class="poignee-volet" (click)="voletOuvert.set(!voletOuvert())" [attr.aria-expanded]="voletOuvert()">
+      <span class="trait" aria-hidden="true"></span>
+      <span>
+        <strong>{{ totaux().batiments }}</strong> bâtiment{{ totaux().batiments > 1 ? 's' : '' }}
+        @if (totaux().taux !== null) { · {{ totaux().taux }} % occupés }
+        @if (aLocaliser().length) { · <span class="a-localiser">{{ aLocaliser().length }} à localiser</span> }
+      </span>
+    </button>
+
+    <div class="corps-volet">
+      <section class="resume-chiffres" aria-label="Chiffres de la sélection">
+        <div><strong>{{ totaux().batiments }}</strong><span>bâtiments</span></div>
+        <div><strong>{{ totaux().lots }}</strong><span>lots</span></div>
+        <div><strong>{{ totaux().taux === null ? '-' : totaux().taux + ' %' }}</strong><span>occupés</span></div>
+      </section>
+
+      <div class="ligne-filtres">
+        <fact-choix vide="Toutes les communes" invite="Toutes les communes" [options]="ref.communes() | options : opt.commune"
+                    [ngModel]="commune()" (ngModelChange)="commune.set($event)" />
+      </div>
+
+      <h3>Couleur des bâtiments</h3>
+      <div class="segments" role="radiogroup" aria-label="Thématique de couleur">
+        <button type="button" role="radio" [attr.aria-checked]="thematique() === 'occupation'" [class.actif]="thematique() === 'occupation'"
+                (click)="choisirThematique('occupation')">Occupation</button>
+        @if (voitLoyers()) {
+          <button type="button" role="radio" [attr.aria-checked]="thematique() === 'impayes'" [class.actif]="thematique() === 'impayes'"
+                  (click)="choisirThematique('impayes')">Impayés</button>
+        }
+        @if (voitTravaux()) {
+          <button type="button" role="radio" [attr.aria-checked]="thematique() === 'travaux'" [class.actif]="thematique() === 'travaux'"
+                  (click)="choisirThematique('travaux')">Travaux</button>
+        }
+        @if (voitGestion()) {
+          <button type="button" role="radio" [attr.aria-checked]="thematique() === 'gestionnaire'" [class.actif]="thematique() === 'gestionnaire'"
+                  (click)="choisirThematique('gestionnaire')">Gestionnaire</button>
+        }
+        <button type="button" role="radio" [attr.aria-checked]="thematique() === 'validation'" [class.actif]="thematique() === 'validation'"
+                (click)="choisirThematique('validation')">Validation</button>
+      </div>
+      <ul class="legende">
+        @for (l of legende(); track l.libelle) {
+          <li>
+            @if (thematique() === 'gestionnaire') {
+              <button type="button" class="cle-legende" [class.active]="gestionnaire() === l.id" [class.estompee]="gestionnaire() !== null && gestionnaire() !== l.id"
+                      (click)="filtrerGestionnaire(l.id)" [attr.aria-pressed]="gestionnaire() === l.id">
+                <i [style.background]="l.couleur"></i><span>{{ l.libelle }}</span><b>{{ l.nombre }}</b>
+              </button>
+            } @else {
+              <span class="cle-legende"><i [style.background]="l.couleur"></i><span>{{ l.libelle }}</span><b>{{ l.nombre }}</b></span>
+            }
+          </li>
+        } @empty {
+          <li class="aide">Aucun bâtiment placé sur la carte.</li>
+        }
+      </ul>
+      @if (thematique() === 'gestionnaire') {
+        <p class="aide">Cliquez sur un gestionnaire pour n'afficher que son portefeuille.</p>
+      }
+
+      <div class="onglets-volet" role="tablist">
+        <button type="button" role="tab" [attr.aria-selected]="volet() === 'liste'" (click)="volet.set('liste')">
+          Dans le cadre <span class="nombre">{{ listeVisible().length }}</span>
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="volet() === 'localiser'" (click)="volet.set('localiser')">
+          À localiser <span class="nombre" [class.alerte]="aLocaliser().length">{{ aLocaliser().length }}</span>
+        </button>
+      </div>
+
+      @if (volet() === 'liste') {
+        <ul class="liste">
+          @for (b of listeVisible(); track b.id) {
+            <li>
+              <button type="button" class="element" [class.choisi]="choisi()?.id === b.id" (click)="choisir(b)"
+                      (mouseenter)="survoler(b.id)" (mouseleave)="survoler(null)">
+                <i class="point" [style.background]="teinte(b).couleur" aria-hidden="true"></i>
+                <span class="texte"><strong>{{ b.nom }}</strong><small>{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }}</small></span>
+                <span class="lots donnee">{{ b.lotsOccupes }}/{{ b.lots }}</span>
+              </button>
+            </li>
+          } @empty {
+            <li class="aide">Aucun bâtiment dans le cadre de la carte. Dézoomez, ou changez les filtres.</li>
+          }
+        </ul>
+      } @else {
+        <ul class="liste">
+          @for (b of aLocaliser(); track b.id) {
+            <li class="a-placer">
+              <span class="texte"><strong>{{ b.nom }}</strong><small>{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }} · {{ b.proprietaire }}</small></span>
+              @if (peutPlacer()) {
+                <button type="button" class="btn petit principal" [class.accent]="aPlacer()?.id === b.id" (click)="placer(b)">
+                  <fact-icone nom="cible" [taille]="16" /> Placer
+                </button>
+              } @else {
+                <a class="btn petit" [routerLink]="['/patrimoine', b.id]">Fiche</a>
+              }
+            </li>
+          } @empty {
+            <li class="aide">Tous les bâtiments sont placés sur la carte.</li>
+          }
+        </ul>
+      }
+    </div>
+  </aside>
+
+  <!-- ------------------------------------------------------------ fiche résumée -->
+  @if (choisi(); as b) {
+    <article class="resume" aria-live="polite">
+      <button type="button" class="fermer" (click)="choisi.set(null)" aria-label="Fermer la fiche"><fact-icone nom="fermer" [taille]="18" /></button>
+      <p class="type">{{ libelleType(b.type) }} · <span class="donnee">{{ b.reference }}</span></p>
+      <h2>{{ b.nom }}</h2>
+      <p class="lieu"><fact-icone nom="cible" [taille]="15" /> {{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }}</p>
+      <dl>
+        <div><dt>Propriétaire</dt><dd>{{ b.proprietaire }}</dd></div>
+        @if (voitGestion()) {
+          <div><dt>Gestionnaire</dt><dd>@if (b.gestionnaire) { {{ b.gestionnaire }} } @else { <em class="manque">aucun</em> }</dd></div>
+        }
+        <div><dt>Lots occupés</dt><dd><strong>{{ b.lotsOccupes }}</strong> sur {{ b.lots }}@if (b.lotsVacants) { · <span class="vacants">{{ b.lotsVacants }} vacant{{ b.lotsVacants > 1 ? 's' : '' }}</span> }</dd></div>
+        <div><dt>Loyers de référence</dt><dd class="donnee">{{ fcfa(b.loyersReference) }}</dd></div>
+        @if (voitTravaux() && b.interventionsOuvertes) {
+          <div><dt>Interventions</dt><dd>{{ b.interventionsOuvertes }} en cours@if (b.interventionsUrgentes) { · <strong class="vacants">{{ b.interventionsUrgentes }} urgente(s)</strong> }</dd></div>
+        }
+        @if (voitLoyers() && b.bauxActifs) {
+          <div><dt>Impayés</dt><dd>@if (b.impaye) { <strong class="vacants donnee">{{ fcfa(b.impaye) }}</strong> · {{ b.moisRetardMax }} mois } @else { à jour }</dd></div>
+        }
+      </dl>
+      @if (b.validation === 'A_VALIDER') { <p class="pastille attention">Fiche à valider</p> }
+      <div class="boutons">
+        @if (peutPlacer()) {
+          <button type="button" class="btn petit" (click)="placer(b)"><fact-icone nom="cible" [taille]="16" /> Déplacer</button>
+        }
+        <a class="btn petit principal" [routerLink]="['/patrimoine', b.id]">Ouvrir la fiche <fact-icone nom="fleche" [taille]="16" /></a>
+      </div>
+    </article>
+  }
+
+  @if (chargement()) {
+    <div class="chargement" role="status"><span class="roue" aria-hidden="true"></span> Chargement des bâtiments…</div>
+  }
+</div>

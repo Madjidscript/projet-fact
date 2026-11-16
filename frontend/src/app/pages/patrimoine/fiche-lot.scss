@@ -1,0 +1,507 @@
+:host {
+  display: block;
+}
+
+.bloc {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--filet);
+  animation: fondu var(--standard) var(--courbe);
+}
+
+.bloc:first-child {
+  padding-top: 0;
+}
+
+.bloc:last-child {
+  border-bottom: 0;
+}
+
+.tete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+h3 {
+  font-size: 16px;
+  color: var(--marque);
+}
+
+h4 {
+  margin: 0 0 10px;
+  font: 600 12.5px var(--titre);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--discret);
+}
+
+p {
+  margin: 0 0 6px;
+}
+
+.discret {
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.surtitre {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ocre-texte);
+}
+
+.equipements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.equipements span {
+  padding: 2px 9px;
+  border-radius: var(--rayon-pastille);
+  background: var(--surface-3);
+  font-size: 12px;
+  color: var(--encre-2);
+}
+
+/* ------------------------------------------------------------- bail actif */
+.bail {
+  margin: 8px 0 0;
+  padding: 14px;
+  border: 1px solid var(--filet);
+  border-left: 4px solid var(--bon);
+  border-radius: var(--rayon-2);
+  background: var(--surface-2);
+}
+
+.bail.attention {
+  border-left-color: var(--attention);
+}
+
+.bail.critique {
+  border-left-color: var(--critique);
+}
+
+.bail.info {
+  border-left-color: var(--info);
+}
+
+.solde {
+  margin: 4px 0 10px;
+}
+
+.montant {
+  margin: 0;
+  font: 700 26px/1.1 var(--titre);
+  color: var(--marque);
+}
+
+.bail.critique .montant {
+  color: var(--critique-texte);
+}
+
+.bail.attention .montant {
+  color: var(--attention-texte);
+}
+
+.faits {
+  margin: 0 0 12px;
+  display: grid;
+  gap: 4px;
+  font-size: 13.5px;
+}
+
+.faits div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.faits dt {
+  color: var(--discret);
+}
+
+.faits dd {
+  margin: 0;
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions .btn.principal {
+  flex: 1 1 100%;
+}
+
+/* ----------------------------------------------------------------- échéancier */
+.echeances,
+.encaissements,
+.historique {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.echeances li {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.mois {
+  text-transform: capitalize;
+  color: var(--encre-2);
+}
+
+.barre {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.barre span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--attention);
+  transform-origin: left;
+  animation: pousse 700ms var(--courbe) both;
+}
+
+.barre span.A_JOUR {
+  background: var(--bon);
+}
+
+.retard .barre {
+  background: var(--critique-clair);
+}
+
+@keyframes pousse {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.etat .pastille {
+  font-size: 12px;
+  padding: 2px 8px;
+}
+
+/* -------------------------------------------------------------- encaissements */
+.encaissements li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--rayon-2);
+  background: var(--surface-2);
+  border: 1px solid var(--filet);
+}
+
+.encaissements li div:first-child {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.encaissements small {
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+.encaissements .annule strong {
+  text-decoration: line-through;
+  color: var(--discret);
+}
+
+.encaissements .motif {
+  color: var(--critique-texte);
+}
+
+.encaissements .boutons {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
+.encaissements li.annulation {
+  display: grid;
+  gap: 8px;
+  background: var(--critique-clair);
+}
+
+.annulation .boutons {
+  justify-content: flex-end;
+}
+
+.historique li {
+  display: grid;
+  font-size: 13.5px;
+}
+
+.historique small {
+  color: var(--discret);
+}
+
+.du {
+  color: var(--critique-texte);
+}
+
+.vide {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+/* --------------------------------------------------------------- formulaires */
+.formulaire {
+  display: grid;
+  gap: 14px;
+}
+
+.intro {
+  margin: 0;
+  font: 600 15px var(--titre);
+  color: var(--marque);
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 12px;
+}
+
+legend {
+  margin-bottom: 10px;
+  font: 600 12.5px var(--titre);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--discret);
+}
+
+.duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.segments {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-3);
+}
+
+.segments button {
+  flex: 1;
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--encre-2);
+  font-weight: 500;
+}
+
+.segments button.actif {
+  background: var(--surface);
+  color: var(--marque);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--filet);
+}
+
+.recap,
+.aide {
+  margin: 0;
+  font-size: 13px;
+  color: var(--encre-2);
+}
+
+.rappel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: var(--rayon-2);
+  background: var(--nuit-clair);
+}
+
+.rappel strong {
+  font: 700 18px var(--titre);
+  color: var(--marque);
+}
+
+.message {
+  display: flex;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: var(--rayon-2);
+  background: var(--critique-clair);
+  color: var(--critique-texte);
+  font-size: 14px;
+}
+
+.message.attention {
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+}
+
+.pied {
+  position: sticky;
+  bottom: -16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 4px -18px -16px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--filet);
+  background: var(--surface);
+}
+
+.pied.plat {
+  position: static;
+  margin: 16px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* ---------------------------------------------------------- encaissement validé */
+.recu {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 6px;
+  padding-top: 8px;
+}
+
+.coche {
+  color: var(--bon);
+}
+
+.coche circle {
+  stroke-dasharray: 66;
+  animation: dessine 500ms var(--courbe) both;
+}
+
+.coche path {
+  stroke-dasharray: 30;
+  animation: dessine 450ms var(--courbe) 350ms both;
+}
+
+@keyframes dessine {
+  from {
+    stroke-dashoffset: 66;
+  }
+}
+
+.recu h3 {
+  font-size: 20px;
+}
+
+/* L'aperçu de la quittance se déplie, comme un papier qu'on ouvre. */
+.papier {
+  width: 100%;
+  margin-top: 10px;
+  padding: 16px;
+  border: 1px solid var(--filet);
+  border-top: 4px solid var(--ocre);
+  border-radius: 4px var(--rayon-2) var(--rayon-2) 4px;
+  background: var(--surface);
+  text-align: left;
+  transform-origin: top;
+  animation: deplie 600ms var(--courbe) 600ms both;
+}
+
+@keyframes deplie {
+  from {
+    opacity: 0;
+    transform: perspective(600px) rotateX(-70deg);
+  }
+}
+
+.papier .numero {
+  font-size: 13px;
+  color: var(--ocre-texte);
+  font-weight: 600;
+}
+
+.papier ul {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.papier li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  font-size: 14px;
+}
+
+.papier li span {
+  text-transform: capitalize;
+}
+
+.papier li small {
+  grid-column: 1 / -1;
+  color: var(--attention-texte);
+}
+
+.solde-apres {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--filet-fort);
+  font-size: 13.5px;
+}
+
+.squelette span {
+  display: block;
+  height: 14px;
+  margin-bottom: 12px;
+  border-radius: 7px;
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.squelette span:nth-child(2) {
+  width: 70%;
+}
+
+.squelette span:nth-child(3) {
+  width: 45%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .papier {
+    animation: fondu var(--courte) both;
+  }
+}
+
+.actions-lot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.retour {
+  justify-self: start;
+  margin-bottom: 4px;
+}

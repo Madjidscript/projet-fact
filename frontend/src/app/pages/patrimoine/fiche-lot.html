@@ -1,0 +1,342 @@
+@if (chargement() || !lot()) {
+  <div class="squelette" aria-busy="true"><span></span><span></span><span></span></div>
+} @else {
+  @let l = lot()!;
+  @switch (mode()) {
+
+    <!-- ================================================================ fiche -->
+    @case ('fiche') {
+      <section class="bloc lot">
+        <div class="tete">
+          <div>
+            <h3>Lot {{ l.numero }}@if (l.libelleType.toLowerCase() !== l.numero.toLowerCase()) { · {{ l.libelleType }} }</h3>
+            <p class="discret">{{ l.etage === 0 ? 'Rez-de-chaussée' : 'Étage ' + l.etage }}@if (l.surface) { · {{ f.surface(l.surface) }} }@if (l.pieces) { · {{ l.pieces }} pièce{{ l.pieces > 1 ? 's' : '' }} }</p>
+          </div>
+          <span class="pastille" [class]="l.statut === 'OCCUPE' ? 'bon' : l.statut === 'EN_PREAVIS' ? 'info' : ['VACANT', 'A_LOUER', 'A_VENDRE'].includes(l.statut) ? 'attention' : 'neutre'">{{ l.libelleStatut }}</span>
+        </div>
+        @if (l.equipements.length) {
+          <p class="equipements">@for (e of l.equipements; track e) { <span>{{ libelle('EQUIPEMENT', e) }}</span> }</p>
+        }
+        <p class="discret">Loyer de référence : <strong class="donnee">{{ f.fcfa(l.loyerReference) }}</strong>@if (l.charges) { + {{ f.fcfa(l.charges) }} de charges }</p>
+        @if ((peutModifier() && !bail()) || peutPublier()) {
+          <div class="actions-lot">
+            @if (peutModifier() && !bail()) {
+              <button type="button" class="btn petit" (click)="aller('modifier')"><fact-icone nom="crayon" [taille]="16" /> Modifier le lot</button>
+            }
+            @if (peutPublier()) {
+              <button type="button" class="btn petit principal" (click)="aller('annonce')"><fact-icone nom="monde" [taille]="16" /> Publier sur le site</button>
+            }
+          </div>
+        }
+      </section>
+
+      @if (bail(); as b) {
+        <!-- -------------------------------------------------------- bail actif -->
+        <section class="bloc bail" [class]="tonBail(b)">
+          <div class="tete">
+            <div>
+              <p class="surtitre">Bail <span class="donnee">{{ b.reference }}</span>@if (b.statut === 'PREAVIS') { · en préavis }</p>
+              <h3>{{ b.occupant }}</h3>
+              @if (b.telephoneOccupant) { <p class="discret donnee">{{ b.telephoneOccupant }}</p> }
+            </div>
+            <span class="pastille" [class]="tonBail(b)">{{ b.moisRetard ? b.moisRetard + ' mois de retard' : 'À jour' }}</span>
+          </div>
+          <div class="solde">
+            <p class="montant donnee">{{ b.solde > 0 ? f.fcfa(b.solde) : b.solde < 0 ? f.fcfa(-b.solde) : '0 FCFA' }}</p>
+            <p class="discret">{{ b.solde > 0 ? 'reste dû à ce jour' : b.solde < 0 ? "d'avance" : 'à jour' }} · {{ texteSituation(b) }}</p>
+          </div>
+          <dl class="faits">
+            <div><dt>Loyer</dt><dd class="donnee">{{ f.fcfa(b.loyer) }}@if (b.charges) { + {{ f.fcfa(b.charges) }} }</dd></div>
+            <div><dt>Exigible</dt><dd>le {{ b.jourExigibilite }} de chaque mois</dd></div>
+            <div><dt>Depuis le</dt><dd>{{ f.date(b.dateEffet) }} · {{ b.dureeMois }} mois</dd></div>
+            <div><dt>Caution</dt><dd class="donnee">{{ f.fcfa(b.caution) }}</dd></div>
+            @if (b.statut === 'PREAVIS') { <div><dt>Sortie prévue</dt><dd>{{ f.date(b.dateSortie) }}</dd></div> }
+          </dl>
+          <div class="actions">
+            @if (peutEncaisser()) {
+              <button type="button" class="btn principal" (click)="aller('encaisser')"><fact-icone nom="monnaie" [taille]="18" /> Encaisser un loyer</button>
+            }
+            @if (peutLouer()) {
+              @if (b.statut === 'ACTIF') { <button type="button" class="btn" (click)="aller('preavis')">Préavis de départ</button> }
+              <button type="button" class="btn" (click)="aller('terminer')">Sortie du locataire</button>
+            }
+          </div>
+        </section>
+
+        <!-- ---------------------------------------------------------- échéancier -->
+        <section class="bloc">
+          <h4>Échéancier</h4>
+          <ul class="echeances">
+            @for (e of donnees()!.echeances; track e.id) {
+              <li [class.retard]="e.enRetard">
+                <span class="mois">{{ f.mois(e.periode) }}</span>
+                <span class="barre" aria-hidden="true"><span [style.width.%]="e.montantDu ? (e.regle / e.montantDu) * 100 : 100" [class]="e.statutPaiement"></span></span>
+                <span class="etat">
+                  @if (e.statutPaiement === 'A_JOUR') { <span class="pastille bon">Payé</span> }
+                  @else if (e.enRetard) { <span class="pastille critique">{{ f.fcfa(e.reste) }} en retard</span> }
+                  @else if (e.statutPaiement === 'PARTIEL') { <span class="pastille attention">Reste {{ f.fcfa(e.reste) }}</span> }
+                  @else { <span class="pastille neutre">Dû le {{ f.date(e.dateExigibilite) }}</span> }
+                </span>
+              </li>
+            } @empty {
+              <li class="discret">Aucune échéance pour le moment.</li>
+            }
+          </ul>
+        </section>
+
+        <!-- ------------------------------------------------------ états des lieux -->
+        <section class="bloc">
+          <h4>États des lieux</h4>
+          <ul class="encaissements">
+            @for (d of etatsDesLieux(); track d.id) {
+              <li>
+                <div>
+                  <strong>{{ d.type === 'ENTREE' ? 'Entrée' : 'Sortie' }} · {{ f.date(d.faitLe.slice(0, 10)) }}</strong>
+                  <small>Signé par {{ d.signataire }} · fait par {{ sansIdentifiant(d.creePar) }}</small>
+                </div>
+                <div class="boutons">
+                  <button type="button" class="btn petit" (click)="pdfEtatDesLieux(d)"><fact-icone nom="document" [taille]="16" /> {{ d.reference }}</button>
+                </div>
+              </li>
+            } @empty {
+              <li class="discret">Aucun état des lieux : il se fait sur place, depuis l'application de terrain.</li>
+            }
+          </ul>
+        </section>
+
+        <!-- -------------------------------------------------------- encaissements -->
+        <section class="bloc">
+          <h4>Encaissements</h4>
+          <ul class="encaissements">
+            @for (e of donnees()!.encaissements; track e.id) {
+              <li [class.annule]="e.annuleLe">
+                <div>
+                  <strong class="donnee">{{ f.fcfa(e.montant) }}</strong>
+                  <small>{{ f.date(e.datePaiement) }} · {{ libelle('MODE_PAIEMENT', e.mode) }}@if (e.referencePaiement) { · {{ e.referencePaiement }} }</small>
+                  @if (e.annuleLe) { <small class="motif">Annulé : {{ e.motifAnnulation }}</small> }
+                  @else if (e.notes) { <small>{{ e.notes }}</small> }
+                </div>
+                <div class="boutons">
+                  <button type="button" class="btn petit" (click)="quittance(e)" [attr.title]="'Quittance ' + e.numero"><fact-icone nom="document" [taille]="16" /> {{ e.numero }}</button>
+                  @if (direction() && !e.annuleLe) {
+                    <button type="button" class="btn petit discret" (click)="aAnnuler.set(e)" aria-label="Annuler cet encaissement"><fact-icone nom="fermer" [taille]="16" /></button>
+                  }
+                </div>
+              </li>
+              @if (aAnnuler()?.id === e.id) {
+                <li class="annulation">
+                  <label class="champ">
+                    <input type="text" name="motif" placeholder=" " [(ngModel)]="motifAnnulation" autocomplete="off">
+                    <span>Motif de l'annulation</span>
+                  </label>
+                  <div class="boutons">
+                    <button type="button" class="btn petit" (click)="aAnnuler.set(null)">Garder</button>
+                    <button type="button" class="btn petit danger" [disabled]="!motifAnnulation.trim()" (click)="annuler()">Annuler l'encaissement</button>
+                  </div>
+                </li>
+              }
+            } @empty {
+              <li class="discret">Aucun encaissement.</li>
+            }
+          </ul>
+        </section>
+      } @else {
+        <!-- ------------------------------------------------------- pas de bail -->
+        <section class="bloc vide">
+          @if (sansBail()) {
+            <p><strong>Lot marqué occupé, sans bail saisi.</strong> Saisissez le bail en cours pour suivre ses loyers.</p>
+          } @else if (louable()) {
+            <p>Aucun bail en cours sur ce lot.</p>
+          } @else {
+            <p>Ce lot est « {{ l.libelleStatut }} » : il ne peut pas être loué en l'état.</p>
+          }
+          @if (peutLouer() && (louable() || sansBail())) {
+            <button type="button" class="btn principal" (click)="aller('bail')"><fact-icone nom="cle" [taille]="18" /> {{ sansBail() ? 'Saisir le bail en cours' : 'Signer un bail' }}</button>
+          }
+        </section>
+      }
+
+      @if (donnees()!.historique.length > (bail() ? 1 : 0)) {
+        <section class="bloc">
+          <h4>Baux précédents</h4>
+          <ul class="historique">
+            @for (h of donnees()!.historique; track h.id) {
+              @if (h.id !== bail()?.id) {
+                <li><span>{{ h.occupant }}</span><small>{{ f.date(h.dateEffet) }} → {{ f.date(h.dateSortie) }}@if (h.solde > 0) { · <b class="du">{{ f.fcfa(h.solde) }} dû</b> }</small></li>
+              }
+            }
+          </ul>
+        </section>
+      }
+    }
+
+    <!-- ================================================================ annonce -->
+    @case ('annonce') {
+      <button type="button" class="btn discret petit retour" (click)="mode.set('fiche')"><fact-icone nom="gauche" [taille]="16" /> Retour au lot</button>
+      <fact-fiche-annonce [idLot]="l.id" (change)="annonceChangee()" />
+    }
+
+    <!-- ============================================================== modifier -->
+    @case ('modifier') {
+      <fact-formulaire-lot [idBatiment]="l.idBatiment" [lot]="l" (enregistre)="lotEnregistre($event)" (annule)="mode.set('fiche')"
+                           (archive)="archive.emit($event)" />
+    }
+
+    <!-- ================================================================= bail -->
+    @case ('bail') {
+      <form class="formulaire" (ngSubmit)="signer()" novalidate>
+        <p class="intro">{{ sansBail() ? 'Bail en cours' : 'Nouveau bail' }} · lot {{ l.numero }}</p>
+        <fieldset>
+          <legend>Locataire</legend>
+          <div class="segments" role="radiogroup" aria-label="Locataire">
+            <button type="button" role="radio" [attr.aria-checked]="!sb.occupantExistant" [class.actif]="!sb.occupantExistant" (click)="sb.occupantExistant = false">Nouveau locataire</button>
+            <button type="button" role="radio" [attr.aria-checked]="sb.occupantExistant" [class.actif]="sb.occupantExistant" (click)="sb.occupantExistant = true">Déjà connu</button>
+          </div>
+          @if (sb.occupantExistant) {
+            <fact-choix name="idOccupant" libelle="Locataire" invite="Rechercher par nom ou téléphone…" [seuilRecherche]="0"
+                        [options]="occupants() | options : opt.occupant" [(ngModel)]="sb.idOccupant" />
+          } @else {
+            <div class="duo">
+              <label class="champ"><input type="text" name="nom" placeholder=" " [(ngModel)]="sb.nom" autocomplete="off" required><span>Nom</span></label>
+              <label class="champ"><input type="text" name="prenoms" placeholder=" " [(ngModel)]="sb.prenoms" autocomplete="off"><span>Prénoms</span></label>
+            </div>
+            <div class="duo">
+              <label class="champ"><input type="tel" name="telephone" placeholder=" " [(ngModel)]="sb.telephone" autocomplete="off"><span>Téléphone</span></label>
+              <label class="champ"><input type="email" name="email" placeholder=" " [(ngModel)]="sb.email" autocomplete="off"><span>E-mail</span></label>
+            </div>
+            <div class="duo">
+              <label class="champ"><input type="text" name="pieceNumero" placeholder=" " [(ngModel)]="sb.pieceNumero" autocomplete="off"><span>N° de pièce d'identité</span></label>
+              <label class="champ"><input type="text" name="profession" placeholder=" " [(ngModel)]="sb.profession" autocomplete="off"><span>Profession</span></label>
+            </div>
+            <div class="duo">
+              <label class="champ"><input type="text" name="garantNom" placeholder=" " [(ngModel)]="sb.garantNom" autocomplete="off"><span>Garant</span></label>
+              <label class="champ"><input type="tel" name="garantTelephone" placeholder=" " [(ngModel)]="sb.garantTelephone" autocomplete="off"><span>Téléphone du garant</span></label>
+            </div>
+          }
+        </fieldset>
+
+        <fieldset>
+          <legend>Conditions</legend>
+          <div class="duo">
+            <label class="champ"><input type="date" name="dateEffet" placeholder=" " [(ngModel)]="sb.dateEffet" required><span>Date d'effet</span></label>
+            <label class="champ"><input type="number" name="dureeMois" placeholder=" " min="1" max="240" [(ngModel)]="sb.dureeMois"><span>Durée (mois)</span></label>
+          </div>
+          <div class="duo">
+            <label class="champ"><input type="number" name="loyer" placeholder=" " min="0" step="5000" [(ngModel)]="sb.loyer" required><span>Loyer mensuel (FCFA)</span></label>
+            <label class="champ"><input type="number" name="charges" placeholder=" " min="0" step="1000" [(ngModel)]="sb.charges"><span>Charges (FCFA)</span></label>
+          </div>
+          <div class="duo">
+            <label class="champ"><input type="number" name="caution" placeholder=" " min="0" step="5000" [(ngModel)]="sb.caution"><span>Caution (FCFA)</span></label>
+            <label class="champ"><input type="number" name="jour" placeholder=" " min="1" max="28" [(ngModel)]="sb.jourExigibilite"><span>Payable le (jour du mois)</span></label>
+          </div>
+          <label class="champ"><input type="number" name="avance" placeholder=" " min="0" max="24" [(ngModel)]="sb.avanceMois"><span>Mois d'avance versés à l'entrée</span></label>
+          @if (sb.avanceMois > 0 && peutEncaisser()) {
+            <label class="case"><input type="checkbox" name="avanceEncaissee" [(ngModel)]="sb.avanceEncaissee"> Avance encaissée aujourd'hui ({{ f.fcfa(totalAvance()) }})</label>
+            @if (sb.avanceEncaissee) {
+              <label class="champ">
+                <select name="modeAvance" [(ngModel)]="sb.modeAvance">
+                  @for (v of ref.liste('MODE_PAIEMENT'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }
+                </select>
+                <span>Mode de paiement de l'avance</span>
+              </label>
+            }
+          }
+          <p class="recap">Frais d'entrée du locataire : <strong class="donnee">{{ f.fcfa(fraisEntree()) }}</strong> (caution et avance)</p>
+        </fieldset>
+
+        @if (erreur()) { <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+        <div class="pied">
+          <button type="button" class="btn" (click)="mode.set('fiche')">Annuler</button>
+          <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">Signer le bail</button>
+        </div>
+      </form>
+    }
+
+    <!-- ============================================================ encaisser -->
+    @case ('encaisser') {
+      @if (recu(); as r) {
+        <!-- Encaissement validé : coche animée et quittance qui se déplie (§ 6.3) -->
+        <div class="recu" role="status">
+          <svg class="coche" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+               stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10.5"/><path d="m7 12.5 3.4 3.4L17 9"/></svg>
+          <h3>{{ f.fcfa(r.encaissement.montant) }} encaissés</h3>
+          <p class="discret">{{ bail()?.occupant }} · {{ libelle('MODE_PAIEMENT', r.encaissement.mode) }}</p>
+          <div class="papier">
+            <p class="numero donnee">{{ r.periodes.length && r.periodes[r.periodes.length - 1].reste === 0 ? 'Quittance' : 'Reçu' }} {{ r.encaissement.numero }}</p>
+            <ul>
+              @for (p of r.periodes; track p.mois) {
+                <li><span>{{ f.mois(p.mois) }}</span><b class="donnee">{{ f.fcfa(p.regle) }}</b>@if (p.reste) { <small>reste {{ f.fcfa(p.reste) }}</small> }</li>
+              } @empty {
+                <li><span>Avance sur les mois à venir</span><b class="donnee">{{ f.fcfa(r.encaissement.montant) }}</b></li>
+              }
+            </ul>
+            <p class="solde-apres">Solde du compte : <b>{{ bail()!.solde > 0 ? f.fcfa(bail()!.solde) + ' dû' : bail()!.solde < 0 ? f.fcfa(-bail()!.solde) + " d'avance" : 'à jour' }}</b></p>
+          </div>
+          <div class="pied plat">
+            <button type="button" class="btn" (click)="mode.set('fiche'); recu.set(null)">Retour au lot</button>
+            <button type="button" class="btn principal" (click)="quittance(r.encaissement)"><fact-icone nom="document" [taille]="18" /> Ouvrir la quittance</button>
+          </div>
+        </div>
+      } @else {
+        <form class="formulaire" (ngSubmit)="encaisser()" novalidate>
+          <p class="intro">Encaissement · {{ bail()?.occupant }} · lot {{ l.numero }}</p>
+          <div class="rappel">
+            <span>Reste dû à ce jour</span>
+            <strong class="donnee">{{ f.fcfa(bail()!.solde > 0 ? bail()!.solde : 0) }}</strong>
+          </div>
+          <label class="champ"><input type="number" name="montant" placeholder=" " min="1" step="1000" [(ngModel)]="enc.montant" required><span>Montant reçu (FCFA)</span></label>
+          <p class="aide">Les paiements soldent les mois les plus anciens d'abord.
+            @if ((enc.montant ?? 0) > 0) { Après ce paiement : <b>{{ resteApres() > 0 ? f.fcfa(resteApres()) + ' encore dû' : resteApres() < 0 ? f.fcfa(-resteApres()) + " d'avance" : 'compte à jour' }}</b>. }
+          </p>
+          <div class="duo">
+            <label class="champ"><input type="date" name="datePaiement" placeholder=" " [max]="aujourdhui" [(ngModel)]="enc.datePaiement" required><span>Date du paiement</span></label>
+            <label class="champ">
+              <select name="mode" [(ngModel)]="enc.mode">
+                @for (v of ref.liste('MODE_PAIEMENT'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }
+              </select>
+              <span>Mode</span>
+            </label>
+          </div>
+          <label class="champ"><input type="text" name="referencePaiement" placeholder=" " [(ngModel)]="enc.referencePaiement" autocomplete="off"><span>Référence (n° de transaction, de chèque…)</span></label>
+          <label class="champ"><input type="text" name="notes" placeholder=" " [(ngModel)]="enc.notes" autocomplete="off"><span>Remarque</span></label>
+          @if (erreur()) { <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+          <div class="pied">
+            <button type="button" class="btn" (click)="mode.set('fiche')">Annuler</button>
+            <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">Enregistrer l'encaissement</button>
+          </div>
+        </form>
+      }
+    }
+
+    <!-- ===================================================== préavis et sortie -->
+    @case ('preavis') {
+      <form class="formulaire" (ngSubmit)="preavis()" novalidate>
+        <p class="intro">Préavis de départ · {{ bail()?.occupant }}</p>
+        <p class="aide">Le locataire annonce son départ. Le lot passe « En préavis » ; le bail continue jusqu'à la sortie.</p>
+        <label class="champ"><input type="date" name="dateSortie" placeholder=" " [(ngModel)]="fin.dateSortie" required><span>Date de sortie prévue</span></label>
+        <label class="champ"><input type="text" name="motif" placeholder=" " [(ngModel)]="fin.motif" autocomplete="off"><span>Motif</span></label>
+        @if (erreur()) { <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+        <div class="pied">
+          <button type="button" class="btn" (click)="mode.set('fiche')">Annuler</button>
+          <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">Enregistrer le préavis</button>
+        </div>
+      </form>
+    }
+    @case ('terminer') {
+      <form class="formulaire" (ngSubmit)="terminer()" novalidate>
+        <p class="intro">Sortie du locataire · {{ bail()?.occupant }}</p>
+        <p class="aide">Le bail est clos à la date de sortie et le lot redevient vacant. Les loyers dus jusqu'à la sortie restent à recouvrer.</p>
+        @if (bail()!.solde > 0) {
+          <p class="message attention"><fact-icone nom="alerte" [taille]="18" /> Il reste {{ f.fcfa(bail()!.solde) }} à payer sur ce bail.</p>
+        }
+        <label class="champ"><input type="date" name="dateSortie" placeholder=" " [max]="aujourdhui" [(ngModel)]="fin.dateSortie" required><span>Date de sortie</span></label>
+        <label class="champ"><input type="text" name="motif" placeholder=" " [(ngModel)]="fin.motif" autocomplete="off"><span>Motif</span></label>
+        @if (erreur()) { <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+        <div class="pied">
+          <button type="button" class="btn" (click)="mode.set('fiche')">Annuler</button>
+          <button type="submit" class="btn danger" [class.occupe]="occupe()" [disabled]="occupe()">Enregistrer la sortie</button>
+        </div>
+      </form>
+    }
+  }
+}

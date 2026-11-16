@@ -1,0 +1,715 @@
+/* La carte du patrimoine. Elle occupe tout l'écran ; volet, fiche résumée et bandeaux se
+   posent dessus sans la masquer entièrement. Téléphone d'abord. */
+
+:host {
+  display: block;
+}
+
+.scene {
+  position: relative;
+  height: calc(100dvh - var(--barre-basse) - env(safe-area-inset-bottom));
+  overflow: hidden;
+  background: var(--surface-3);
+}
+
+.carte {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.placement .carte {
+  cursor: crosshair;
+}
+
+:host ::ng-deep .leaflet-container {
+  font-family: var(--texte);
+  background: var(--surface-3);
+}
+
+:host ::ng-deep .placement .leaflet-container {
+  cursor: crosshair;
+}
+
+/* ------------------------------------------------------------------ marqueurs */
+/* Pastille colorée selon la thématique ; le changement de thématique la recolore en fondu. */
+:host ::ng-deep .bat-marqueur {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--teinte);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: background var(--standard) var(--courbe), transform var(--courte) var(--courbe);
+}
+
+:host ::ng-deep .bat-marqueur:hover,
+:host ::ng-deep .bat-marqueur.survol {
+  transform: scale(1.35);
+}
+
+/* Les marqueurs tombent en cascade à l'ouverture (§ 6.3) */
+:host ::ng-deep .tombe {
+  animation: tombe var(--longue) var(--courbe) both;
+}
+
+@keyframes tombe {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+/* Bâtiment en alerte : pulsation lente */
+:host ::ng-deep .bat-marqueur.alerte {
+  position: relative;
+}
+
+:host ::ng-deep .bat-marqueur.alerte::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--teinte);
+  animation: halo 2.4s ease-out infinite;
+}
+
+/* Bâtiment sélectionné : halo pulsant */
+:host ::ng-deep .bat-marqueur.choisi {
+  position: relative;
+  transform: scale(1.3);
+  box-shadow: 0 0 0 4px var(--ocre), 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+@keyframes halo {
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+:host ::ng-deep .groupe-marqueur {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--anneau);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform var(--courte) var(--courbe);
+}
+
+:host ::ng-deep .groupe-marqueur:hover {
+  transform: scale(1.08);
+}
+
+:host ::ng-deep .groupe-marqueur b {
+  display: grid;
+  place-items: center;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  border-radius: 50%;
+  background: var(--nuit-3);
+  color: #fff;
+  font: 600 13px var(--donnee);
+}
+
+:host ::ng-deep .repere-placement {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ocre);
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 3px rgba(47, 111, 214, 0.35), 0 3px 10px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+  animation: tombe var(--standard) var(--courbe);
+}
+
+/* ------------------------------------------------------------------ barre haute */
+.barre-haute {
+  position: absolute;
+  z-index: 600;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.cherche {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tactile);
+  padding: 0 14px;
+  border-radius: var(--rayon-2);
+  background: var(--surface);
+  color: var(--discret);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.cherche input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--encre);
+}
+
+.rond-carte {
+  width: var(--tactile);
+  padding: 0;
+  flex: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.rond-carte[aria-pressed='true'] {
+  background: var(--nuit);
+  color: #fff;
+  border-color: var(--nuit);
+}
+
+/* ---------------------------------------------------------- bandeau de placement */
+.bandeau-placement {
+  position: absolute;
+  z-index: 700;
+  top: 66px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border-radius: var(--rayon);
+  background: var(--nuit);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  animation: depuis-haut var(--standard) var(--courbe);
+}
+
+.bandeau-placement p {
+  flex: 1 1 220px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.bandeau-placement fact-icone {
+  color: var(--ocre);
+}
+
+.bandeau-placement .boutons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@keyframes depuis-haut {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
+/* ------------------------------------------------------------------------ volet */
+/* Téléphone : il glisse depuis le bas ; replié, seule sa poignée dépasse. */
+.volet {
+  position: absolute;
+  z-index: 650;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 72%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px 20px 0 0;
+  background: var(--surface);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.18);
+  transform: translateY(calc(100% - 58px));
+  transition: transform var(--standard) var(--courbe);
+}
+
+.volet.ouvert {
+  transform: none;
+}
+
+.poignee-volet {
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-height: 58px;
+  padding: 8px 16px 10px;
+  border: 0;
+  background: none;
+  color: var(--encre-2);
+  font-size: 14px;
+}
+
+.poignee-volet .trait {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--filet-fort);
+}
+
+.poignee-volet strong {
+  color: var(--marque);
+}
+
+.a-localiser {
+  color: var(--attention-texte);
+  font-weight: 600;
+}
+
+.corps-volet {
+  overflow-y: auto;
+  padding: 0 16px 16px;
+}
+
+.resume-chiffres {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.resume-chiffres div {
+  display: grid;
+  padding: 10px;
+  border-radius: var(--rayon-2);
+  background: var(--surface-3);
+  text-align: center;
+}
+
+.resume-chiffres strong {
+  font: 700 19px var(--titre);
+  color: var(--marque);
+}
+
+.resume-chiffres span {
+  font-size: 12px;
+  color: var(--discret);
+}
+
+.ligne-filtres fact-choix {
+  width: 100%;
+}
+
+.volet h3 {
+  margin: 16px 0 8px;
+  font: 600 12.5px var(--titre);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--discret);
+}
+
+.segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-3);
+}
+
+.segments button {
+  flex: 1 1 auto;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--encre-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe);
+}
+
+.segments button.actif {
+  background: var(--surface);
+  color: var(--marque);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--filet);
+}
+
+.legende {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  animation: fondu var(--standard) var(--courbe);
+}
+
+.cle-legende {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--encre-2);
+  font-size: 13.5px;
+  text-align: left;
+  transition: opacity var(--standard) var(--courbe), background var(--courte) var(--courbe);
+}
+
+button.cle-legende:hover {
+  background: var(--surface-3);
+}
+
+.cle-legende.active {
+  background: var(--nuit-clair);
+  color: var(--marque);
+  font-weight: 600;
+}
+
+.cle-legende.estompee {
+  opacity: 0.45;
+}
+
+.cle-legende i {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--filet-fort);
+}
+
+.cle-legende span {
+  flex: 1;
+}
+
+.cle-legende b {
+  font: 500 12.5px var(--donnee);
+  color: var(--discret);
+}
+
+.aide {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--discret);
+  list-style: none;
+}
+
+.onglets-volet {
+  display: flex;
+  margin: 18px 0 8px;
+  border-bottom: 1px solid var(--filet);
+}
+
+.onglets-volet button {
+  position: relative;
+  flex: 1;
+  min-height: 40px;
+  border: 0;
+  background: none;
+  color: var(--encre-2);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.onglets-volet button[aria-selected='true'] {
+  color: var(--marque);
+  font-weight: 600;
+}
+
+.onglets-volet button::after {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--ocre);
+  transform: scaleX(0);
+  transition: transform var(--standard) var(--courbe);
+}
+
+.onglets-volet button[aria-selected='true']::after {
+  transform: scaleX(1);
+}
+
+.nombre {
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: var(--rayon-pastille);
+  background: var(--surface-3);
+  font: 600 11.5px var(--donnee);
+}
+
+.nombre.alerte {
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+}
+
+.liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.element {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--rayon-2);
+  background: none;
+  color: var(--encre);
+  text-align: left;
+  transition: background var(--courte) var(--courbe);
+}
+
+.element:hover,
+.element.choisi {
+  background: var(--surface-3);
+}
+
+.element.choisi {
+  box-shadow: inset 3px 0 0 var(--ocre);
+}
+
+.point {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.texte {
+  display: grid;
+  min-width: 0;
+}
+
+.texte strong {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.texte small {
+  font-size: 12.5px;
+  color: var(--discret);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lots {
+  font-size: 12.5px;
+  color: var(--encre-2);
+}
+
+.a-placer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-bottom: 1px solid var(--filet);
+}
+
+/* -------------------------------------------------------------- fiche résumée */
+.resume {
+  position: absolute;
+  z-index: 680;
+  left: 12px;
+  right: 12px;
+  bottom: 70px;
+  padding: 16px 16px 14px;
+  border-radius: var(--rayon);
+  background: var(--surface);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  animation: monte-resume var(--standard) var(--courbe);
+}
+
+@keyframes monte-resume {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.resume .fermer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--encre-2);
+}
+
+.resume .type {
+  margin: 0;
+  padding-right: 40px;
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+.resume h2 {
+  margin: 4px 0 2px;
+  padding-right: 40px;
+  font-size: 18px;
+  color: var(--marque);
+}
+
+.resume .lieu {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  color: var(--encre-2);
+}
+
+.resume dl {
+  margin: 0 0 10px;
+  display: grid;
+  gap: 4px;
+  font-size: 13.5px;
+}
+
+.resume dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resume dt {
+  color: var(--discret);
+}
+
+.resume dd {
+  margin: 0;
+  text-align: right;
+}
+
+.vacants {
+  color: var(--attention-texte);
+  font-weight: 600;
+}
+
+.manque {
+  color: var(--attention-texte);
+}
+
+.resume .pastille {
+  margin: 0 0 10px;
+}
+
+.resume .boutons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------------ chargement */
+.chargement {
+  position: absolute;
+  z-index: 800;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--rayon-pastille);
+  background: var(--surface);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+}
+
+.roue {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--marque);
+  border-color: var(--marque) transparent var(--marque) transparent;
+  animation: tourne 0.8s linear infinite;
+}
+
+/* ------------------------------------------------- tablette et ordinateur (§ 5.3) */
+@media (min-width: 768px) {
+  .scene {
+    height: 100dvh;
+  }
+
+  .barre-haute {
+    left: 396px;
+    right: auto;
+    width: min(460px, calc(100% - 420px));
+  }
+
+  .bandeau-placement {
+    left: 396px;
+    right: 16px;
+  }
+
+  /* Le volet devient un panneau posé à gauche, toujours ouvert. */
+  .volet,
+  .volet.ouvert {
+    top: 12px;
+    left: 12px;
+    bottom: 12px;
+    right: auto;
+    width: 368px;
+    max-height: none;
+    border-radius: var(--rayon);
+    transform: none;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16);
+    animation: depuis-gauche var(--longue) var(--courbe) both;
+  }
+
+  @keyframes depuis-gauche {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+  }
+
+  .poignee-volet {
+    display: none;
+  }
+
+  .corps-volet {
+    padding-top: 16px;
+  }
+
+  .resume {
+    left: auto;
+    right: 16px;
+    bottom: 24px;
+    width: 340px;
+    animation-name: depuis-droite;
+  }
+
+  @keyframes depuis-droite {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+}

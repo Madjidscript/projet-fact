@@ -1,0 +1,171 @@
+<header class="entete">
+  <div>
+    <h1>Comptes</h1>
+    <p class="accroche">
+      @if (chargement()) { Chargement… } @else { {{ actifs() }} comptes actifs sur {{ comptes().length }} }
+      @if (!peutEcrire()) { · consultation seule }
+    </p>
+  </div>
+  @if (peutEcrire()) {
+    <button type="button" class="btn principal" (click)="nouveau()"><fact-icone nom="plus" /> Nouveau compte</button>
+  }
+</header>
+
+<div class="outils">
+  <label class="cherche">
+    <fact-icone nom="recherche" [taille]="18" />
+    <input type="search" placeholder="Rechercher un nom, un identifiant…" [ngModel]="recherche()" (ngModelChange)="recherche.set($event)"
+           aria-label="Rechercher un compte">
+  </label>
+  <label class="filtre">
+    <span class="sr">Filtrer par profil</span>
+    <select [ngModel]="filtreProfil()" (ngModelChange)="filtreProfil.set($event)">
+      <option value="">Tous les profils</option>
+      @for (p of profils(); track p.code) { <option [value]="p.code">{{ p.libelle }}</option> }
+    </select>
+  </label>
+</div>
+
+<div class="scene">
+  @if (chargement()) {
+    <ul class="liste" aria-busy="true">
+      @for (i of [1, 2, 3]; track i) { <li class="carte squelette"><span></span><span></span></li> }
+    </ul>
+  } @else {
+    <ul class="liste">
+      @for (c of visibles(); track c.identifiant; let i = $index) {
+        <li class="carte compte" [factApparition]="i" [class.inactif]="!c.actif" [class.modifie]="modifie() === c.identifiant">
+          <span class="avatar" aria-hidden="true">{{ initiales(c.nom) }}</span>
+          <div class="qui">
+            <h2>{{ c.nom }}</h2>
+            <p class="donnee">{{ c.identifiant }}@if (c.fonction) { <span class="texte"> · {{ c.fonction }}</span> }</p>
+          </div>
+          <div class="etiquettes">
+            <span class="pastille info">{{ c.libelleProfil }}</span>
+            @if (!c.actif) { <span class="pastille neutre">Désactivé</span> }
+            @if (c.actif && c.doitChanger) { <span class="pastille attention">Mot de passe provisoire</span> }
+            @if (c.droits.length) { <span class="pastille accent">+ {{ c.droits.length }} droit{{ c.droits.length > 1 ? 's' : '' }}</span> }
+          </div>
+          <p class="connexion">
+            {{ c.derniereConnexion ? 'Dernière connexion ' : 'Jamais connecté' }}<span class="donnee">{{ c.derniereConnexion ? f(c.derniereConnexion) : '' }}</span>
+          </p>
+          @if (peutEcrire()) {
+            <div class="actions">
+              <button type="button" class="btn petit" (click)="modifier(c)"><fact-icone nom="crayon" [taille]="16" /> Modifier</button>
+              <button type="button" class="btn petit" (click)="aConfirmer.set({ genre: 'reinitialiser', compte: c })" [disabled]="!c.actif">
+                <fact-icone nom="cle" [taille]="16" /> Réinitialiser
+              </button>
+              <button type="button" class="btn petit" (click)="aConfirmer.set({ genre: 'basculer', compte: c })"
+                      [disabled]="c.identifiant === auth.compte()?.identifiant">
+                {{ c.actif ? 'Désactiver' : 'Réactiver' }}
+              </button>
+            </div>
+          }
+        </li>
+      } @empty {
+        <li class="plein">
+          <fact-etat-vide icone="comptes" titre="Aucun compte ne correspond" message="Modifiez la recherche ou le filtre de profil." />
+        </li>
+      }
+    </ul>
+  }
+
+  <fact-panneau-lateral [page]="true" [titre]="creation() ? 'Nouveau compte' : 'Modifier le compte'" [ouvert]="ouvert()" (fermer)="ouvert.set(false)">
+    <form class="formulaire" (ngSubmit)="enregistrer()" novalidate>
+      <label class="champ">
+        <input type="text" name="identifiant" placeholder=" " [ngModel]="saisie().identifiant" (ngModelChange)="champ('identifiant', $event)"
+               [disabled]="!creation()" autocapitalize="none" spellcheck="false" autocomplete="off" required>
+        <span>Identifiant</span>
+        @if (creation()) { <small class="aide-champ">3 à 40 caractères : lettres minuscules, chiffres, point, tiret.</small> }
+      </label>
+      <label class="champ">
+        <input type="text" name="nom" placeholder=" " [ngModel]="saisie().nom" (ngModelChange)="champ('nom', $event)" autocomplete="off" required>
+        <span>Nom et prénoms</span>
+      </label>
+      <label class="champ">
+        <input type="text" name="fonction" placeholder=" " [ngModel]="saisie().fonction" (ngModelChange)="champ('fonction', $event)" autocomplete="off">
+        <span>Fonction</span>
+      </label>
+      <label class="champ">
+        <input type="email" name="email" placeholder=" " [ngModel]="saisie().email" (ngModelChange)="champ('email', $event)" autocomplete="off">
+        <span>E-mail{{ saisie().profil === 'PROPRIETAIRE' ? ' (obligatoire)' : '' }}</span>
+      </label>
+      <label class="champ">
+        <input type="tel" name="telephone" placeholder=" " [ngModel]="saisie().telephone" (ngModelChange)="champ('telephone', $event)" autocomplete="off">
+        <span>Téléphone</span>
+      </label>
+
+      <label class="champ">
+        <select name="profil" [ngModel]="saisie().profil" (ngModelChange)="choisirProfil($event)" required>
+          <option value="" disabled>Choisir…</option>
+          @for (p of profils(); track p.code) { <option [value]="p.code">{{ p.libelle }}</option> }
+        </select>
+        <span>Profil</span>
+      </label>
+
+      @if (profilChoisi(); as p) {
+        <div class="profil">
+          <p><strong>{{ p.description }}.</strong> Portée : {{ libellePortee(p.portee).toLowerCase() }}.</p>
+          <ul>
+            @for (d of p.droits; track d) { <li><fact-icone nom="coche" [taille]="14" /> {{ libelleDroit(d) }}</li> }
+          </ul>
+        </div>
+
+        <fieldset>
+          <legend>Droits accordés en plus</legend>
+          <p class="aide">À n'utiliser que pour une exception : le profil suffit dans la plupart des cas.</p>
+          @for (d of droitsEnPlus(); track d.code) {
+            <label class="case">
+              <input type="checkbox" [checked]="saisie().droits.includes(d.code)" (change)="basculerDroit(d.code)"> {{ d.libelle }}
+            </label>
+          }
+        </fieldset>
+      }
+
+      @if (erreur()) {
+        <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p>
+      }
+
+      <div class="pied-formulaire">
+        <button type="button" class="btn" (click)="ouvert.set(false)">Annuler</button>
+        <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">
+          {{ creation() ? 'Créer le compte' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  </fact-panneau-lateral>
+</div>
+
+<fact-confirmation
+  [ouvert]="aConfirmer() !== null"
+  [danger]="aConfirmer()?.genre === 'basculer' && !!aConfirmer()?.compte?.actif"
+  [titre]="aConfirmer()?.genre === 'reinitialiser'
+    ? 'Réinitialiser le mot de passe ?'
+    : aConfirmer()?.compte?.actif ? 'Désactiver ce compte ?' : 'Réactiver ce compte ?'"
+  [message]="aConfirmer()?.genre === 'reinitialiser'
+    ? (aConfirmer()?.compte?.nom ?? '') + ' recevra un mot de passe provisoire, à changer à sa prochaine connexion. Ses sessions ouvertes seront fermées.'
+    : aConfirmer()?.compte?.actif
+      ? (aConfirmer()?.compte?.nom ?? '') + ' ne pourra plus se connecter et ses sessions seront fermées. Le compte reste consultable et peut être réactivé.'
+      : (aConfirmer()?.compte?.nom ?? '') + ' pourra de nouveau se connecter.'"
+  [action]="aConfirmer()?.genre === 'reinitialiser' ? 'Réinitialiser' : aConfirmer()?.compte?.actif ? 'Désactiver' : 'Réactiver'"
+  (confirmer)="confirmer()"
+  (annuler)="aConfirmer.set(null)" />
+
+<!-- Le mot de passe provisoire n'est montré qu'une fois : il n'est gardé nulle part en clair. -->
+@if (provisoire(); as p) {
+  <div class="voile" role="dialog" aria-modal="true" aria-labelledby="provisoire-titre">
+    <div class="provisoire">
+      <span class="rond"><fact-icone nom="cle" [taille]="24" /></span>
+      <h2 id="provisoire-titre">Mot de passe provisoire</h2>
+      <p>À remettre à <strong>{{ p.nom }}</strong> (<span class="donnee">{{ p.identifiant }}</span>). Il devra le changer à sa première connexion.</p>
+      <p class="secret donnee">{{ p.motDePasse }}</p>
+      <p class="aide">Il ne sera plus affiché après la fermeture de cette fenêtre.</p>
+      <div class="pied-formulaire">
+        <button type="button" class="btn" (click)="copier()">
+          <fact-icone [nom]="copie() ? 'coche' : 'copier'" [taille]="16" /> {{ copie() ? 'Copié' : 'Copier' }}
+        </button>
+        <button type="button" class="btn principal" (click)="provisoire.set(null)">J'ai noté le mot de passe</button>
+      </div>
+    </div>
+  </div>
+}

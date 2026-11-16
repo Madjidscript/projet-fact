@@ -1,0 +1,196 @@
+<header class="entete">
+  <div>
+    <h1>Rapports</h1>
+    <p class="accroche">{{ portee() }} · {{ donnees()?.periode?.libelle ?? '…' }}</p>
+  </div>
+  <div class="exports">
+    <button type="button" class="btn" [class.occupe]="export() === 'excel'" [disabled]="!!export()" (click)="exporter('excel')">
+      <fact-icone nom="telecharger" [taille]="18" /> Excel
+    </button>
+    <button type="button" class="btn principal" [class.occupe]="export() === 'pdf'" [disabled]="!!export()" (click)="exporter('pdf')">
+      <fact-icone nom="telecharger" [taille]="18" /> PDF
+    </button>
+  </div>
+</header>
+
+<section class="periode" aria-label="Période">
+  <div class="segments" role="radiogroup" aria-label="Période">
+    @for (r of [{ c: '3', l: '3 mois' }, { c: '6', l: '6 mois' }, { c: '12', l: '12 mois' }, { c: 'annee', l: 'Cette année' }]; track r.c) {
+      <button type="button" role="radio" [attr.aria-checked]="raccourci() === r.c" [class.actif]="raccourci() === r.c" (click)="choisir($any(r.c))">{{ r.l }}</button>
+    }
+  </div>
+  <div class="libre">
+    <label class="champ mois"><input type="month" name="du" [max]="maintenant" [ngModel]="du()" (ngModelChange)="changerMois('du', $event)"><span>Du mois</span></label>
+    <label class="champ mois"><input type="month" name="au" [max]="maintenant" [ngModel]="au()" (ngModelChange)="changerMois('au', $event)"><span>Au mois</span></label>
+  </div>
+</section>
+
+@if (chargement() && !donnees()) {
+  <section class="kpi">@for (i of [1, 2, 3, 4]; track i) { <div class="squelette"></div> }</section>
+  <div class="squelette haut"></div>
+} @else if (donnees(); as d) {
+  <div class="corps" [class.recharge]="chargement()">
+    <!-- ------------------------------------------------------------ chiffres clés -->
+    <section class="kpi" aria-label="Chiffres clés">
+      <article class="carte indicateur" [factApparition]="0">
+        <p class="libelle">Taux d'occupation</p>
+        <p class="valeur" [class]="tonTaux(d.occupation.taux, 85, 60)"><fact-compteur [valeur]="d.occupation.taux ?? 0" [decimales]="1" suffixe=" %" /></p>
+        <p class="note">{{ d.occupation.occupes }} lots occupés sur {{ d.occupation.lots }}</p>
+      </article>
+      <article class="carte indicateur" [factApparition]="1">
+        <p class="libelle">Taux de recouvrement</p>
+        <p class="valeur" [class]="tonTaux(d.recouvrement.taux)"><fact-compteur [valeur]="d.recouvrement.taux ?? 0" [decimales]="1" suffixe=" %" /></p>
+        <p class="note">{{ f.fcfa(d.recouvrement.regle) }} réglés sur {{ f.fcfa(d.recouvrement.attendu) }}</p>
+      </article>
+      <article class="carte indicateur" [class.alerte]="d.impayes.total > 0" [factApparition]="2">
+        <p class="libelle">Impayés en retard</p>
+        <p class="valeur" [class.critique]="d.impayes.total > 0"><fact-compteur [valeur]="d.impayes.total" suffixe=" FCFA" /></p>
+        <p class="note">{{ d.impayes.baux }} locataire(s) concerné(s)</p>
+      </article>
+      <article class="carte indicateur" [factApparition]="3">
+        <p class="libelle">Argent reçu sur la période</p>
+        <p class="valeur"><fact-compteur [valeur]="d.recouvrement.encaisse" suffixe=" FCFA" /></p>
+        <p class="note">Tous les paiements enregistrés</p>
+      </article>
+    </section>
+
+    <!-- --------------------------------------------------------------- recouvrement -->
+    <section class="carte bloc" factApparition>
+      <div class="titre-bloc">
+        <h2>Loyers attendus et réglés, mois par mois</h2>
+        <p class="legende"><span class="cle attendu"></span> Attendu <span class="cle regle"></span> Réglé</p>
+      </div>
+      <div class="colonnes" role="list" aria-label="Recouvrement par mois">
+        @for (m of barresMois(); track m.mois; let i = $index) {
+          <div class="colonne" role="listitem" [attr.aria-label]="m.long + ' : ' + pct(m.taux) + ' réglé'" [attr.title]="m.long + ' · attendu ' + f.fcfa(m.attendu) + ' · réglé ' + f.fcfa(m.regle) + ' · reçu ' + f.fcfa(m.encaisse)">
+            <span class="taux" [class]="m.ton">{{ m.etiquette }}</span>
+            <div class="piste">
+              <span class="barre attendu" [style.height.%]="m.hAttendu" [style.animation-delay.ms]="i * 40"></span>
+              <span class="barre regle" [class]="m.ton" [style.height.%]="m.hRegle" [style.animation-delay.ms]="i * 40 + 120"></span>
+            </div>
+            <span class="mois">{{ m.court }}</span>
+          </div>
+        }
+      </div>
+      <p class="aide">Le mois en cours n'est compté que pour les loyers déjà exigibles. Survolez une colonne pour le détail.</p>
+    </section>
+
+    <div class="deux">
+      <!-- ----------------------------------------------------------- occupation -->
+      <section class="carte bloc" factApparition>
+        <div class="titre-bloc">
+          <h2>Occupation</h2>
+          <div class="onglets" role="tablist" aria-label="Occupation par">
+            @for (a of [{ c: 'parCommune', l: 'Commune' }, { c: 'parGestionnaire', l: 'Gestionnaire' }, { c: 'parProprietaire', l: 'Propriétaire' }, { c: 'parBatiment', l: 'Bâtiment' }]; track a.c) {
+              <button type="button" role="tab" [attr.aria-selected]="axeOccupation() === a.c" [class.actif]="axeOccupation() === a.c" (click)="axeOccupation.set($any(a.c))">{{ a.l }}</button>
+            }
+          </div>
+        </div>
+        @if (partsOccupation().length) { <fact-barres [parts]="partsOccupation()" titre="Taux d'occupation" /> }
+        @else { <p class="vide">Aucun lot dans ce périmètre.</p> }
+      </section>
+
+      <!-- --------------------------------------------------- recouvrement par axe -->
+      <section class="carte bloc" factApparition>
+        <div class="titre-bloc">
+          <h2>Recouvrement</h2>
+          <div class="onglets" role="tablist" aria-label="Recouvrement par">
+            @for (a of [{ c: 'parGestionnaire', l: 'Gestionnaire' }, { c: 'parBatiment', l: 'Bâtiment' }]; track a.c) {
+              <button type="button" role="tab" [attr.aria-selected]="axeRecouvrement() === a.c" [class.actif]="axeRecouvrement() === a.c" (click)="axeRecouvrement.set($any(a.c))">{{ a.l }}</button>
+            }
+          </div>
+        </div>
+        @if (partsRecouvrement().length) { <fact-barres [parts]="partsRecouvrement()" titre="Taux de recouvrement" /> }
+        @else { <p class="vide">Aucun loyer attendu sur la période.</p> }
+        <p class="aide">Les plus faibles en tête : c'est là qu'il faut relancer.</p>
+      </section>
+    </div>
+
+    <!-- ---------------------------------------------------------------- impayés -->
+    <section class="carte bloc" factApparition>
+      <div class="titre-bloc">
+        <h2>Impayés par ancienneté</h2>
+        <a class="btn discret petit" routerLink="/loyers">Voir les loyers en retard <fact-icone nom="droite" [taille]="16" /></a>
+      </div>
+      <div class="anciennete">
+        @for (a of d.impayes.parAnciennete; track a.ordre) {
+          <div class="tranche" [class]="a.ordre === 1 ? 'attention' : 'critique'">
+            <span class="duree">{{ a.libelle }}</span>
+            <strong class="donnee">{{ f.fcfa(a.montant) }}</strong>
+            <span class="jauge"><span [style.width.%]="(a.montant / maxAnciennete()) * 100"></span></span>
+            <small>{{ a.baux }} locataire(s)</small>
+          </div>
+        }
+      </div>
+      @if (d.impayes.dossiers.length) {
+        <h3>Les plus gros retards</h3>
+        <ul class="dossiers">
+          @for (x of d.impayes.dossiers.slice(0, 8); track x.idLot) {
+            <li>
+              <a [routerLink]="['/patrimoine', x.idBatiment]" [queryParams]="{ lot: x.idLot }">
+                <span class="qui"><strong>{{ x.occupant }}</strong><small>{{ x.batiment }} · lot {{ x.lot }}@if (x.telephone) { · <span class="donnee">{{ x.telephone }}</span> }</small></span>
+                <span class="combien"><strong class="donnee">{{ f.fcfa(x.montant) }}</strong><small>{{ x.moisRetard }} mois</small></span>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <div class="deux">
+      <!-- --------------------------------------------------------------- vacance -->
+      <section class="carte bloc" factApparition>
+        <div class="titre-bloc">
+          <h2>Durée de vacance</h2>
+          <div class="onglets" role="tablist" aria-label="Vacance par">
+            <button type="button" role="tab" [attr.aria-selected]="axeVacance() === 'parType'" [class.actif]="axeVacance() === 'parType'" (click)="axeVacance.set('parType')">Type de lot</button>
+            <button type="button" role="tab" [attr.aria-selected]="axeVacance() === 'parQuartier'" [class.actif]="axeVacance() === 'parQuartier'" (click)="axeVacance.set('parQuartier')">Quartier</button>
+          </div>
+        </div>
+        <p class="phrase">
+          @if (d.vacance.relocations) { Un lot libéré met en moyenne <strong>{{ d.vacance.moyenne }} jours</strong> à être reloué ({{ d.vacance.relocations }} relocation(s) sur la période). }
+          @else { Aucune relocation sur la période. Aujourd'hui, <strong>{{ d.vacance.enCours.lots }} lot(s)</strong> sont libres depuis {{ d.vacance.enCours.moyenne ?? 0 }} jours en moyenne. }
+        </p>
+        @if (partsVacance().length) { <fact-barres [parts]="partsVacance()" titre="Durée de vacance" /> }
+      </section>
+
+      <!-- ------------------------------------------------------------ loyer au m² -->
+      <section class="carte bloc" factApparition>
+        <div class="titre-bloc">
+          <h2>Loyer moyen au m²</h2>
+          <div class="onglets" role="tablist" aria-label="Loyer au m² par">
+            <button type="button" role="tab" [attr.aria-selected]="axeM2() === 'parQuartier'" [class.actif]="axeM2() === 'parQuartier'" (click)="axeM2.set('parQuartier')">Quartier</button>
+            <button type="button" role="tab" [attr.aria-selected]="axeM2() === 'parType'" [class.actif]="axeM2() === 'parType'" (click)="axeM2.set('parType')">Type de lot</button>
+          </div>
+        </div>
+        <p class="phrase">@if (d.loyerM2.moyenne !== null) { <strong>{{ f.fcfa(d.loyerM2.moyenne) }}</strong> par m² et par mois, sur {{ d.loyerM2.lots }} lots dont la surface est connue. } @else { Renseignez la surface des lots pour obtenir cet indicateur. }</p>
+        @if (partsM2().length) { <fact-barres [parts]="partsM2()" titre="Loyer au m²" /> }
+      </section>
+    </div>
+
+    <div class="deux">
+      <!-- ---------------------------------------------------------- interventions -->
+      <section class="carte bloc" factApparition>
+        <div class="titre-bloc">
+          <h2>Délai de traitement des pannes</h2>
+          <div class="onglets" role="tablist" aria-label="Délai par">
+            <button type="button" role="tab" [attr.aria-selected]="axeDelai() === 'parCategorie'" [class.actif]="axeDelai() === 'parCategorie'" (click)="axeDelai.set('parCategorie')">Catégorie</button>
+            <button type="button" role="tab" [attr.aria-selected]="axeDelai() === 'parPrestataire'" [class.actif]="axeDelai() === 'parPrestataire'" (click)="axeDelai.set('parPrestataire')">Prestataire</button>
+          </div>
+        </div>
+        @if (d.interventions.closes) {
+          <p class="phrase"><strong>{{ pct(d.interventions.delaiMoyen).replace(' %', '') }} jours</strong> en moyenne entre le signalement et la clôture, pour {{ d.interventions.closes }} intervention(s) · coût {{ f.fcfa(d.interventions.cout) }}.</p>
+          <fact-barres [parts]="partsDelai()" titre="Délai moyen" />
+        } @else {
+          <p class="vide">Aucune intervention clôturée sur la période.</p>
+        }
+      </section>
+
+      <!-- -------------------------------------------------------------- demandes -->
+      <section class="carte bloc attente" factApparition>
+        <div class="titre-bloc"><h2>Demandes reçues par le site</h2></div>
+        <fact-etat-vide icone="info" titre="Bientôt" message="Le nombre de demandes de visite et de devis, et la part qui aboutit, s'afficheront ici une fois le nouveau site en ligne." />
+      </section>
+    </div>
+  </div>
+}

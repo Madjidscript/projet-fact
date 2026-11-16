@@ -1,0 +1,138 @@
+<div class="tr">
+  <fact-entete-terrain titre="Recensement" retour="/terrain" />
+
+  @if (termine(); as nom) {
+    <section class="tr-fini carte" role="status">
+      <svg class="tr-coche" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" /><path d="m15 27 7.500 7.500L37 19" /></svg>
+      <h2>« {{ nom }} » est enregistré</h2>
+      <p>{{ terrain.enLigne() && auth.connecte() ? 'Il part maintenant vers l\'agence.' : 'Il est gardé dans le téléphone et partira au retour du réseau.' }}
+        Le gestionnaire le contrôlera avant de le valider.</p>
+      <button type="button" class="btn principal grand" (click)="recommencer()"><fact-icone nom="plus" [taille]="18" /> Recenser un autre bâtiment</button>
+    </section>
+  } @else {
+    <!-- --------------------------------------------------------------- étapes -->
+    <nav class="tr-etapes" aria-label="Étapes">
+      @for (e of etapes; track e.cle; let i = $index) {
+        <button type="button" [class.actif]="etape() === e.cle" [class.fait]="i < rang()" (click)="aller(e.cle)" [attr.aria-current]="etape() === e.cle ? 'step' : null">
+          <span>{{ i + 1 }}</span>{{ e.libelle }}
+        </button>
+      }
+    </nav>
+
+    @switch (etape()) {
+      @case ('position') {
+        <section class="tr-bloc">
+          <h2>Où est le bâtiment ?</h2>
+          <p class="tr-aide">Placez-vous devant l'entrée et touchez <strong>« Ma position »</strong>. Ajustez le point sur l'image satellite si besoin.</p>
+          <fact-carte-position class="tr-carte" [position]="position()" [modifiable]="true" (change)="placer($event)" />
+          @if (position(); as p) {
+            <p class="tr-precision" [class.bonne]="(p.precision ?? 99) <= 15" [class.moyenne]="(p.precision ?? 99) > 15 && (p.precision ?? 99) <= 40">
+              <fact-icone nom="cible" [taille]="18" />
+              @if (p.precision) { Précision : ± {{ p.precision | number: '1.0-0' }} m — {{ p.precision <= 15 ? 'bonne' : p.precision <= 40 ? 'correcte' : 'faible, approchez-vous ou attendez un peu' }} }
+              @else { Point placé à la main sur la carte }
+            </p>
+          }
+        </section>
+      }
+
+      @case ('photos') {
+        <section class="tr-bloc">
+          <h2>Photos</h2>
+          <p class="tr-aide">La façade, l'entrée, la rue. Elles sont réduites pour prendre peu de place.</p>
+          <ul class="tr-photos">
+            @for (p of photos(); track p.url; let i = $index) {
+              <li><img [src]="p.url" [alt]="'Photo ' + (i + 1)"><button type="button" (click)="retirerPhoto(i)" aria-label="Retirer la photo"><fact-icone nom="fermer" [taille]="16" /></button></li>
+            }
+            <li class="tr-prendre">
+              <label>
+                <input type="file" accept="image/*" capture="environment" multiple (change)="ajouterPhotos($event)">
+                <fact-icone nom="photo" [taille]="28" /><span>Prendre une photo</span>
+              </label>
+            </li>
+          </ul>
+        </section>
+      }
+
+      @case ('batiment') {
+        <section class="tr-bloc">
+          <h2>Le bâtiment</h2>
+          <div class="tr-form">
+            <label class="champ"><input type="text" name="nom" placeholder=" " [(ngModel)]="s.nom" autocomplete="off"><span>Nom (ou ce qui est écrit sur la façade)</span></label>
+            <label class="champ">
+              <select name="type" [(ngModel)]="s.type">
+                @for (v of ref.liste('TYPE_BATIMENT'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }
+              </select>
+              <span>Type</span>
+            </label>
+            <fact-choix name="commune" libelle="Commune" [options]="ref.communes() | options : opt.commune" [(ngModel)]="s.idCommune" (ngModelChange)="s.idQuartier = null" />
+            <fact-choix name="quartier" libelle="Quartier" vide="Non précisé" [options]="ref.quartiers(s.idCommune) | options : opt.quartier"
+                        [(ngModel)]="s.idQuartier" [disabled]="!s.idCommune" />
+            <label class="champ"><input type="text" name="adresse" placeholder=" " [(ngModel)]="s.adresse" autocomplete="off"><span>Repère (près de la pharmacie…)</span></label>
+            <label class="champ"><input type="number" inputmode="numeric" name="niveaux" placeholder=" " min="0" max="60" [(ngModel)]="s.niveaux"><span>Nombre de niveaux</span></label>
+            @if (preparation(); as prep) {
+              <fact-choix name="proprietaire" libelle="Propriétaire" [seuilRecherche]="0" [options]="prep.proprietaires | options : optionProprietaire"
+                          [(ngModel)]="s.idProprietaire" />
+            }
+            <label class="champ"><textarea name="description" placeholder=" " rows="3" [(ngModel)]="s.description"></textarea><span>Observations (état, accès, gardien…)</span></label>
+          </div>
+        </section>
+      }
+
+      @case ('lots') {
+        <section class="tr-bloc">
+          <h2>Les lots <small>{{ lots().length }}</small></h2>
+          @if (!lots().length) {
+            <div class="tr-generer carte">
+              <p>Un immeuble régulier ? Créez tous les lots d'un coup, puis corrigez ce qui diffère.</p>
+              <div class="tr-trio">
+                <label class="champ"><input type="number" inputmode="numeric" name="gNiveaux" placeholder=" " min="1" max="40" [(ngModel)]="generateur.niveaux"><span>Niveaux</span></label>
+                <label class="champ"><input type="number" inputmode="numeric" name="gPortes" placeholder=" " min="1" max="20" [(ngModel)]="generateur.parNiveau"><span>Portes par niveau</span></label>
+                <label class="champ">
+                  <select name="gType" [(ngModel)]="generateur.type">@for (v of ref.liste('TYPE_LOT'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }</select>
+                  <span>Type</span>
+                </label>
+              </div>
+              <label class="case"><input type="checkbox" name="gRdc" [(ngModel)]="generateur.rdc"> Le rez-de-chaussée compte des lots</label>
+              <button type="button" class="btn principal" (click)="generer()">Créer {{ (generateur.niveaux || 0) * (generateur.parNiveau || 0) }} lots</button>
+            </div>
+          }
+          <ul class="tr-lots">
+            @for (l of lots(); track $index; let i = $index) {
+              <li class="carte">
+                <div class="tr-lot-ligne">
+                  <label class="champ court"><input type="text" [name]="'num' + i" placeholder=" " [(ngModel)]="l.numero" (ngModelChange)="lotChange()" autocomplete="off"><span>Porte</span></label>
+                  <label class="champ court"><input type="number" inputmode="numeric" [name]="'eta' + i" placeholder=" " [(ngModel)]="l.etage" (ngModelChange)="lotChange()"><span>Étage</span></label>
+                  <button type="button" class="tr-suppr" (click)="retirerLot(i)" [attr.aria-label]="'Retirer le lot ' + l.numero"><fact-icone nom="fermer" [taille]="18" /></button>
+                </div>
+                <div class="tr-lot-ligne">
+                  <label class="champ">
+                    <select [name]="'typ' + i" [(ngModel)]="l.type" (ngModelChange)="lotChange()">@for (v of ref.liste('TYPE_LOT'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }</select>
+                    <span>Type</span>
+                  </label>
+                  <div class="tr-statut" role="radiogroup" [attr.aria-label]="'Occupation du lot ' + l.numero">
+                    <button type="button" role="radio" [attr.aria-checked]="l.statut === 'OCCUPE'" [class.actif]="l.statut === 'OCCUPE'" (click)="l.statut = 'OCCUPE'; lotChange()">Occupé</button>
+                    <button type="button" role="radio" [attr.aria-checked]="l.statut === 'VACANT'" [class.actif]="l.statut === 'VACANT'" (click)="l.statut = 'VACANT'; lotChange()">Libre</button>
+                    <button type="button" role="radio" [attr.aria-checked]="l.statut === 'EN_TRAVAUX'" [class.actif]="l.statut === 'EN_TRAVAUX'" (click)="l.statut = 'EN_TRAVAUX'; lotChange()">Travaux</button>
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+          <button type="button" class="btn" (click)="ajouterLot()"><fact-icone nom="plus" [taille]="18" /> Ajouter un lot</button>
+        </section>
+      }
+    }
+
+    @if (erreur()) { <p class="tr-erreur" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+
+    <!-- ------------------------------------------------------------- pied fixe -->
+    <footer class="tr-pied">
+      @if (rang() < etapes.length - 1) {
+        <button type="button" class="btn grand" (click)="suivante()">Suivant <fact-icone nom="droite" [taille]="18" /></button>
+      }
+      <button type="button" class="btn principal grand" [class.occupe]="enregistrement()" [disabled]="enregistrement()" (click)="enregistrer()">
+        <fact-icone nom="coche" [taille]="18" /> Enregistrer
+      </button>
+    </footer>
+  }
+</div>

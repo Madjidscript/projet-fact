@@ -1,0 +1,215 @@
+<div class="es">
+  @if (chargement()) {
+    <div class="es-squelette haut"></div>
+    <div class="es-kpi">@for (i of [1, 2, 3, 4]; track i) { <div class="es-squelette"></div> }</div>
+  } @else if (espace(); as e) {
+    @if (e.apercu) {
+      <p class="es-apercu"><fact-icone nom="info" [taille]="18" /> Aperçu de l'espace de <strong>{{ e.proprietaire.nomComplet }}</strong>, tel qu'il le voit. Seul le propriétaire peut répondre aux devis.</p>
+    }
+
+    <!-- -------------------------------------------------------------------- accueil -->
+    <header class="es-entete">
+      <p class="es-sur">Espace propriétaire · {{ e.proprietaire.reference }}</p>
+      <h1>Bonjour {{ prenom() }}</h1>
+      <p class="es-accroche">Vos biens confiés à FACT Immobilier, en un coup d'œil.</p>
+    </header>
+
+    <section class="es-kpi" aria-label="Chiffres clés">
+      <article class="carte es-chiffre" [factApparition]="0">
+        <span class="es-pic"><fact-icone nom="batiment" /></span>
+        <p class="es-valeur"><fact-compteur [valeur]="totaux().batiments" /></p>
+        <p>bâtiment{{ totaux().batiments > 1 ? 's' : '' }} · {{ totaux().lots }} lots</p>
+      </article>
+      <article class="carte es-chiffre" [factApparition]="1">
+        <span class="es-pic bon"><fact-icone nom="cle" /></span>
+        <p class="es-valeur"><fact-compteur [valeur]="totaux().taux" [decimales]="1" suffixe=" %" /></p>
+        <p>occupés · {{ totaux().occupes }} sur {{ totaux().lots }}</p>
+      </article>
+      <article class="carte es-chiffre" [factApparition]="2">
+        <span class="es-pic"><fact-icone nom="monnaie" /></span>
+        <p class="es-valeur petite"><fact-compteur [valeur]="e.loyers.regle" suffixe=" FCFA" /></p>
+        <p>loyers réglés sur 12 mois</p>
+      </article>
+      <article class="carte es-chiffre" [class.alerte]="e.loyers.impaye > 0" [factApparition]="3">
+        <span class="es-pic" [class.critique]="e.loyers.impaye > 0" [class.bon]="!e.loyers.impaye"><fact-icone [nom]="e.loyers.impaye ? 'alerte' : 'coche'" /></span>
+        <p class="es-valeur petite"><fact-compteur [valeur]="e.loyers.impaye" suffixe=" FCFA" /></p>
+        <p>{{ e.loyers.impaye ? 'd\'impayés, suivis par l\'agence' : 'aucun impayé' }}</p>
+      </article>
+    </section>
+
+    <!-- ------------------------------------------------------------ devis à approuver -->
+    @if (aRepondre().length) {
+      <section class="es-bloc es-attention" aria-label="Devis à approuver">
+        <h2><fact-icone nom="alerte" [taille]="20" /> {{ aRepondre().length > 1 ? 'Des devis attendent' : 'Un devis attend' }} votre réponse</h2>
+        @for (i of aRepondre(); track i.id) {
+          <article class="carte es-devis" [id]="'devis-' + i.id">
+            <div class="es-devis-tete">
+              <div>
+                <p class="es-sur">{{ i.reference }} · {{ i.categorie }} · {{ i.urgence }}</p>
+                <h3>{{ i.titre }}</h3>
+                <p class="discret">{{ i.batiment }}@if (i.numeroLot) { · lot {{ i.numeroLot }} }@if (i.prestataire) { · {{ i.prestataire }} }</p>
+              </div>
+              <p class="es-montant">{{ f.fcfa(i.devis) }}<small>votre seuil : {{ f.fcfa(i.seuil) }}</small></p>
+            </div>
+            @if (i.constat) { <p class="es-constat"><strong>Constat :</strong> {{ i.constat }}</p> }
+            @if (reponse()?.id === i.id) {
+              <form class="es-reponse" (ngSubmit)="confirmer()" novalidate>
+                <label class="champ"><input type="text" name="motif" placeholder=" " maxlength="250" [(ngModel)]="motif" autocomplete="off">
+                  <span>{{ reponse()!.accord ? 'Un mot pour l\'agence (facultatif)' : 'Pourquoi refusez-vous ?' }}</span></label>
+                <div class="es-pied">
+                  <button type="button" class="btn" (click)="reponse.set(null)">Annuler</button>
+                  <button type="submit" class="btn" [class.principal]="reponse()!.accord" [class.danger]="!reponse()!.accord" [class.occupe]="envoi()" [disabled]="envoi()">
+                    {{ reponse()!.accord ? 'Confirmer mon accord' : 'Confirmer mon refus' }}</button>
+                </div>
+              </form>
+            } @else if (!e.apercu) {
+              <div class="es-pied">
+                <button type="button" class="btn" (click)="repondre(i.id, false)">Refuser</button>
+                <button type="button" class="btn principal" (click)="repondre(i.id, true)"><fact-icone nom="coche" [taille]="18" /> Donner mon accord</button>
+              </div>
+            }
+          </article>
+        }
+      </section>
+    }
+
+    <div class="es-deux">
+      <!-- --------------------------------------------------------------- mes biens -->
+      <section class="es-bloc" aria-label="Mes biens">
+        <h2>Mes biens</h2>
+        @if (e.batiments.length) {
+          <div class="carte es-carte"><div #carte class="es-leaflet"></div>
+            <p class="es-cle-carte"><span><i class="bon"></i> Tout est loué et payé</span><span><i class="attention"></i> Des lots à louer</span><span><i class="critique"></i> Des loyers en retard</span></p>
+          </div>
+        }
+        <ul class="es-batiments">
+          @for (b of e.batiments; track b.id; let n = $index) {
+            <li [id]="'bat-' + b.id" [factApparition]="n">
+              <button type="button" class="carte es-bat" [attr.aria-expanded]="ouvert() === b.id" (click)="ouvert.set(ouvert() === b.id ? null : b.id)">
+                <span class="es-bat-texte">
+                  <strong>{{ b.nom }}</strong>
+                  <small>{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }} · {{ b.occupes }}/{{ b.lots }} lots occupés</small>
+                </span>
+                <span class="es-bat-etats">
+                  @if (b.impaye) { <span class="pastille critique">{{ f.fcfa(b.impaye) }} impayés</span> }
+                  @if (b.interventions) { <span class="pastille attention">{{ b.interventions }} chantier{{ b.interventions > 1 ? 's' : '' }} en cours</span> }
+                  <fact-icone [nom]="ouvert() === b.id ? 'haut' : 'bas'" [taille]="18" />
+                </span>
+              </button>
+              @if (ouvert() === b.id) {
+                <ul class="es-lots">
+                  @for (l of b.lotsDetail; track l.numero) {
+                    <li>
+                      <span class="es-porte donnee">{{ l.numero }}</span>
+                      <span class="es-lot-texte"><strong>{{ l.type }}</strong><small>{{ l.etage === 0 ? 'Rez-de-chaussée' : 'Étage ' + l.etage }}@if (l.loyer) { · {{ f.fcfa(l.loyer) }} / mois }</small></span>
+                      <span class="pastille" [class]="tonLot(l)">
+                        @if (l.moisRetard) { {{ l.moisRetard }} mois de retard } @else if (l.loyer) { Loué, à jour } @else { {{ l.libelleStatut }} }
+                      </span>
+                    </li>
+                  }
+                </ul>
+              }
+            </li>
+          } @empty {
+            <li class="es-vide">Aucun bien n'est encore rattaché à votre fiche.</li>
+          }
+        </ul>
+      </section>
+
+      <div class="es-colonne">
+        <!-- ------------------------------------------------------------ loyers -->
+        <section class="es-bloc carte">
+          <h2>Loyers des 12 derniers mois</h2>
+          <div class="es-colonnes" role="list" aria-label="Loyers par mois">
+            @for (m of barres(); track m.mois; let i = $index) {
+              <div role="listitem" class="es-col" [attr.title]="m.court + ' : attendu ' + f.fcfa(m.attendu) + ', réglé ' + f.fcfa(m.regle)">
+                <div class="es-piste"><span class="a" [style.height.%]="m.hA" [style.animation-delay.ms]="i * 40"></span><span class="r" [style.height.%]="m.hR" [style.animation-delay.ms]="i * 40 + 100"></span></div>
+                <small>{{ m.court }}</small>
+              </div>
+            }
+          </div>
+          <p class="es-legende"><span class="cle a"></span> Attendu <span class="cle r"></span> Réglé · les noms de vos locataires restent confidentiels.</p>
+        </section>
+
+        <!-- ------------------------------------------------------------ gestionnaire -->
+        <section class="es-bloc carte">
+          <h2>Votre contact à l'agence</h2>
+          @for (g of e.gestionnaires; track g.id) {
+            <div class="es-contact">
+              <span class="es-avatar">{{ g.nom.replace('ESSAI ', '').slice(0, 1) }}</span>
+              <div>
+                <strong>{{ g.nom }}</strong>
+                <small>{{ g.role }}{{ g.fonction ? ' · ' + g.fonction : '' }} — {{ g.batiments }}</small>
+                <div class="es-boutons">
+                  @if (g.telephone) {
+                    <a class="btn petit" [href]="tel(g.telephone)"><fact-icone nom="telephone" [taille]="16" /> Appeler</a>
+                    <a class="btn petit" [href]="whatsapp(g.telephone)" target="_blank" rel="noopener"><fact-icone nom="whatsapp" [taille]="16" /> WhatsApp</a>
+                  }
+                  @if (g.email) { <a class="btn petit" [href]="'mailto:' + g.email"><fact-icone nom="courrier" [taille]="16" /> E-mail</a> }
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="es-contact">
+              <span class="es-avatar">F</span>
+              <div><strong>FACT Immobilier</strong><small>Votre gestionnaire vous sera bientôt présenté.</small>
+                <div class="es-boutons"><a class="btn petit" href="tel:+2252722469138"><fact-icone nom="telephone" [taille]="16" /> 27 22 46 91 38</a></div>
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------- travaux -->
+    <section class="es-bloc">
+      <h2>Travaux</h2>
+      <ul class="es-travaux">
+        @for (i of enCours(); track i.id) {
+          <li class="carte">
+            <span class="pastille info">{{ etapes[i.statut] }}</span>
+            <strong>{{ i.titre }}</strong>
+            <small>{{ i.batiment }}@if (i.numeroLot) { · lot {{ i.numeroLot }} } · {{ i.categorie }}@if (i.devis) { · devis {{ f.fcfa(i.devis) }} }
+              @if (i.accordDecision === 'ACCORD') { · accord donné } @if (i.accordDecision === 'REFUS') { · refusé : {{ i.accordMotif }} }</small>
+          </li>
+        }
+        @for (i of terminees(); track i.id) {
+          <li class="carte termine">
+            <span class="pastille bon">{{ etapes[i.statut] }}</span>
+            <strong>{{ i.titre }}</strong>
+            <small>{{ i.batiment }}@if (i.cout !== null) { · coût {{ f.fcfa(i.cout) }}{{ i.imputation === 'PROPRIETAIRE' ? ', à votre charge' : '' }} }</small>
+          </li>
+        }
+        @if (!enCours().length && !terminees().length) { <li class="es-vide">Aucuns travaux ces six derniers mois.</li> }
+      </ul>
+    </section>
+
+    <!-- -------------------------------------------------------------- documents -->
+    <section class="es-bloc carte">
+      <h2>Vos documents</h2>
+      <div class="es-docs">
+        <div>
+          <h3>Relevé de gestion</h3>
+          <p class="discret">Loyers encaissés, honoraires, travaux et montant reversé.</p>
+          <div class="es-mois">
+            <label class="champ"><input type="month" name="du" [max]="maintenant" [ngModel]="du()" (ngModelChange)="du.set($event)"><span>Du mois</span></label>
+            <label class="champ"><input type="month" name="au" [max]="maintenant" [ngModel]="au()" (ngModelChange)="au.set($event)"><span>Au mois</span></label>
+          </div>
+          <button type="button" class="btn principal" [class.occupe]="pdf()" [disabled]="pdf()" (click)="relevePdf()"><fact-icone nom="telecharger" [taille]="18" /> Télécharger le relevé</button>
+        </div>
+        <div>
+          <h3>Mandat</h3>
+          @for (m of e.mandats; track m.id) {
+            <p class="es-mandat">
+              <span><strong>{{ m.reference }}</strong> · {{ m.libelleType }} · {{ m.statut === 'ACTIF' ? 'en cours jusqu\'au ' + f.date(m.dateFin) : m.statut === 'RESILIE' ? 'résilié' : m.statut === 'ECHU' ? 'échu' : 'à venir' }}</span>
+              <small>Honoraires {{ m.tauxHonoraires.toString().replace('.', ',') }} %@if (m.seuilTravaux) { · accord demandé au-delà de {{ f.fcfa(m.seuilTravaux) }} }</small>
+              @if (document(m)) { <button type="button" class="btn petit" (click)="documentMandat(m)"><fact-icone nom="telecharger" [taille]="16" /> Mandat signé</button> }
+            </p>
+          } @empty {
+            <p class="discret">Votre mandat n'est pas encore saisi : votre gestionnaire s'en occupe.</p>
+          }
+        </div>
+      </div>
+    </section>
+  }
+</div>

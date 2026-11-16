@@ -1,0 +1,101 @@
+/* Formulaires du patrimoine, posés dans le panneau latéral. */
+
+:host {
+  display: block;
+}
+
+.formulaire {
+  display: grid;
+  gap: 16px;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 12px;
+}
+
+legend {
+  margin-bottom: 10px;
+  padding: 0;
+  font: 600 13px var(--titre);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--discret);
+}
+
+.duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.retirer {
+  justify-self: start;
+}
+
+.aide {
+  margin: 0;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--rayon-2);
+  font-size: 13.5px;
+}
+
+.note.attention {
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+}
+
+.cases {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+}
+
+.cases .case {
+  font-size: 14px;
+  min-height: 38px;
+}
+
+.message {
+  display: flex;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: var(--rayon-2);
+  background: var(--critique-clair);
+  color: var(--critique-texte);
+  font-size: 14px;
+  animation: montee var(--standard) var(--courbe);
+}
+
+.pied {
+  position: sticky;
+  bottom: -16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 4px -18px -16px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--filet);
+  background: var(--surface);
+}
+
+.pied .gauche {
+  margin-right: auto;
+}

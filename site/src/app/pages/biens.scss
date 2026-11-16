@@ -1,0 +1,333 @@
+:host {
+  display: block;
+}
+
+.filtres-zone {
+  position: relative;
+  z-index: 5;
+  margin-top: -32px;
+}
+
+.filtres {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--filet);
+  box-shadow: 0 24px 50px -36px rgba(11, 18, 34, 0.6);
+}
+
+.ligne-filtres {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.types {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.puce {
+  flex: none;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--filet-fort);
+  border-radius: var(--rayon-pastille);
+  background: var(--surface);
+  color: var(--encre-2);
+  font-weight: 500;
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe), border-color var(--courte) var(--courbe);
+}
+
+.puce.actif {
+  border-color: var(--nuit);
+  background: var(--nuit);
+  color: #fff;
+}
+
+.plus {
+  justify-self: start;
+}
+
+.plus-criteres {
+  display: grid;
+  gap: 12px;
+  animation: montee var(--standard) var(--courbe) both;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.options legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--encre-2);
+}
+
+.resultats {
+  padding-top: 22px;
+  padding-bottom: 32px;
+}
+
+.barre-resultats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.compte {
+  margin: 0;
+  color: var(--encre-2);
+}
+
+.compte strong {
+  color: var(--nuit);
+  font-size: 18px;
+}
+
+.outils {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.tri {
+  min-width: 190px;
+}
+
+.tri select {
+  min-height: 46px;
+}
+
+/* ------------------------------------------------------------------ alerte */
+.alerte-recherche {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 16px 0 18px;
+  padding: 12px 14px;
+  border: 1px dashed var(--filet-fort);
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+
+.aide {
+  margin: 0;
+  color: var(--discret);
+  font-size: 13.5px;
+}
+
+.form-alerte {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.titre-alerte {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding-right: 64px;
+  color: var(--encre-2);
+}
+
+.ligne-alerte {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.fermer-alerte {
+  position: absolute;
+  right: 0;
+  top: -6px;
+}
+
+.ok {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  color: var(--bon-texte);
+}
+
+.ko {
+  margin: 0 0 12px;
+  color: var(--critique-texte);
+  animation: secousse var(--standard) var(--courbe);
+}
+
+/* --------------------------------------------------------- liste et carte */
+.partage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.colonne-carte {
+  display: none;
+}
+
+.partage.vue-carte .colonne-liste {
+  display: none;
+}
+
+.partage.vue-carte .colonne-carte {
+  display: block;
+  height: calc(100svh - 230px);
+  min-height: 380px;
+}
+
+site-carte-biens {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--filet);
+}
+
+.aide-carte {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--discret);
+  font-size: 13px;
+}
+
+.grille-biens.voile {
+  opacity: 0.55;
+  transition: opacity var(--standard) var(--courbe);
+}
+
+.squelette {
+  aspect-ratio: 4 / 4.4;
+  border-radius: 18px;
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.vide {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 44px 20px;
+  text-align: center;
+  border: 1px dashed var(--filet-fort);
+  border-radius: 20px;
+  background: var(--surface-2);
+}
+
+.vide h2 {
+  margin: 6px 0 0;
+  font: 700 22px var(--titre);
+  color: var(--nuit);
+}
+
+.vide p {
+  max-width: 52ch;
+  margin: 0;
+  color: var(--encre-2);
+}
+
+.rond {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--nuit-clair);
+  color: var(--nuit);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Sur téléphone, un bouton flottant bascule entre la liste et la carte. */
+.bascule {
+  position: fixed;
+  z-index: 700;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--rayon-pastille);
+  background: var(--nuit);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 14px 30px -12px rgba(11, 18, 34, 0.7);
+}
+
+@media (min-width: 640px) {
+  .ligne-filtres {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ligne-filtres {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .plus-criteres .ligne-filtres {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .bascule {
+    display: none;
+  }
+
+  .partage,
+  .partage.vue-carte {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .partage .colonne-liste,
+  .partage.vue-carte .colonne-liste {
+    display: block;
+  }
+
+  .partage .colonne-carte,
+  .partage.vue-carte .colonne-carte {
+    display: block;
+    position: sticky;
+    top: 78px;
+    height: calc(100vh - 110px);
+  }
+
+  .partage .grille-biens {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  site-carte-biens {
+    height: calc(100% - 30px);
+  }
+}

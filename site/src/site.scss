@@ -1,0 +1,402 @@
+/* Styles propres au site public, en complément des jetons et composants partagés (styles.scss). */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.conteneur {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .conteneur {
+    padding: 0 28px;
+  }
+}
+
+.section {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+}
+
+.surtitre {
+  display: inline-block;
+  margin: 0 0 10px;
+  color: var(--ocre-texte);
+  font: 600 13px var(--texte);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.titre-section {
+  margin: 0 0 14px;
+  color: var(--nuit);
+  font: 700 clamp(28px, 5vw, 44px) / 1.12 var(--titre);
+  letter-spacing: -0.01em;
+}
+
+.chapeau {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--encre-2);
+  font-size: clamp(16px, 2.2vw, 18px);
+  line-height: 1.65;
+}
+
+.btn.grand {
+  min-height: 52px;
+  padding: 0 24px;
+  font-size: 16px;
+  border-radius: 14px;
+}
+
+/* En-tête des pages intérieures : bandeau sombre sous la barre de navigation */
+.bandeau {
+  position: relative;
+  overflow: hidden;
+  padding: 132px 0 56px;
+  background: radial-gradient(120% 140% at 85% 0%, #2f5585 0%, #1a2f55 45%, #0f1b30 100%);
+  color: #fff;
+}
+
+.bandeau::after {
+  content: '';
+  position: absolute;
+  right: -120px;
+  top: -80px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(26, 99, 216, 0.35), transparent 70%);
+  pointer-events: none;
+}
+
+.bandeau > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bandeau h1 {
+  margin: 0 0 12px;
+  font: 700 clamp(32px, 6vw, 54px) / 1.08 var(--titre);
+  letter-spacing: -0.015em;
+}
+
+.bandeau p {
+  max-width: 60ch;
+  margin: 0;
+  color: #dce4e4;
+  font-size: clamp(16px, 2.2vw, 18px);
+  line-height: 1.6;
+}
+
+.fil {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: #b4c2d0;
+}
+
+.fil a {
+  color: #dce4e4;
+}
+
+/* Vignette d'un bien */
+.vignette {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--filet);
+  border-radius: 18px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 300ms var(--courbe), box-shadow 300ms var(--courbe);
+}
+
+.vignette:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 40px -24px rgba(11, 18, 34, 0.45);
+}
+
+.visuel {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.visuel .fond {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.85);
+  transition: transform 600ms var(--courbe);
+}
+
+.vignette:hover .visuel .fond {
+  transform: scale(1.06);
+}
+
+.visuel .etiquette {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  padding: 5px 10px;
+  border-radius: var(--rayon-pastille);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--nuit);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.vignette .corps {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px 18px;
+}
+
+.vignette .prix {
+  margin: 0;
+  color: var(--nuit);
+  font: 700 19px var(--titre);
+}
+
+.vignette h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.vignette .lieu {
+  margin: 0;
+  color: var(--discret);
+  font-size: 14px;
+}
+
+.caracteristiques {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 4px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--filet);
+  color: var(--encre-2);
+  font-size: 13.5px;
+}
+
+.caracteristiques span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grille-biens {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .grille-biens {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .grille-biens {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Appel final commun aux pages */
+.appel {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 18px;
+  padding: 40px 24px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #1a63d8, #154fb0);
+  color: #fff;
+}
+
+.appel h2 {
+  margin: 0;
+  font: 700 clamp(24px, 4vw, 36px) / 1.15 var(--titre);
+}
+
+.appel p {
+  max-width: 56ch;
+  margin: 10px 0 0;
+  color: #e7f0fd;
+  line-height: 1.6;
+}
+
+.appel .btn {
+  justify-self: start;
+  background: #fff;
+  color: var(--nuit);
+  border-color: #fff;
+}
+
+@media (min-width: 768px) {
+  .appel {
+    padding: 56px;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+
+.formulaire-site {
+  display: grid;
+  gap: 14px;
+}
+
+.duo-site {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .duo-site {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.envoye {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.coche-dessinee {
+  width: 72px;
+  height: 72px;
+}
+
+.coche-dessinee circle {
+  stroke: var(--bon);
+}
+
+.coche-dessinee path {
+  stroke: var(--bon);
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: trace 600ms 200ms var(--courbe) forwards;
+}
+
+@keyframes trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Transitions de page : la nouvelle page arrive dans le sens de la navigation (§ 6.2). */
+@keyframes sortie-avant { to { opacity: 0; transform: translateX(-28px); } }
+@keyframes entree-avant { from { opacity: 0; transform: translateX(28px); } }
+@keyframes sortie-arriere { to { opacity: 0; transform: translateX(28px); } }
+@keyframes entree-arriere { from { opacity: 0; transform: translateX(-28px); } }
+
+::view-transition-old(root) {
+  animation: 220ms cubic-bezier(0.4, 0, 1, 1) both sortie-avant;
+}
+
+::view-transition-new(root) {
+  animation: 320ms cubic-bezier(0.2, 0, 0, 1) both entree-avant;
+}
+
+html[data-sens='arriere']::view-transition-old(root) {
+  animation-name: sortie-arriere;
+}
+
+html[data-sens='arriere']::view-transition-new(root) {
+  animation-name: entree-arriere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  html[data-sens='arriere']::view-transition-old(root),
+  html[data-sens='arriere']::view-transition-new(root) {
+    animation: 150ms linear both fondu;
+  }
+}
+
+/* Titres découpés en mots (directive siteTitre) */
+.masque-mot {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.mot-titre {
+  display: inline-block;
+}
+
+[sitetitre] {
+  position: relative;
+}
+
+.trait-titre {
+  display: block;
+  width: 72px;
+  height: 4px;
+  margin-top: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--ocre), var(--argent-2));
+  transform-origin: left;
+}
+
+/* Reflet des cartes inclinées (directive siteInclinaison) */
+.reflet-carte {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  width: 70%;
+  aspect-ratio: 1;
+  margin: -35% 0 0 -35%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 65%);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+}
+
+/* Mot « chrome » du bandeau d'accueil : les lettres argent du logo */
+.chrome {
+  background: linear-gradient(180deg, #f6f9fa 0%, #dce4e4 38%, #97a5b4 55%, #e8eef0 72%, #b4c2d0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

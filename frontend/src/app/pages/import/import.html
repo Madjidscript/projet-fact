@@ -1,0 +1,110 @@
+<header class="entete">
+  <div>
+    <h1>Import du patrimoine</h1>
+    <p class="accroche">Charger les bâtiments, propriétaires et lots tenus jusqu'ici dans les fichiers Excel de l'agence.</p>
+  </div>
+  <button type="button" class="btn" [class.occupe]="occupe() === 'modele'" (click)="telechargerModele()">
+    <fact-icone nom="telecharger" [taille]="18" /> Télécharger le modèle
+  </button>
+</header>
+
+<div class="deux large-gauche" style="margin-top: 22px">
+  <div>
+    @if (rapport()?.importe) {
+      <!-- ------------------------------------------------------- import réussi -->
+      @let r = rapport()!;
+      <div class="reussite" role="status">
+        <svg class="coche-animee" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" opacity=".25"/><path d="m7 12.5 3.4 3.4L17 9"/></svg>
+        <div>
+          <strong>Import terminé.</strong>
+          {{ r.proprietaires.nouveaux }} propriétaire(s), {{ r.batiments.nouveaux }} bâtiment(s) et {{ r.lots.nouveaux }} lot(s) ajoutés.
+        </div>
+      </div>
+      <article class="carte" style="margin-top: 16px">
+        <h3>Et maintenant</h3>
+        <ol class="etapes-import">
+          <li>Les bâtiments importés sont <strong>à valider</strong> par leur gestionnaire, un par un.</li>
+          @if (r.batiments.aLocaliser) {
+            <li><strong>{{ r.batiments.aLocaliser }}</strong> bâtiment(s) sans coordonnées attendent le passage d'un agent : liste « À localiser ».</li>
+          }
+          <li>La Direction affecte ensuite chaque bâtiment à son gestionnaire.</li>
+        </ol>
+        <div class="actions-entete" style="margin-top: 14px">
+          <a class="btn principal" routerLink="/patrimoine">Voir les bâtiments</a>
+          <button type="button" class="btn" (click)="recommencer()">Importer un autre fichier</button>
+        </div>
+      </article>
+    } @else {
+      <!-- ------------------------------------------------------ dépôt du fichier -->
+      <label class="depot" [class.survol]="survol()" (dragover)="glisser($event, true)" (dragleave)="glisser($event, false)" (drop)="deposer($event)">
+        <span class="rond"><fact-icone [nom]="occupe() === 'controle' ? 'synchro' : 'document'" [taille]="28" /></span>
+        @if (occupe() === 'controle') {
+          <strong>Contrôle du fichier…</strong>
+          <span class="aide">Chaque ligne est vérifiée ; rien n'est encore enregistré.</span>
+        } @else if (fichier(); as f) {
+          <strong>{{ f.name }}</strong>
+          <span class="aide">{{ taille(f.size) }} · cliquez pour choisir un autre fichier</span>
+        } @else {
+          <strong>Déposez le classeur ici</strong>
+          <span class="aide">ou cliquez pour le choisir · .xlsx</span>
+        }
+        <input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" (change)="choisir($event)">
+      </label>
+
+      @if (rapport(); as r) {
+        <section aria-live="polite">
+          <div class="bilan">
+            <article class="carte chiffre"><p class="valeur bon"><fact-compteur [valeur]="r.proprietaires.nouveaux" /></p>
+              <p class="libelle">propriétaires à créer@if (r.proprietaires.existants) { · {{ r.proprietaires.existants }} déjà connus }</p></article>
+            <article class="carte chiffre"><p class="valeur bon"><fact-compteur [valeur]="r.batiments.nouveaux" /></p>
+              <p class="libelle">bâtiments à créer@if (r.batiments.existants) { · {{ r.batiments.existants }} déjà connus }</p></article>
+            <article class="carte chiffre"><p class="valeur bon"><fact-compteur [valeur]="r.lots.nouveaux" /></p>
+              <p class="libelle">lots à créer@if (r.lots.existants) { · {{ r.lots.existants }} déjà connus }</p></article>
+            @if (r.batiments.aLocaliser) {
+              <article class="carte chiffre"><p class="valeur"><fact-compteur [valeur]="r.batiments.aLocaliser" /></p>
+                <p class="libelle">bâtiments sans coordonnées, à localiser</p></article>
+            }
+          </div>
+
+          @if (r.erreurs.length) {
+            <article class="carte">
+              <div class="entre">
+                <h3>{{ r.erreurs.length }} erreur{{ r.erreurs.length > 1 ? 's' : '' }} à corriger dans le fichier</h3>
+                <span class="pastille critique">Rien n'est importé</span>
+              </div>
+              <ul class="erreurs">
+                @for (e of r.erreurs; track $index) {
+                  <li><span class="ou">{{ e.feuille }} · l.{{ e.ligne }}</span><span>{{ e.message }}</span></li>
+                }
+              </ul>
+              <p class="aide" style="margin-top: 12px">Corrigez le classeur, enregistrez-le, puis déposez-le à nouveau.</p>
+            </article>
+          } @else if (r.proprietaires.nouveaux + r.batiments.nouveaux + r.lots.nouveaux === 0) {
+            <article class="carte"><p>Tout le contenu de ce fichier est déjà dans l'application : il n'y a rien à importer.</p></article>
+          } @else {
+            <div class="actions-entete">
+              <button type="button" class="btn principal" [class.occupe]="occupe() === 'import'" [disabled]="!!occupe()" (click)="importer()">
+                <fact-icone nom="coche" [taille]="18" /> Importer ces fiches
+              </button>
+              <button type="button" class="btn" (click)="recommencer()">Annuler</button>
+            </div>
+          }
+        </section>
+      }
+    }
+  </div>
+
+  <aside class="carte">
+    <h3>Comment faire</h3>
+    <ol class="etapes-import">
+      <li>Téléchargez le modèle : trois feuilles, <strong>Propriétaires</strong>, <strong>Bâtiments</strong> et <strong>Lots</strong>.</li>
+      <li>Recopiez-y le patrimoine, une ligne par fiche. La feuille « Lisez-moi » donne les valeurs admises.</li>
+      <li>Déposez le fichier : il est contrôlé en entier, sans rien enregistrer.</li>
+      <li>S'il n'y a plus d'erreur, confirmez l'import.</li>
+    </ol>
+    <p class="aide" style="margin-top: 12px">
+      Un même fichier peut être déposé plusieurs fois : les fiches déjà présentes sont reconnues par leur nom et ne sont pas dupliquées.
+    </p>
+  </aside>
+</div>

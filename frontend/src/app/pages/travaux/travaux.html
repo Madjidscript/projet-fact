@@ -1,0 +1,150 @@
+<header class="entete">
+  <div>
+    <h1>Travaux</h1>
+    <p class="accroche">@if (!chargement()) { {{ ouvertes() }} intervention(s) en cours de traitement }</p>
+  </div>
+  @if (peutSignaler()) {
+    <button type="button" class="btn principal" (click)="signalement.set(true)"><fact-icone nom="alerte" [taille]="18" /> Signaler une panne</button>
+  }
+</header>
+
+@if (synthese(); as s) {
+  <section class="kpi" aria-label="Chiffres des travaux">
+    <article class="carte indicateur" [factApparition]="0">
+      <p class="libelle">Ouvertes</p>
+      <p class="valeur"><fact-compteur [valeur]="ouvertes()" /></p>
+    </article>
+    <article class="carte indicateur" [class.alerte]="s.synthese.urgentes > 0" [factApparition]="1">
+      <p class="libelle">Urgentes</p>
+      <p class="valeur" [class.critique]="s.synthese.urgentes > 0"><fact-compteur [valeur]="s.synthese.urgentes" /></p>
+    </article>
+    <article class="carte indicateur" [factApparition]="2">
+      <p class="libelle">Délai moyen de traitement</p>
+      <p class="valeur">@if (s.synthese.delaiMoyen !== null) { <fact-compteur [valeur]="s.synthese.delaiMoyen" [decimales]="1" suffixe=" j" /> } @else { - }</p>
+    </article>
+    <article class="carte indicateur" [factApparition]="3">
+      <p class="libelle">Coût des travaux ce mois</p>
+      <p class="valeur"><fact-compteur [valeur]="s.synthese.coutMois" suffixe=" FCFA" /></p>
+    </article>
+  </section>
+}
+
+<div class="segments" role="tablist" aria-label="Étapes">
+  <button type="button" role="tab" [attr.aria-selected]="vue() === 'affecter'" [class.actif]="vue() === 'affecter'" (click)="vue.set('affecter')">
+    À affecter <span class="nombre" [class.alerte]="compte('affecter')">{{ compte('affecter') }}</span>
+  </button>
+  <button type="button" role="tab" [attr.aria-selected]="vue() === 'planifiees'" [class.actif]="vue() === 'planifiees'" (click)="vue.set('planifiees')">
+    Planifiées <span class="nombre">{{ compte('planifiees') }}</span>
+  </button>
+  <button type="button" role="tab" [attr.aria-selected]="vue() === 'en-cours'" [class.actif]="vue() === 'en-cours'" (click)="vue.set('en-cours')">
+    En cours <span class="nombre">{{ compte('en-cours') }}</span>
+  </button>
+  <button type="button" role="tab" [attr.aria-selected]="vue() === 'cloturer'" [class.actif]="vue() === 'cloturer'" (click)="vue.set('cloturer')">
+    À clôturer <span class="nombre">{{ compte('cloturer') }}</span>
+  </button>
+  <button type="button" role="tab" [attr.aria-selected]="vue() === 'closes'" [class.actif]="vue() === 'closes'" (click)="vue.set('closes')">
+    Closes <span class="nombre">{{ compte('closes') }}</span>
+  </button>
+  <button type="button" role="tab" [attr.aria-selected]="vue() === 'prestataires'" [class.actif]="vue() === 'prestataires'" (click)="vue.set('prestataires')">
+    Prestataires <span class="nombre">{{ prestataires().length }}</span>
+  </button>
+</div>
+
+@if (chargement()) {
+  <ul class="liste">@for (i of [1, 2, 3]; track i) { <li class="squelette"></li> }</ul>
+} @else if (vue() === 'prestataires') {
+  <!-- --------------------------------------------------------- prestataires -->
+  @if (gereRepertoire()) {
+    <div class="barre"><button type="button" class="btn" (click)="ouvrirPrestataire('nouveau')"><fact-icone nom="plus" [taille]="18" /> Nouveau prestataire</button></div>
+  }
+  <ul class="liste">
+    @for (p of prestataires(); track p.id; let n = $index) {
+      <li [factApparition]="n">
+        <button type="button" class="carte element" [class.inactif]="!p.actif" (click)="gereRepertoire() && ouvrirPrestataire(p)">
+          <span class="pictogramme"><fact-icone nom="outils" /></span>
+          <span class="texte">
+            <strong>{{ p.nom }}</strong>
+            <small>{{ p.libelleSpecialite ?? 'Toutes spécialités' }}@if (p.telephone) { · <span class="donnee">{{ p.telephone }}</span> }</small>
+          </span>
+          <span class="droite">
+            @if (!p.actif) { <span class="pastille neutre">Inactif</span> }
+            @else if (p.enCours) { <span class="pastille info">{{ p.enCours }} en cours</span> }
+          </span>
+        </button>
+      </li>
+    } @empty {
+      <li><fact-etat-vide icone="outils" titre="Aucun prestataire" message="Ajoutez les plombiers, électriciens et entreprises à qui l'agence confie ses travaux." /></li>
+    }
+  </ul>
+} @else {
+  <!-- ---------------------------------------------------------- interventions -->
+  @if (interventions().length > 6) {
+    <label class="cherche">
+      <fact-icone nom="recherche" [taille]="18" />
+      <input type="search" placeholder="Panne, bâtiment, prestataire…" [ngModel]="recherche()" (ngModelChange)="recherche.set($event)" aria-label="Rechercher une intervention">
+    </label>
+  }
+  <ul class="liste">
+    @for (i of visibles(); track i.id; let n = $index) {
+      <li [factApparition]="n">
+        <button type="button" class="carte element" [class.urgente]="i.ouverte && (i.urgence === 'CRITIQUE' || i.urgence === 'HAUTE')" (click)="ouverte.set(i)">
+          <span class="pictogramme" [class]="tonUrgence(i.urgence)"><fact-icone [nom]="i.statut === 'CLOTUREE' ? 'coche' : i.statut === 'ANNULEE' ? 'fermer' : 'outils'" /></span>
+          <span class="texte">
+            <strong>{{ i.titre }}</strong>
+            <small>{{ i.batiment }}@if (i.numeroLot) { · lot {{ i.numeroLot }} } · {{ i.libelleCategorie }} · {{ f.depuis(i.signaleLe) }}</small>
+            @if (i.prestataire) { <small class="presta"><fact-icone nom="utilisateur" [taille]="13" /> {{ i.prestataire }}@if (i.datePrevue && i.statut === 'AFFECTEE') { · prévu le {{ i.datePrevue.split('-').reverse().join('/') }} }</small> }
+          </span>
+          <span class="droite">
+            <span class="pastille" [class]="tonUrgence(i.urgence)">{{ i.libelleUrgence }}</span>
+            @if (i.devisMontant !== null && i.statut === 'EN_COURS') { <span class="pastille attention">Devis à valider</span> }
+            @if (i.coutReel !== null) { <span class="donnee montant">{{ f.fcfa(i.coutReel) }}</span> }
+            @if (i.photos) { <span class="photos"><fact-icone nom="photo" [taille]="14" /> {{ i.photos }}</span> }
+          </span>
+        </button>
+      </li>
+    } @empty {
+      <li>
+        <fact-etat-vide icone="coche" titre="Rien à cette étape" [message]="vue() === 'affecter' ? 'Aucune panne en attente d\'un prestataire.' : 'Aucune intervention à cette étape pour le moment.'">
+          @if (peutSignaler() && !interventions().length) { <button type="button" class="btn principal" (click)="signalement.set(true)">Signaler une panne</button> }
+        </fact-etat-vide>
+      </li>
+    }
+  </ul>
+}
+
+<fact-panneau-lateral [page]="true" [titre]="ouverte()?.reference ?? 'Intervention'" [ouvert]="!!ouverte()" (fermer)="ouverte.set(null)">
+  @if (ouverte(); as i) {
+    <fact-fiche-intervention [idIntervention]="i.id" (change)="charger()" />
+  }
+</fact-panneau-lateral>
+
+<fact-panneau-lateral [page]="true" titre="Signaler une panne" [ouvert]="signalement()" (fermer)="signalement.set(false)">
+  @if (signalement()) {
+    <fact-signalement (cree)="cree($event)" (annule)="signalement.set(false)" />
+  }
+</fact-panneau-lateral>
+
+<fact-panneau-lateral [page]="true" [titre]="prestataireOuvert() === 'nouveau' ? 'Nouveau prestataire' : 'Prestataire'" [ouvert]="!!prestataireOuvert()"
+                      (fermer)="prestataireOuvert.set(null)">
+  @if (prestataireOuvert()) {
+    <form class="formulaire" (ngSubmit)="enregistrerPrestataire()" novalidate>
+      <label class="champ"><input type="text" name="nom" placeholder=" " [(ngModel)]="sp.nom" autocomplete="off" required><span>Nom ou entreprise</span></label>
+      <label class="champ">
+        <select name="specialite" [(ngModel)]="sp.specialite">
+          <option [ngValue]="null">Toutes spécialités</option>
+          @for (v of ref.liste('CATEGORIE_INTERVENTION'); track v.code) { <option [ngValue]="v.code">{{ v.libelle }}</option> }
+        </select>
+        <span>Spécialité</span>
+      </label>
+      <label class="champ"><input type="tel" name="telephone" placeholder=" " [(ngModel)]="sp.telephone" autocomplete="off"><span>Téléphone</span></label>
+      <label class="champ"><input type="email" name="email" placeholder=" " [(ngModel)]="sp.email" autocomplete="off"><span>E-mail</span></label>
+      <label class="champ"><textarea name="notes" placeholder=" " [(ngModel)]="sp.notes"></textarea><span>Notes (tarifs, disponibilités…)</span></label>
+      @if (prestataireOuvert() !== 'nouveau') { <label class="case"><input type="checkbox" name="actif" [(ngModel)]="sp.actif"> Actif</label> }
+      @if (erreur()) { <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p> }
+      <div class="pied">
+        <button type="button" class="btn" (click)="prestataireOuvert.set(null)">Annuler</button>
+        <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">Enregistrer</button>
+      </div>
+    </form>
+  }
+</fact-panneau-lateral>

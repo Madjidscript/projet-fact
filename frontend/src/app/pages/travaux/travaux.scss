@@ -1,0 +1,275 @@
+:host {
+  display: block;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 16px 72px;
+}
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  animation: montee var(--longue) var(--courbe) both;
+}
+
+h1 {
+  font-size: clamp(26px, 5vw, 34px);
+  color: var(--marque);
+}
+
+.accroche {
+  margin: 4px 0 0;
+  color: var(--encre-2);
+}
+
+.kpi {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.indicateur {
+  display: grid;
+  gap: 4px;
+}
+
+.indicateur.alerte {
+  border-color: color-mix(in srgb, var(--critique) 40%, var(--filet));
+  background: linear-gradient(180deg, var(--critique-clair), var(--surface) 70%);
+}
+
+.libelle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--encre-2);
+}
+
+.valeur {
+  margin: 0;
+  font: 700 clamp(20px, 5vw, 26px) / 1.15 var(--titre);
+  color: var(--marque);
+}
+
+.valeur.critique {
+  color: var(--critique-texte);
+}
+
+/* ---------------------------------------------------------------- étapes */
+.segments {
+  display: flex;
+  gap: 2px;
+  margin: 22px 0 14px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  overflow-x: auto;
+}
+
+.segments button {
+  flex: none;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--encre-2);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe);
+}
+
+.segments button.actif {
+  background: var(--surface);
+  color: var(--marque);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--filet);
+}
+
+.nombre {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: var(--rayon-pastille);
+  background: var(--surface-2);
+  font: 600 11.5px var(--donnee);
+}
+
+.nombre.alerte {
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+}
+
+.cherche {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tactile);
+  margin-bottom: 12px;
+  padding: 0 14px;
+  border: 1px solid var(--filet-fort);
+  border-radius: var(--rayon-2);
+  background: var(--surface);
+  color: var(--discret);
+}
+
+.cherche input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--encre);
+}
+
+.barre {
+  margin-bottom: 12px;
+}
+
+/* ---------------------------------------------------------------- liste */
+.liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.element {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 14px;
+  align-items: center;
+  width: 100%;
+  padding: 14px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: transform var(--courte) var(--courbe), border-color var(--courte) var(--courbe);
+}
+
+.element:hover {
+  transform: translateY(-2px);
+  border-color: var(--filet-fort);
+}
+
+.element.urgente {
+  border-left: 4px solid var(--critique);
+}
+
+.element.inactif {
+  opacity: 0.6;
+}
+
+.pictogramme {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--nuit-clair);
+  color: var(--marque);
+}
+
+.pictogramme.critique {
+  background: var(--critique-clair);
+  color: var(--critique-texte);
+}
+
+.pictogramme.attention {
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+}
+
+.texte {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.texte strong {
+  font-size: 15px;
+}
+
+.texte small {
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.presta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--encre-2) !important;
+}
+
+.droite {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.montant {
+  font-size: 13px;
+}
+
+.photos {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+.squelette {
+  height: 84px;
+  border-radius: var(--rayon);
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* -------------------------------------------------------------- formulaire */
+.formulaire {
+  display: grid;
+  gap: 14px;
+}
+
+.message {
+  display: flex;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: var(--rayon-2);
+  background: var(--critique-clair);
+  color: var(--critique-texte);
+  font-size: 14px;
+}
+
+.pied {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  :host {
+    padding: 32px 28px 72px;
+  }
+
+  .kpi {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .element {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .droite {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+}

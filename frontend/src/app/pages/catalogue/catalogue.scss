@@ -1,0 +1,366 @@
+/* Catalogue des composants. Téléphone d'abord (§ 5.1), puis les points de rupture du § 5.3. */
+
+:host {
+  display: block;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.surtitre {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ocre-texte);
+}
+
+h1 {
+  font-size: clamp(28px, 5vw, 38px);
+  color: var(--marque);
+}
+
+.accroche {
+  margin: 8px 0 0;
+  max-width: 62ch;
+  color: var(--encre-2);
+}
+
+/* Sommaire : reste accessible en haut pendant le défilement */
+.sommaire {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  gap: 4px;
+  margin: 20px -16px 0;
+  padding: 8px 16px;
+  overflow-x: auto;
+  background: color-mix(in srgb, var(--fond) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--filet);
+}
+
+.sommaire a {
+  flex: none;
+  padding: 7px 12px;
+  border-radius: var(--rayon-pastille);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--encre-2);
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe);
+}
+
+.sommaire a:hover {
+  background: var(--surface-3);
+  color: var(--marque);
+  text-decoration: none;
+}
+
+section {
+  margin-top: 44px;
+  scroll-margin-top: 64px;
+}
+
+h2 {
+  font-size: 21px;
+  color: var(--marque);
+}
+
+h3 {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.intro {
+  margin: 6px 0 16px;
+  max-width: 74ch;
+  color: var(--encre-2);
+}
+
+.aide,
+.note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.etiquette {
+  margin: 16px 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--discret);
+}
+
+.etiquette:first-child {
+  margin-top: 0;
+}
+
+.grille {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.grille + .grille {
+  margin-top: 14px;
+}
+
+.rangee {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.carte.rangee,
+.carte > .rangee:first-child {
+  margin-top: 0;
+}
+
+.rangee.centre {
+  justify-content: center;
+}
+
+.pile {
+  display: grid;
+  gap: 14px;
+}
+
+/* ---------------------------------------------------------------- fondations */
+.couleurs {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.couleur h3 {
+  margin: 12px 0 2px;
+}
+
+.couleur p {
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.couleur .donnee {
+  color: var(--discret);
+}
+
+.nuance {
+  display: block;
+  height: 56px;
+  border-radius: var(--rayon-2);
+  transition: transform var(--courte) var(--courbe);
+}
+
+.couleur:hover .nuance {
+  transform: scale(1.03);
+}
+
+.demo-titre {
+  margin: 0 0 14px;
+  font: 700 22px/1.2 var(--titre);
+  color: var(--marque);
+}
+
+.carte p {
+  margin: 0;
+}
+
+.durees {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--encre-2);
+}
+
+.durees .donnee {
+  display: inline-block;
+  min-width: 64px;
+  color: var(--marque);
+  font-weight: 500;
+}
+
+/* -------------------------------------------------------------------- champs */
+.formulaire {
+  margin-bottom: 6px;
+}
+
+fact-etapes {
+  margin-top: 26px;
+}
+
+/* --------------------------------------------------------------- indicateurs */
+.compteur {
+  font: 700 clamp(24px, 6vw, 34px) / 1.1 var(--titre);
+  color: var(--marque);
+}
+
+/* --------------------------------------------------------- décor de la carte */
+.fausse-carte {
+  position: relative;
+  height: 440px;
+  border-radius: var(--rayon);
+  border: 1px solid var(--filet);
+  overflow: hidden;
+  background:
+    linear-gradient(115deg, transparent 46%, color-mix(in srgb, var(--info) 22%, transparent) 46.5%, color-mix(in srgb, var(--info) 22%, transparent) 54%, transparent 54.5%),
+    repeating-linear-gradient(0deg, transparent 0 58px, var(--filet) 58px 60px),
+    repeating-linear-gradient(90deg, transparent 0 78px, var(--filet) 78px 80px),
+    var(--surface-3);
+}
+
+.outils-carte {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 400;
+}
+
+.marqueur {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: background var(--standard) var(--courbe);
+  animation: tombe var(--longue) var(--courbe) both;
+}
+
+.marqueur.bon { background: var(--bon); }
+.marqueur.attention { background: var(--attention); animation-delay: 60ms; }
+.marqueur.critique { background: var(--critique); animation-delay: 120ms; }
+
+.marqueur.groupe {
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  display: grid;
+  place-items: center;
+  background: var(--nuit);
+  color: #fff;
+  font: 600 13px var(--donnee);
+  animation-delay: 180ms;
+}
+
+/* Bâtiment en alerte : pulsation lente du marqueur rouge (§ 6.3) */
+.marqueur.alerte::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--critique);
+  animation: halo 2.4s ease-out infinite;
+}
+
+/* Les marqueurs tombent en cascade à l'ouverture de la carte (§ 6.3) */
+@keyframes tombe {
+  from {
+    opacity: 0;
+    transform: translateY(-26px);
+  }
+}
+
+@keyframes halo {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* -------------------------------------------------------------------- icônes */
+.icones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+
+.icones li {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 14px 6px 10px;
+  border: 1px solid var(--filet);
+  border-radius: var(--rayon-2);
+  background: var(--surface);
+  color: var(--marque);
+  transition: transform var(--courte) var(--courbe), border-color var(--courte) var(--courbe);
+}
+
+.icones li:hover {
+  transform: translateY(-3px);
+  border-color: var(--filet-fort);
+}
+
+.icones span {
+  font-size: 11px;
+  color: var(--discret);
+}
+
+.reste {
+  background: var(--nuit-clair);
+}
+
+.reste ul {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  color: var(--encre-2);
+}
+
+/* ------------------------------------------------- points de rupture (§ 5.3) */
+@media (min-width: 768px) {
+  :host {
+    padding: 32px 28px 72px;
+  }
+
+  .sommaire {
+    margin-left: -28px;
+    margin-right: -28px;
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .couleurs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grille.deux,
+  .grille.quatre {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .large {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1200px) {
+  .couleurs {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .grille.quatre {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

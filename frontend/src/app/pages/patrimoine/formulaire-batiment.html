@@ -1,0 +1,87 @@
+<form class="formulaire" (ngSubmit)="enregistrer()" novalidate>
+  <fieldset>
+    <legend>Identité</legend>
+    <label class="champ">
+      <input type="text" name="nom" placeholder=" " [(ngModel)]="s.nom" autocomplete="off" required>
+      <span>Nom du bâtiment</span>
+    </label>
+    <label class="champ">
+      <select name="type" [(ngModel)]="s.type" required>
+        @for (v of ref.liste('TYPE_BATIMENT'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }
+      </select>
+      <span>Type</span>
+    </label>
+    <div class="duo">
+      <label class="champ">
+        <input type="number" name="niveaux" placeholder=" " min="0" max="60" [(ngModel)]="s.niveaux">
+        <span>Niveaux</span>
+      </label>
+      <label class="champ">
+        <input type="number" name="annee" placeholder=" " min="1900" max="2100" [(ngModel)]="s.anneeConstruction">
+        <span>Année de construction</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Localisation</legend>
+    <div class="duo">
+      <fact-choix name="commune" libelle="Commune" [options]="ref.communes() | options : opt.commune"
+                  [ngModel]="s.idCommune" (ngModelChange)="choisirCommune($event)" required />
+      <fact-choix name="quartier" libelle="Quartier" vide="Non précisé" [options]="ref.quartiers(s.idCommune) | options : opt.quartier"
+                  [(ngModel)]="s.idQuartier" [disabled]="!s.idCommune" [invite]="s.idCommune ? 'Choisir…' : 'Choisissez la commune'" />
+    </div>
+    <label class="champ">
+      <input type="text" name="adresse" placeholder=" " [(ngModel)]="s.adresse" autocomplete="off">
+      <span>Adresse ou repère</span>
+      <small class="aide-champ">Les adresses sont rares à Abidjan : un repère connu aide l'agent (« derrière la pharmacie… »).</small>
+    </label>
+
+    <fact-carte-position [position]="position()" [centre]="centre()" [modifiable]="true" (change)="placer($event)" />
+    @if (position()) {
+      <button type="button" class="btn discret petit retirer" (click)="retirerPosition()">Retirer la position</button>
+    } @else if (enAttenteDeLocalisation()) {
+      <p class="note attention">Ce bâtiment est « à localiser » : on peut corriger sa fiche, il ne pourra être validé qu'une fois placé.</p>
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>Propriétaire</legend>
+    <fact-choix name="proprietaire" [seuilRecherche]="0" libelle="Propriétaire" [options]="proprietaires() | options : opt.proprietaire"
+                [(ngModel)]="s.idProprietaire" required />
+    @if (peutCreerProprietaire()) {
+      <p class="aide">Il n'est pas dans la liste ? <a routerLink="/proprietaires" [queryParams]="{ nouveau: 1 }">Créez d'abord sa fiche</a>.</p>
+    }
+  </fieldset>
+
+  @if (peutAffecter()) {
+    <fieldset>
+      <legend>Qui gère quoi</legend>
+      <div class="duo">
+        <fact-choix name="gestionnaire" [seuilRecherche]="0" libelle="Gestionnaire" vide="Sans gestionnaire" [options]="gestionnaires() | options : opt.gestionnaire"
+                    [(ngModel)]="s.idGestionnaire" />
+        <fact-choix name="suppleant" [seuilRecherche]="0" libelle="Suppléant" vide="Aucun" [options]="gestionnaires() | options : opt.gestionnaire : s.idGestionnaire"
+                    [(ngModel)]="s.idSuppleant" [disabled]="!s.idGestionnaire" />
+      </div>
+      @if (!gestionnaires().length) {
+        <p class="aide">Aucun compte gestionnaire actif : créez-en depuis la rubrique « Comptes ».</p>
+      }
+    </fieldset>
+  }
+
+  <label class="champ">
+    <textarea name="description" placeholder=" " [(ngModel)]="s.description"></textarea>
+    <span>Description, remarques</span>
+  </label>
+
+  @if (erreur()) {
+    <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p>
+  }
+
+  <div class="pied">
+    <button type="button" class="btn" (click)="annule.emit()">Annuler</button>
+    <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">
+      {{ s.id ? 'Enregistrer' : 'Créer le bâtiment' }}
+    </button>
+  </div>
+</form>

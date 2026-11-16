@@ -1,0 +1,145 @@
+@switch (etat()) {
+  @case ('chargement') {
+    <section class="bandeau"><div class="conteneur"><div class="squelette titre"></div><div class="squelette ligne"></div></div></section>
+    <div class="conteneur fiche"><div class="squelette photo"></div><div class="squelette bloc-prix"></div></div>
+  }
+  @case ('pret') {
+    @if (bien(); as b) {
+      <section class="bandeau">
+        <div class="conteneur" siteRevele>
+          <nav class="fil" aria-label="Fil d'Ariane">
+            <a routerLink="/">Accueil</a> <span>/</span>
+            <a [routerLink]="b.operation === 'LOCATION' ? '/louer' : '/acheter'">{{ b.operation === 'LOCATION' ? 'Louer' : 'Acheter' }}</a> <span>/</span> <span>{{ b.categorie }}</span>
+          </nav>
+          <h1>{{ b.titre }}</h1>
+          <p>{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }} · Abidjan · <span class="ref">Réf. {{ b.reference }}</span></p>
+          <div class="gestes">
+            <site-coeur [bien]="b" [libelle]="true" />
+            <button type="button" class="btn petit clair" (click)="partager()"><fact-icone nom="copier" [taille]="16" /> Partager</button>
+          </div>
+          @if (avis()) { <p class="avis" role="status">{{ avis() }}</p> }
+        </div>
+      </section>
+
+      <div class="conteneur fiche">
+        <div class="principal">
+          @if (b.galerie.length) {
+            <site-galerie [photos]="b.galerie" [titre]="b.titre" [idBien]="b.id" />
+          } @else {
+            <div class="visuel-fiche" siteRevele>
+              <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+                <circle cx="310" cy="64" r="26" fill="rgba(255,255,255,.2)" />
+                <path d="M0 240V150h40v-40h50v40h30V80h70v70h30v-36h46v36h40V96h56v54h38v90Z" fill="rgba(255,255,255,.13)" />
+                <path d="M0 240v-46h70v-20h56v20h50v-36h70v36h40v-18h114v64Z" fill="rgba(255,255,255,.2)" />
+              </svg>
+              <span class="note-photo"><fact-icone nom="photo" [taille]="16" /> Photos sur demande auprès de l’agence</span>
+            </div>
+          }
+
+          <section class="bloc" siteRevele>
+            <h2>Caractéristiques</h2>
+            <ul class="carac" siteCascade>
+              <li><fact-icone nom="gestion" [dessin]="true" /><span>Type</span><strong>{{ b.libelleType }}</strong></li>
+              @if (b.surface) { <li><fact-icone nom="surface" [dessin]="true" /><span>Surface</span><strong>{{ b.surface }} m²</strong></li> }
+              @if (b.pieces) { <li><fact-icone nom="pieces" [dessin]="true" /><span>Pièces</span><strong>{{ b.pieces }}</strong></li> }
+              @if (b.chambres) { <li><fact-icone nom="chambre" [dessin]="true" /><span>Chambres</span><strong>{{ b.chambres }}</strong></li> }
+              @if (b.sallesEau) { <li><fact-icone nom="salle-eau" [dessin]="true" /><span>Salles d’eau</span><strong>{{ b.sallesEau }}</strong></li> }
+              @if (b.etage !== null) { <li><fact-icone nom="etage" [dessin]="true" /><span>Étage</span><strong>{{ b.etage === 0 ? 'Rez-de-chaussée' : b.etage + (b.etage === 1 ? 'er' : 'e') }}</strong></li> }
+            </ul>
+            @if (b.equipements.length) {
+              <h3>Équipements</h3>
+              <ul class="equipements" siteLot>
+                @for (e of b.equipements; track e) { <li><fact-icone [nom]="iconeEquipement(e)" [taille]="18" [dessin]="true" /> {{ ref.libelleEquipement(e) }}</li> }
+              </ul>
+            }
+          </section>
+
+          @if (b.description) {
+            <section class="bloc" siteRevele>
+              <h2>Description</h2>
+              <p class="description">{{ b.description }}</p>
+            </section>
+          }
+
+          <section class="bloc" siteRevele>
+            <h2>Situation</h2>
+            @if (placee()) {
+              <div class="carte-situation"><site-carte-biens [biens]="unBien()" [suivreZone]="false" /></div>
+              <p class="aide">{{ b.positionExacte ? 'Position du bien.' : 'Zone approximative : l’adresse exacte vous est communiquée lors de la visite.' }}</p>
+            } @else {
+              <p class="aide">{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }}. L’adresse exacte vous est communiquée lors de la visite.</p>
+            }
+          </section>
+        </div>
+
+        <aside class="cote" aria-label="Prix et contact">
+          <div class="contact" siteRevele="0.15">
+            <p class="etiquette">{{ b.operation === 'LOCATION' ? 'Loyer' : 'Prix' }}</p>
+            <p class="prix" [attr.aria-label]="texte()"><span [siteNombre]="b.prix" [suffixe]="b.operation === 'LOCATION' ? ' FCFA / mois' : ' FCFA'"></span></p>
+            <dl class="conditions">
+              @if (b.charges) { <div><dt>Charges</dt><dd>{{ f.montant(b.charges) }} FCFA / mois</dd></div> }
+              @if (b.cautionMois) { <div><dt>Caution</dt><dd>{{ b.cautionMois }} mois · {{ f.montant(b.cautionMois * b.prix) }} FCFA</dd></div> }
+              @if (b.avanceMois) { <div><dt>Avance</dt><dd>{{ b.avanceMois }} mois · {{ f.montant(b.avanceMois * b.prix) }} FCFA</dd></div> }
+              @if (b.operation === 'LOCATION' && (b.cautionMois || b.avanceMois)) {
+                <div class="total"><dt>À l’entrée</dt><dd>{{ f.montant(((b.cautionMois ?? 0) + (b.avanceMois ?? 0)) * b.prix) }} FCFA</dd></div>
+              }
+            </dl>
+            <a class="btn accent grand" href="#visite" siteAimant><fact-icone nom="visite" [taille]="20" /> Demander une visite</a>
+            <a class="btn grand whatsapp-btn" [href]="agence.whatsapp + '?text=' + messageWhatsapp()" target="_blank" rel="noopener">
+              <fact-icone nom="whatsapp" [taille]="20" /> WhatsApp
+            </a>
+            <a class="btn grand" [href]="agence.telephones[1].lien"><fact-icone nom="appel" [taille]="20" /> Appeler {{ agence.telephones[1].libelle }}</a>
+          </div>
+
+          <section class="visite" id="visite" siteRevele aria-labelledby="titre-visite">
+            @if (accuse(); as a) {
+              <site-accuse [reference]="a.reference" [message]="a.message" (nouvelle)="nouvelleDemande()" />
+            } @else {
+              <h2 id="titre-visite">Demander une visite</h2>
+              <form class="formulaire-site" (ngSubmit)="demanderVisite()" novalidate>
+                <div class="duo-site">
+                  <label class="champ" [class.erreur]="erreurs().includes('date')">
+                    <select name="date" [(ngModel)]="v.date"><option value="" disabled>Choisir…</option>
+                      @for (j of jours; track j.valeur) { <option [value]="j.valeur">{{ j.libelle }}</option> }</select>
+                    <span>Jour souhaité</span>
+                  </label>
+                  <label class="champ" [class.erreur]="erreurs().includes('creneau')">
+                    <select name="creneau" [(ngModel)]="v.creneau"><option value="" disabled>Choisir…</option>
+                      @for (c of creneaux; track c) { <option [value]="c">{{ c }}</option> }</select>
+                    <span>Créneau</span>
+                  </label>
+                </div>
+                <label class="champ" [class.erreur]="erreurs().includes('nom')"><input type="text" name="nom" placeholder=" " autocomplete="name" [(ngModel)]="v.nom"><span>Nom et prénoms</span></label>
+                <label class="champ" [class.erreur]="erreurs().includes('telephone')"><input type="tel" name="telephone" placeholder=" " autocomplete="tel" [(ngModel)]="v.telephone"><span>Téléphone</span>
+                  @if (erreurs().includes('telephone')) { <small class="aide-champ">10 chiffres, par exemple 07 01 02 03 04.</small> }</label>
+                <label class="champ" [class.erreur]="erreurs().includes('email')"><input type="email" name="email" placeholder=" " autocomplete="email" [(ngModel)]="v.email"><span>E-mail (facultatif)</span></label>
+                <label class="champ"><textarea name="message" placeholder=" " rows="3" [(ngModel)]="v.message"></textarea><span>Message (facultatif)</span></label>
+                <input type="text" name="site" tabindex="-1" autocomplete="off" aria-hidden="true" [style]="stylePiege" [(ngModel)]="v.site">
+                <label class="case" [class.erreur-case]="erreurs().includes('accord')"><input type="checkbox" name="accord" [(ngModel)]="v.accord">
+                  <span>J’accepte que l’agence utilise ces informations pour organiser la visite (<a routerLink="/mentions-legales" fragment="donnees">données personnelles</a>).</span></label>
+                @if (erreurApi()) { <p class="ko" role="alert">{{ erreurApi() }}</p> }
+                <button type="submit" class="btn accent grand" [class.occupe]="envoi()" [disabled]="envoi()">Envoyer ma demande</button>
+              </form>
+            }
+          </section>
+        </aside>
+      </div>
+
+      @if (similaires().length) {
+        <section class="section conteneur" aria-labelledby="titre-similaires">
+          <h2 class="titre-section" id="titre-similaires" siteTitre>Biens similaires</h2>
+          <ul class="grille-biens" siteLot>@for (s of similaires(); track s.id) { <li siteInclinaison><site-vignette-bien [bien]="s" [transition]="false" /></li> }</ul>
+        </section>
+      }
+    }
+  }
+  @default {
+    <section class="bandeau">
+      <div class="conteneur">
+        <h1>{{ etat() === 'absent' ? 'Ce bien n’est plus disponible' : 'Ce bien ne peut pas être affiché' }}</h1>
+        <p>{{ etat() === 'absent' ? 'Il a peut-être été loué ou vendu. Découvrez nos autres biens.' : 'Vérifiez votre connexion et réessayez.' }}</p>
+        <p><a class="btn accent grand retour" routerLink="/louer">Voir les biens à louer</a></p>
+      </div>
+    </section>
+  }
+}

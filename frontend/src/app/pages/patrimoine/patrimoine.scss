@@ -1,0 +1,699 @@
+/* Écrans du patrimoine : bâtiments, fiche bâtiment, propriétaires, import.
+   Téléphone d'abord (§ 5.1), puis les points de rupture du § 5.3. */
+
+:host {
+  display: block;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 16px 72px;
+}
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  animation: montee var(--longue) var(--courbe) both;
+}
+
+.fil {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  color: var(--discret);
+}
+
+.fil a {
+  color: var(--discret);
+}
+
+h1 {
+  font-size: clamp(25px, 5vw, 34px);
+  color: var(--marque);
+}
+
+.accroche {
+  margin: 4px 0 0;
+  color: var(--encre-2);
+}
+
+.actions-entete {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------------- outils */
+.outils {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 16px;
+}
+
+.cherche {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tactile);
+  padding: 0 14px;
+  border: 1px solid var(--filet-fort);
+  border-radius: var(--rayon-2);
+  background: var(--surface);
+  color: var(--discret);
+}
+
+.cherche:focus-within {
+  border-color: var(--marque);
+}
+
+.cherche input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--encre);
+}
+
+fact-choix.filtre {
+  min-width: 230px;
+}
+
+/* Boutons segmentés : le fond de l'onglet actif glisse de l'un à l'autre (§ 6.2) */
+.segments {
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-3);
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.segments button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--encre-2);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background var(--courte) var(--courbe), color var(--courte) var(--courbe);
+}
+
+.segments button:hover {
+  color: var(--encre);
+}
+
+.segments button.actif {
+  background: var(--surface);
+  color: var(--marque);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--filet);
+}
+
+.segments .nombre {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: var(--rayon-pastille);
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+  font: 600 11.5px var(--donnee);
+}
+
+/* ------------------------------------------------------- cartes de bâtiments */
+.grille {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+.plein {
+  grid-column: 1 / -1;
+}
+
+.bat {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  transition: transform var(--courte) var(--courbe), border-color var(--courte) var(--courbe);
+}
+
+/* Au survol, la carte se soulève (§ 6.2) */
+.bat:hover,
+.bat:focus-visible {
+  transform: translateY(-3px);
+  border-color: var(--filet-fort);
+}
+
+.bat .haut {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bat h2 {
+  font-size: 16.5px;
+  color: var(--marque);
+}
+
+.bat .ref {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+.pictogramme {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--nuit-clair);
+  color: var(--marque);
+}
+
+.lieu {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--encre-2);
+}
+
+.qui {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 13.5px;
+  color: var(--encre-2);
+}
+
+.qui span b {
+  font-weight: 500;
+  color: var(--encre);
+}
+
+.manque {
+  color: var(--attention-texte);
+  font-style: italic;
+}
+
+.etiquettes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Jauge d'occupation : la barre se remplit à l'apparition (§ 6.3) */
+.jauge {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--encre-2);
+}
+
+.jauge .ligne {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.piste {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.piste span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--bon);
+  transform-origin: left;
+  animation: pousse 800ms var(--courbe) 200ms both;
+}
+
+.piste span.attention {
+  background: var(--attention);
+}
+
+.piste span.critique {
+  background: var(--critique);
+}
+
+@keyframes pousse {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.squelette-carte {
+  height: 208px;
+  border-radius: var(--rayon);
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------- fiche bâtiment */
+.chiffres {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.chiffre {
+  padding: 14px 16px;
+}
+
+.chiffre p {
+  margin: 0;
+}
+
+.chiffre .valeur {
+  font: 700 24px/1.1 var(--titre);
+  color: var(--marque);
+}
+
+.chiffre .libelle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.onglets {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 18px;
+  border-bottom: 1px solid var(--filet);
+  overflow-x: auto;
+}
+
+.onglets button {
+  position: relative;
+  min-height: var(--tactile);
+  padding: 0 16px;
+  border: 0;
+  background: none;
+  color: var(--encre-2);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.onglets button::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--ocre);
+  transform: scaleX(0);
+  transition: transform var(--standard) var(--courbe);
+}
+
+.onglets button[aria-selected='true'] {
+  color: var(--marque);
+  font-weight: 600;
+}
+
+.onglets button[aria-selected='true']::after {
+  transform: scaleX(1);
+}
+
+.panneau-onglet {
+  animation: fondu var(--standard) var(--courbe);
+}
+
+.deux {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+.fiche-liste {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+
+.fiche-liste div {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--filet);
+  font-size: 14px;
+}
+
+.fiche-liste div:last-child {
+  border-bottom: 0;
+}
+
+.fiche-liste dt {
+  color: var(--discret);
+}
+
+.fiche-liste dd {
+  margin: 0;
+  color: var(--encre);
+  overflow-wrap: anywhere;
+}
+
+.carte h3 {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.bandeau-alerte {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: var(--rayon-2);
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+  font-size: 14px;
+  animation: montee var(--standard) var(--courbe);
+}
+
+.bandeau-alerte p {
+  flex: 1 1 260px;
+  margin: 0;
+}
+
+.entre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.entre h3 {
+  margin: 0;
+}
+
+.carte + .carte,
+fact-table-donnees {
+  margin-top: 16px;
+}
+
+/* Dans une grille, l'écart vient de la grille elle-même. */
+.chiffres .carte + .carte,
+.deux > .carte + .carte,
+.bilan .carte + .carte {
+  margin-top: 0;
+}
+
+/* -------------------------------------------------------------- interventions */
+.liste-interventions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ligne-int {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color var(--courte) var(--courbe);
+}
+
+.ligne-int:hover {
+  border-color: var(--filet-fort);
+}
+
+.ligne-int.urgente {
+  border-left: 4px solid var(--critique);
+}
+
+.ligne-int .texte {
+  display: grid;
+  gap: 2px;
+}
+
+.ligne-int small {
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+@media (min-width: 768px) {
+  .ligne-int {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+
+/* ------------------------------------------------------- lots libres à louer */
+.titre-tableau {
+  margin: 4px 0 10px;
+  font-size: 16px;
+}
+
+.libres {
+  margin-bottom: 16px;
+  border-color: color-mix(in srgb, var(--ocre) 45%, var(--filet));
+  background: linear-gradient(180deg, var(--ocre-clair), var(--surface) 80%);
+}
+
+.liste-libres {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.liste-libres li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--filet);
+  border-radius: var(--rayon-2);
+  background: var(--surface);
+}
+
+.liste-libres .texte {
+  display: grid;
+}
+
+.liste-libres small {
+  color: var(--discret);
+  font-size: 12.5px;
+}
+
+.liste-libres .btn {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+  .liste-libres li {
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .liste-libres .btn {
+    grid-column: auto;
+  }
+}
+
+/* --------------------------------------------------------------- formulaires */
+.aide {
+  margin: 0;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+/* ---------------------------------------------------------------- import */
+.depot {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 34px 20px;
+  border: 2px dashed var(--filet-fort);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--courte) var(--courbe), background var(--courte) var(--courbe);
+}
+
+.depot:hover,
+.depot.survol {
+  border-color: var(--marque);
+  background: var(--nuit-clair);
+}
+
+.depot .rond {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--nuit-clair);
+  color: var(--marque);
+}
+
+.depot strong {
+  color: var(--marque);
+}
+
+.depot input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.etapes-import {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  color: var(--encre-2);
+}
+
+.bilan {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.bilan .chiffre .valeur.bon {
+  color: var(--bon-texte);
+}
+
+.erreurs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.erreurs li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  padding: 10px 12px;
+  border-radius: var(--rayon-2);
+  background: var(--critique-clair);
+  font-size: 14px;
+}
+
+.erreurs .ou {
+  font: 500 12.5px var(--donnee);
+  color: var(--critique-texte);
+  white-space: nowrap;
+}
+
+.reussite {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--rayon);
+  background: var(--bon-clair);
+  color: var(--bon-texte);
+  animation: montee var(--standard) var(--courbe);
+}
+
+/* La coche se dessine à l'envoi réussi (§ 6.2) */
+.coche-animee path {
+  stroke-dasharray: 30;
+  animation: dessine 600ms var(--courbe) 150ms both;
+}
+
+@keyframes dessine {
+  from {
+    stroke-dashoffset: 30;
+  }
+}
+
+/* ------------------------------------------------- points de rupture (§ 5.3) */
+@media (min-width: 768px) {
+  :host {
+    padding: 32px 28px 72px;
+  }
+
+  .grille {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chiffres {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .deux {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1200px) {
+  .grille {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .deux.large-gauche {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
+
+/* Photos du bâtiment (relevées sur le terrain) */
+.photos-batiment {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0 0 4px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, 220px);
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.photos-batiment li {
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  animation: montee var(--standard) var(--courbe) both;
+}
+
+.photos-batiment fact-photo-securisee {
+  width: 100%;
+  height: 100%;
+}

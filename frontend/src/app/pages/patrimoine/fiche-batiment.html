@@ -1,0 +1,327 @@
+@if (chargement()) {
+  <div class="squelette-carte" style="height: 120px" aria-busy="true"></div>
+  <div class="chiffres">@for (i of [1, 2, 3, 4]; track i) { <div class="squelette-carte" style="height: 86px"></div> }</div>
+} @else if (introuvable() || !batiment()) {
+  <fact-etat-vide icone="batiment" titre="Bâtiment introuvable"
+                  message="Il n'existe pas, ou il n'est pas dans votre périmètre.">
+    <a class="btn principal" routerLink="/patrimoine">Retour aux bâtiments</a>
+  </fact-etat-vide>
+} @else {
+  @let b = batiment()!;
+  <header class="entete">
+    <div>
+      <p class="fil"><a routerLink="/patrimoine">Bâtiments</a> <fact-icone nom="droite" [taille]="14" /> <span class="donnee">{{ b.reference }}</span></p>
+      <h1>{{ b.nom }}</h1>
+      <p class="accroche">
+        {{ libelle('TYPE_BATIMENT', b.type) }} · {{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }}
+      </p>
+      <div class="etiquettes" style="margin-top: 10px">
+        @if (b.archiveLe) { <span class="pastille neutre">Archivé le {{ f.date(b.archiveLe) }}</span> }
+        @if (b.validation === 'A_VALIDER') { <span class="pastille attention">À valider</span> } @else { <span class="pastille bon">Validé</span> }
+        @if (b.latitude === null) { <span class="pastille neutre">À localiser</span> }
+        @if (b.origine === 'SITE') { <span class="pastille info">Repris du site actuel</span> }
+        @if (b.origine === 'IMPORT') { <span class="pastille info">Importé</span> }
+        @if (b.origine === 'TERRAIN') { <span class="pastille info">Recensé sur le terrain</span> }
+      </div>
+    </div>
+    <div class="actions-entete">
+      @if (peutArchiver()) {
+        <button type="button" class="btn" (click)="aConfirmer.set({ genre: 'archiver-batiment' })">
+          <fact-icone nom="archive" [taille]="18" /> {{ b.archiveLe ? 'Restaurer' : 'Archiver' }}
+        </button>
+      }
+      @if (peutModifier()) {
+        <button type="button" class="btn principal" (click)="modification.set(true)"><fact-icone nom="crayon" [taille]="18" /> Modifier</button>
+      }
+    </div>
+  </header>
+
+  @if (peutValider()) {
+    <div class="bandeau-alerte" role="status">
+      <fact-icone nom="alerte" />
+      <p>
+        @if (b.latitude === null) {
+          Cette fiche attend d'être localisée puis validée. Placez le bâtiment sur la carte (« Modifier »), ou attendez le passage d'un agent.
+        } @else {
+          Cette fiche a été créée sur le terrain ou reprise d'un fichier : contrôlez-la, puis validez-la.
+        }
+      </p>
+      <button type="button" class="btn petit principal" [disabled]="b.latitude === null" (click)="aConfirmer.set({ genre: 'valider' })">
+        <fact-icone nom="coche" [taille]="16" /> Valider la fiche
+      </button>
+    </div>
+  }
+
+  <section class="chiffres" aria-label="Chiffres du bâtiment">
+    <article class="carte chiffre"><p class="valeur"><fact-compteur [valeur]="b.lots" /></p><p class="libelle">Lots gérés</p></article>
+    <article class="carte chiffre"><p class="valeur"><fact-compteur [valeur]="b.lotsOccupes" /></p><p class="libelle">Occupés</p></article>
+    <article class="carte chiffre"><p class="valeur"><fact-compteur [valeur]="b.lotsVacants" /></p><p class="libelle">Vacants ou à louer</p></article>
+    <article class="carte chiffre"><p class="valeur"><fact-compteur [valeur]="b.loyersReference" suffixe=" FCFA" /></p><p class="libelle">Loyers de référence</p></article>
+  </section>
+
+  <div class="onglets" role="tablist" aria-label="Fiche du bâtiment">
+    <button type="button" role="tab" [attr.aria-selected]="onglet() === 'identite'" (click)="choisirOnglet('identite')">Identité</button>
+    <button type="button" role="tab" [attr.aria-selected]="onglet() === 'lots'" (click)="choisirOnglet('lots')">Lots ({{ lots().length }})</button>
+    @if (voitLocation()) {
+      <button type="button" role="tab" [attr.aria-selected]="onglet() === 'location'" (click)="choisirOnglet('location')">Location</button>
+    }
+    @if (voitTravaux()) {
+      <button type="button" role="tab" [attr.aria-selected]="onglet() === 'interventions'" (click)="choisirOnglet('interventions')">
+        Interventions@if (b.interventionsOuvertes) { ({{ b.interventionsOuvertes }}) }
+      </button>
+    }
+    <button type="button" role="tab" [attr.aria-selected]="onglet() === 'proprietaire'" (click)="choisirOnglet('proprietaire')">Propriétaire</button>
+    @if (voitHistorique()) {
+      <button type="button" role="tab" [attr.aria-selected]="onglet() === 'historique'" (click)="choisirOnglet('historique')">Historique</button>
+    }
+  </div>
+
+  @switch (onglet()) {
+    <!-- ------------------------------------------------------------- identité -->
+    @case ('identite') {
+      @if (photos().length) {
+        <ul class="photos-batiment" aria-label="Photos du bâtiment">
+          @for (p of photos(); track p.id; let i = $index) {
+            <li [style.animation-delay.ms]="i * 50"><fact-photo-securisee [idPhoto]="p.id" source="batiments" [alt]="'Photo ' + (i + 1) + ' du bâtiment'" /></li>
+          }
+        </ul>
+      }
+      <div class="deux large-gauche panneau-onglet" role="tabpanel">
+        <article class="carte">
+          <h3>Identité</h3>
+          <dl class="fiche-liste">
+            <div><dt>Référence</dt><dd class="donnee">{{ b.reference }}</dd></div>
+            <div><dt>Type</dt><dd>{{ libelle('TYPE_BATIMENT', b.type) }}</dd></div>
+            <div><dt>Adresse ou repère</dt><dd>{{ b.adresse || '-' }}</dd></div>
+            <div><dt>Commune</dt><dd>{{ b.commune }}</dd></div>
+            <div><dt>Quartier</dt><dd>{{ b.quartier || '-' }}</dd></div>
+            <div><dt>Niveaux</dt><dd>{{ b.niveaux ?? '-' }}</dd></div>
+            <div><dt>Construction</dt><dd>{{ b.anneeConstruction ?? '-' }}</dd></div>
+            @if (auth.compte()?.portee === 'TOUT') {
+              <div><dt>Gestionnaire</dt><dd>@if (b.gestionnaire) { {{ b.gestionnaire }} } @else { <em class="manque">aucun</em> }</dd></div>
+              @if (b.suppleant) { <div><dt>Suppléant</dt><dd>{{ b.suppleant }}</dd></div> }
+            }
+            @if (b.description) { <div><dt>Description</dt><dd>{{ b.description }}</dd></div> }
+            <div><dt>Créé</dt><dd>{{ f.dateHeure(b.creeLe) }}@if (b.creePar) { · {{ b.creePar }} }</dd></div>
+            @if (b.majLe) { <div><dt>Modifié</dt><dd>{{ f.dateHeure(b.majLe) }}@if (b.majPar) { · {{ b.majPar }} }</dd></div> }
+          </dl>
+        </article>
+        <div>
+          <article class="carte">
+            <h3>Position</h3>
+            <fact-carte-position [position]="position()" [centre]="ref.centreCommune(b.idCommune)" />
+          </article>
+          @if (occupation().length) {
+            <article class="carte">
+              <h3>Occupation</h3>
+              <fact-anneau [parts]="occupation()" />
+            </article>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ----------------------------------------------------------------- lots -->
+    @case ('lots') {
+      <div class="panneau-onglet" role="tabpanel">
+        @if (lots().length) {
+          <article class="carte">
+            <div class="entre">
+              <h3>Vue par étage</h3>
+              <div class="actions-entete">
+                @if (peutLouer()) {
+                  <button type="button" class="btn petit" (click)="choisirOnglet('location')"><fact-icone nom="utilisateur" [taille]="16" /> Ajouter un locataire</button>
+                }
+                @if (peutModifier()) {
+                  <button type="button" class="btn petit principal" (click)="lotOuvert.set('nouveau')"><fact-icone nom="plus" [taille]="16" /> Ajouter un lot</button>
+                }
+              </div>
+            </div>
+            <fact-vue-etages [lots]="lotsEtages()" [choisi]="lotModifie()" (lot)="ouvrirLot($event.id)" />
+          </article>
+          <fact-table-donnees titre="Lots du bâtiment" [colonnes]="colonnesLots" [lignes]="lignesLots()" cleLigne="id" [parPage]="15"
+                              [recherche]="lots().length > 8" [exportable]="true" [cliquable]="true"
+                              [surbrillance]="lotModifie()" (ligne)="ouvrirLigne($event)" />
+        } @else {
+          <fact-etat-vide icone="cle" titre="Aucun lot dans ce bâtiment" message="Saisissez ses appartements, magasins ou bureaux, porte par porte.">
+            @if (peutModifier()) {
+              <button type="button" class="btn principal" (click)="lotOuvert.set('nouveau')">Ajouter un lot</button>
+            }
+          </fact-etat-vide>
+        }
+      </div>
+    }
+
+    <!-- ------------------------------------------------------------- location -->
+    @case ('location') {
+      <div class="panneau-onglet" role="tabpanel">
+        @if (baux() === null) {
+          <p class="aide">Chargement…</p>
+        } @else {
+          @if (peutLouer() && lotsLibres().length) {
+            <article class="carte libres">
+              <div class="entre">
+                <div>
+                  <h3>Ajouter un locataire</h3>
+                  <p class="aide">Choisissez le lot libre à louer : le bail se signe sur ce lot.</p>
+                </div>
+                <span class="pastille attention">{{ lotsLibres().length }} lot(s) libre(s)</span>
+              </div>
+              <ul class="liste-libres">
+                @for (l of lotsLibres(); track l.id) {
+                  <li>
+                    <span class="texte"><strong>Lot {{ l.numero }}</strong>
+                      <small>{{ l.libelleType }} · {{ l.etage === 0 ? 'RDC' : 'étage ' + l.etage }}@if (l.loyerReference) { · {{ f.fcfa(l.loyerReference) }} }</small></span>
+                    <span class="pastille neutre">{{ l.libelleStatut }}</span>
+                    <button type="button" class="btn petit principal" (click)="louer(l)"><fact-icone nom="plus" [taille]="16" /> Ajouter un locataire</button>
+                  </li>
+                }
+              </ul>
+            </article>
+          } @else if (peutLouer() && !lotsLibres().length && lots().length) {
+            <p class="aide">Tous les lots sont loués : pour ajouter un locataire, un lot doit d'abord se libérer (sortie du locataire en place).</p>
+          }
+          @if (sansBail().length) {
+            <div class="bandeau-alerte" role="status">
+              <fact-icone nom="alerte" />
+              <p><strong>{{ sansBail().length }} lot(s) marqué(s) occupé(s) sans bail saisi</strong> ({{ numerosSansBail() }}) :
+                saisissez leur bail pour suivre les loyers.</p>
+              <button type="button" class="btn petit" (click)="louer(sansBail()[0])">Saisir le premier</button>
+            </div>
+          }
+          <h3 class="titre-tableau">Baux en cours</h3>
+          <fact-table-donnees titre="Baux en cours" [colonnes]="colonnesBaux" [lignes]="lignesBaux()" cleLigne="id" [parPage]="15"
+                              [recherche]="lignesBaux().length > 8" [exportable]="true" [cliquable]="true"
+                              vide="Aucun bail en cours dans ce bâtiment." (ligne)="ouvrirBail($event)" />
+          <p class="aide" style="margin-top: 10px">Cliquez sur un lot pour encaisser un loyer, poser un préavis ou ouvrir ses quittances.</p>
+        }
+      </div>
+    }
+
+    <!-- -------------------------------------------------------- interventions -->
+    @case ('interventions') {
+      <div class="panneau-onglet" role="tabpanel">
+        <div class="entre">
+          <h3 class="titre-tableau">Interventions et travaux</h3>
+          @if (peutSignaler()) {
+            <button type="button" class="btn petit principal" (click)="signalement.set(true)"><fact-icone nom="alerte" [taille]="16" /> Signaler une panne</button>
+          }
+        </div>
+        @if (interventions() === null) {
+          <p class="aide">Chargement…</p>
+        } @else {
+          <ul class="liste-interventions">
+            @for (i of interventions(); track i.id) {
+              <li>
+                <button type="button" class="carte ligne-int" [class.urgente]="i.ouverte && (i.urgence === 'CRITIQUE' || i.urgence === 'HAUTE')"
+                        (click)="interventionOuverte.set(i)">
+                  <span class="texte"><strong>{{ i.titre }}</strong>
+                    <small><span class="donnee">{{ i.reference }}</span>@if (i.numeroLot) { · lot {{ i.numeroLot }} } · {{ i.libelleCategorie }} · {{ depuis(i.signaleLe) }}@if (i.prestataire) { · {{ i.prestataire }} }</small></span>
+                  <span class="etiquettes">
+                    <span class="pastille" [class]="tonUrgence(i.urgence)">{{ i.libelleUrgence }}</span>
+                    <span class="pastille" [class]="i.statut === 'CLOTUREE' ? 'bon' : i.statut === 'ANNULEE' ? 'neutre' : 'info'">{{ i.libelleStatut }}</span>
+                  </span>
+                </button>
+              </li>
+            } @empty {
+              <li><fact-etat-vide icone="outils" titre="Aucune intervention" message="Les pannes signalées sur ce bâtiment et ses lots apparaîtront ici." /></li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    <!-- --------------------------------------------------------- propriétaire -->
+    @case ('proprietaire') {
+      <div class="deux panneau-onglet" role="tabpanel">
+        @if (proprietaire(); as p) {
+          <article class="carte">
+            <div class="entre">
+              <h3>{{ p.nomComplet }}</h3>
+              <span class="donnee aide">{{ p.reference }}</span>
+            </div>
+            <dl class="fiche-liste">
+              <div><dt>Type</dt><dd>{{ libelle('TYPE_PERSONNE', p.typePersonne) }}</dd></div>
+              @if (p.telephone !== undefined) {
+                <div><dt>Téléphone</dt><dd class="donnee">{{ p.telephone || '-' }}@if (p.telephone2) { · {{ p.telephone2 }} }</dd></div>
+                <div><dt>E-mail</dt><dd>{{ p.email || '-' }}</dd></div>
+                <div><dt>Adresse</dt><dd>{{ p.adresse || '-' }}</dd></div>
+                <div><dt>Reversement</dt><dd>{{ p.reversementMode ? libelle('MODE_PAIEMENT', p.reversementMode) : '-' }}@if (p.reversementCoordonnees) { · <span class="donnee">{{ p.reversementCoordonnees }}</span> }</dd></div>
+              }
+              <div><dt>Bâtiments</dt><dd>{{ p.batiments }}</dd></div>
+              <div><dt>Espace propriétaire</dt><dd>{{ p.idCompte ? 'Ouvert' : 'Non ouvert' }}</dd></div>
+            </dl>
+            @if (p.telephone !== undefined) {
+              <a class="btn petit" [routerLink]="['/proprietaires']" [queryParams]="{ fiche: p.id }" style="margin-top: 12px">Voir sa fiche</a>
+            }
+          </article>
+          <article class="carte">
+            <h3>Mandat</h3>
+            <fact-etat-vide icone="document" titre="Mandat à venir"
+                            message="Type, date, durée, taux d'honoraires et seuil de travaux du mandat seront saisis ici avec la gestion locative (étape 9)." />
+          </article>
+        }
+      </div>
+    }
+
+    <!-- ------------------------------------------------------------ historique -->
+    @case ('historique') {
+      <article class="carte panneau-onglet" role="tabpanel">
+        <h3>Toutes les modifications</h3>
+        @if (historique() === null) {
+          <p class="aide">Chargement…</p>
+        } @else {
+          <fact-fil-historique [evenements]="evenements()" />
+        }
+      </article>
+    }
+  }
+
+  <!-- -------------------------------------------------------------- panneaux -->
+  <fact-panneau-lateral [page]="true" titre="Modifier le bâtiment" [ouvert]="modification()" (fermer)="modification.set(false)">
+    @if (modification()) {
+      <fact-formulaire-batiment [batiment]="b" (enregistre)="batimentEnregistre($event)" (annule)="modification.set(false)" />
+    }
+  </fact-panneau-lateral>
+  <fact-panneau-lateral [page]="true" [titre]="lotOuvert() === 'nouveau' ? 'Nouveau lot' : 'Lot ' + ($any(lotOuvert())?.numero ?? '')"
+                        [ouvert]="!!lotOuvert()" (fermer)="lotOuvert.set(null)">
+    @if (lotOuvert(); as l) {
+      <fact-formulaire-lot [idBatiment]="b.id" [lot]="l === 'nouveau' ? null : l" [etageParDefaut]="etageSuivant()"
+                           (enregistre)="lotEnregistre($event)" (annule)="lotOuvert.set(null)"
+                           (archive)="aConfirmer.set({ genre: 'archiver-lot', lot: $event })" />
+    }
+  </fact-panneau-lateral>
+
+  <fact-panneau-lateral [page]="true" [titre]="'Lot ' + (lotFiche()?.numero ?? '')" [ouvert]="!!lotFiche()" (fermer)="lotFiche.set(null)">
+    @if (lotFiche(); as l) {
+      <fact-fiche-lot [idLot]="l.id" [ouvrirEn]="lotEnBail() ? 'bail' : 'fiche'" (change)="lotChange($event)" (ferme)="lotFiche.set(null)"
+                      (archive)="aConfirmer.set({ genre: 'archiver-lot', lot: $event })" />
+    }
+  </fact-panneau-lateral>
+
+  <fact-panneau-lateral [page]="true" [titre]="interventionOuverte()?.reference ?? 'Intervention'" [ouvert]="!!interventionOuverte()"
+                        (fermer)="interventionOuverte.set(null)">
+    @if (interventionOuverte(); as i) {
+      <fact-fiche-intervention [idIntervention]="i.id" (change)="interventionChange()" />
+    }
+  </fact-panneau-lateral>
+  <fact-panneau-lateral [page]="true" titre="Signaler une panne" [ouvert]="signalement()" (fermer)="signalement.set(false)">
+    @if (signalement()) {
+      <fact-signalement [idBatiment]="b.id" (cree)="interventionSignalee($event)" (annule)="signalement.set(false)" />
+    }
+  </fact-panneau-lateral>
+
+  <fact-confirmation
+    [ouvert]="aConfirmer() !== null"
+    [danger]="aConfirmer()?.genre !== 'valider' && !(aConfirmer()?.genre === 'archiver-batiment' && b.archiveLe)"
+    [titre]="aConfirmer()?.genre === 'valider' ? 'Valider cette fiche ?'
+      : aConfirmer()?.genre === 'archiver-lot' ? 'Archiver le lot ' + (aConfirmer()?.lot?.numero ?? '') + ' ?'
+      : b.archiveLe ? 'Restaurer ce bâtiment ?' : 'Archiver ce bâtiment ?'"
+    [message]="aConfirmer()?.genre === 'valider' ? 'Vous confirmez que l\'identité, la position et le propriétaire de ce bâtiment ont été contrôlés.'
+      : aConfirmer()?.genre === 'archiver-lot' ? 'Le lot ne sera plus proposé ni compté, mais restera consultable. Son numéro de porte redevient libre.'
+      : b.archiveLe ? 'Le bâtiment reviendra dans le patrimoine géré.'
+      : 'Le bâtiment et ses lots sortent du patrimoine géré, mais restent consultables. Rien n\'est supprimé.'"
+    [action]="aConfirmer()?.genre === 'valider' ? 'Valider' : aConfirmer()?.genre === 'archiver-lot' ? 'Archiver le lot' : b.archiveLe ? 'Restaurer' : 'Archiver'"
+    (confirmer)="confirmer()"
+    (annuler)="aConfirmer.set(null)" />
+}

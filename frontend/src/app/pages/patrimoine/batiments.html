@@ -1,0 +1,114 @@
+<header class="entete">
+  <div>
+    <h1>Bâtiments</h1>
+    <p class="accroche">
+      @if (chargement()) {
+        Chargement…
+      } @else {
+        <fact-compteur [valeur]="visibles().length" /> bâtiment{{ visibles().length > 1 ? 's' : '' }} ·
+        <fact-compteur [valeur]="totaux().lots" /> lots, dont <fact-compteur [valeur]="totaux().occupes" /> occupés
+        @if (auth.compte()?.portee === 'SON_PORTEFEUILLE') { · votre portefeuille }
+      }
+    </p>
+  </div>
+  <div class="actions-entete">
+    <div class="segments" role="group" aria-label="Affichage">
+      <button type="button" [class.actif]="vue() === 'cartes'" [attr.aria-pressed]="vue() === 'cartes'" (click)="vue.set('cartes')">Cartes</button>
+      <button type="button" [class.actif]="vue() === 'tableau'" [attr.aria-pressed]="vue() === 'tableau'" (click)="vue.set('tableau')">Tableau</button>
+    </div>
+    @if (peutCreer()) {
+      <button type="button" class="btn principal" (click)="creation.set(true)"><fact-icone nom="plus" /> Nouveau bâtiment</button>
+    }
+  </div>
+</header>
+
+<div class="outils">
+  <label class="cherche">
+    <fact-icone nom="recherche" [taille]="18" />
+    <input type="search" placeholder="Nom, référence, propriétaire, quartier…" [ngModel]="recherche()" (ngModelChange)="recherche.set($event)"
+           aria-label="Rechercher un bâtiment">
+  </label>
+  <fact-choix class="filtre" vide="Toutes les communes" invite="Toutes les communes" [options]="communes() | options : opt.commune"
+              [ngModel]="commune()" (ngModelChange)="commune.set($event)" />
+  <div class="segments" role="group" aria-label="Filtrer les bâtiments">
+    <button type="button" [class.actif]="filtre() === 'tous'" [attr.aria-pressed]="filtre() === 'tous'" (click)="filtre.set('tous')">Tous</button>
+    <button type="button" [class.actif]="filtre() === 'a-valider'" [attr.aria-pressed]="filtre() === 'a-valider'" (click)="filtre.set('a-valider')">
+      À valider @if (aValider()) { <span class="nombre">{{ aValider() }}</span> }
+    </button>
+    <button type="button" [class.actif]="filtre() === 'a-localiser'" [attr.aria-pressed]="filtre() === 'a-localiser'" (click)="filtre.set('a-localiser')">
+      À localiser @if (aLocaliser()) { <span class="nombre">{{ aLocaliser() }}</span> }
+    </button>
+    @if (voitGestion()) {
+      <button type="button" [class.actif]="filtre() === 'sans-gestionnaire'" [attr.aria-pressed]="filtre() === 'sans-gestionnaire'"
+              (click)="filtre.set('sans-gestionnaire')">
+        Sans gestionnaire @if (sansGestionnaire()) { <span class="nombre">{{ sansGestionnaire() }}</span> }
+      </button>
+    }
+  </div>
+</div>
+
+@if (chargement()) {
+  <ul class="grille" aria-busy="true">
+    @for (i of [1, 2, 3, 4, 5, 6]; track i) { <li class="squelette-carte"></li> }
+  </ul>
+} @else if (vue() === 'tableau') {
+  <fact-table-donnees titre="Bâtiments" [colonnes]="colonnes" [lignes]="lignes()" cleLigne="id" [parPage]="20" [recherche]="false"
+                      [exportable]="true" [cliquable]="true" vide="Aucun bâtiment ne correspond à ces critères." (ligne)="ouvrirLigne($event)" />
+} @else {
+  <ul class="grille">
+    @for (b of visibles(); track b.id; let i = $index) {
+      <li [factApparition]="i">
+        <button type="button" class="carte bat" (click)="ouvrir(b.id)" [attr.aria-label]="b.nom + ', ' + b.commune">
+          <div class="haut">
+            <div>
+              <h2>{{ b.nom }}</h2>
+              <p class="ref donnee">{{ b.reference }} · {{ libelleType(b.type) }}</p>
+            </div>
+            <span class="pictogramme" aria-hidden="true"><fact-icone nom="batiment" /></span>
+          </div>
+          <p class="lieu"><fact-icone nom="cible" [taille]="16" />{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }}</p>
+          <p class="qui">
+            <span>Propriétaire : <b>{{ b.proprietaire }}</b></span>
+            @if (voitGestion()) {
+              <span>Gestionnaire : @if (b.gestionnaire) { <b>{{ b.gestionnaire }}</b> } @else { <em class="manque">aucun</em> }</span>
+            }
+          </p>
+          @if (b.lots) {
+            <div class="jauge">
+              <div class="ligne"><span>{{ b.lotsOccupes }} / {{ b.lots }} lots occupés</span><span class="donnee">{{ fcfa(b.loyersReference) }}</span></div>
+              <div class="piste" aria-hidden="true"><span [class]="occupation(b).ton" [style.width.%]="occupation(b).part"></span></div>
+            </div>
+          } @else {
+            <p class="aide">Aucun lot saisi.</p>
+          }
+          @if (b.validation === 'A_VALIDER' || b.latitude === null) {
+            <div class="etiquettes">
+              @if (b.validation === 'A_VALIDER') { <span class="pastille attention">À valider</span> }
+              @if (b.latitude === null) { <span class="pastille neutre">À localiser</span> }
+            </div>
+          }
+        </button>
+      </li>
+    } @empty {
+      <li class="plein">
+        @if (batiments().length) {
+          <fact-etat-vide icone="recherche" titre="Aucun bâtiment ne correspond" message="Modifiez la recherche, la commune ou le filtre." />
+        } @else if (peutCreer()) {
+          <fact-etat-vide icone="batiment" titre="Aucun bâtiment pour le moment"
+                          message="Créez un premier bâtiment, ou importez le fichier du patrimoine de l'agence.">
+            <button type="button" class="btn principal" (click)="creation.set(true)">Nouveau bâtiment</button>
+          </fact-etat-vide>
+        } @else {
+          <fact-etat-vide icone="batiment" titre="Aucun bâtiment dans votre périmètre"
+                          message="Les bâtiments qui vous seront confiés apparaîtront ici." />
+        }
+      </li>
+    }
+  </ul>
+}
+
+<fact-panneau-lateral [page]="true" titre="Nouveau bâtiment" [ouvert]="creation()" (fermer)="creation.set(false)">
+  @if (creation()) {
+    <fact-formulaire-batiment (enregistre)="cree($event)" (annule)="creation.set(false)" />
+  }
+</fact-panneau-lateral>

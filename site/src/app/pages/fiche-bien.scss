@@ -1,0 +1,288 @@
+:host {
+  display: block;
+}
+
+.ref {
+  font-family: var(--donnee);
+  font-size: 0.9em;
+  color: #b4c2d0;
+}
+
+.gestes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.clair {
+  min-height: 42px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.avis {
+  margin-top: 10px !important;
+  font-size: 14px !important;
+}
+
+.fiche {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  padding-top: 28px;
+  padding-bottom: 24px;
+}
+
+.visuel-fiche {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border-radius: 22px;
+  background: linear-gradient(140deg, #1a2f55, #1a63d8);
+}
+
+.visuel-fiche svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.note-photo {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--rayon-pastille);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--nuit);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.bloc {
+  margin-top: 28px;
+}
+
+.bloc h2,
+.visite h2 {
+  margin: 0 0 14px;
+  font: 700 21px var(--titre);
+  color: var(--nuit);
+}
+
+.bloc h3 {
+  margin: 20px 0 10px;
+  font-size: 16px;
+  color: var(--nuit);
+}
+
+.carac {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carac li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--filet);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.carac fact-icone {
+  grid-row: span 2;
+  color: var(--ocre-texte);
+}
+
+.carac span {
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.equipements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.equipements li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--rayon-pastille);
+  background: var(--bon-clair);
+  color: var(--bon-texte);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.description {
+  margin: 0;
+  color: var(--encre-2);
+  font-size: 16.5px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+.carte-situation {
+  height: 300px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--filet);
+}
+
+.aide {
+  margin: 8px 0 0;
+  color: var(--discret);
+  font-size: 14px;
+}
+
+.cote {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.contact,
+.visite {
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+  border: 1px solid var(--filet);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 24px 50px -36px rgba(11, 18, 34, 0.6);
+}
+
+.contact .btn {
+  justify-content: center;
+}
+
+.etiquette {
+  margin: 0;
+  color: var(--discret);
+  font-size: 14px;
+}
+
+.prix {
+  margin: 0;
+  color: var(--nuit);
+  font: 700 clamp(26px, 4vw, 32px) / 1.1 var(--titre);
+}
+
+.conditions {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+
+.conditions div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14.5px;
+}
+
+.conditions dt {
+  color: var(--discret);
+}
+
+.conditions dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 500;
+}
+
+.conditions .total {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--filet);
+  font-weight: 700;
+  color: var(--nuit);
+}
+
+.whatsapp-btn {
+  background: #25d366;
+  border-color: #25d366;
+  color: #fff;
+}
+
+.visite {
+  scroll-margin-top: 90px;
+}
+
+.visite .btn[type='submit'] {
+  justify-content: center;
+}
+
+.ko {
+  margin: 0;
+  color: var(--critique-texte);
+  animation: secousse var(--standard) var(--courbe);
+}
+
+.erreur-case {
+  color: var(--critique-texte);
+  animation: secousse var(--standard) var(--courbe);
+}
+
+.retour {
+  margin-top: 14px;
+}
+
+.squelette {
+  border-radius: 18px;
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.bandeau .squelette {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.squelette.titre {
+  height: 48px;
+  max-width: 560px;
+  margin-bottom: 14px;
+}
+
+.squelette.ligne {
+  height: 20px;
+  max-width: 320px;
+}
+
+.squelette.photo {
+  aspect-ratio: 16 / 10;
+}
+
+.squelette.bloc-prix {
+  height: 320px;
+}
+
+@media (min-width: 1024px) {
+  .fiche {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 40px;
+  }
+
+  .carac {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,292 @@
+:host {
+  display: grid;
+  gap: 16px;
+}
+
+.tete h3 {
+  margin: 4px 0;
+  font-size: 18px;
+  color: var(--marque);
+}
+
+.ref {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--discret);
+}
+
+.lieu {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: var(--encre-2);
+}
+
+.etiquettes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.annulee {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--rayon-2);
+  background: var(--surface-3);
+  color: var(--encre-2);
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions .btn.principal {
+  flex: 1 1 100%;
+}
+
+/* ------------------------------------------------------------- étape en cours */
+.etape {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--filet);
+  border-left: 4px solid var(--ocre);
+  border-radius: var(--rayon-2);
+  background: var(--surface-2);
+  animation: montee var(--standard) var(--courbe);
+}
+
+h4 {
+  margin: 0;
+  font: 600 12.5px var(--titre);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--discret);
+}
+
+.etape h4 {
+  color: var(--ocre-texte);
+}
+
+.choix {
+  display: grid;
+}
+
+.rappel,
+.aide {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--encre-2);
+}
+
+.message {
+  display: flex;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--rayon-2);
+  background: var(--critique-clair);
+  color: var(--critique-texte);
+  font-size: 14px;
+}
+
+.message.attention {
+  background: var(--attention-clair);
+  color: var(--attention-texte);
+}
+
+.boutons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------------- déroulé */
+.bloc {
+  display: grid;
+  gap: 10px;
+}
+
+.deroule {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.deroule li {
+  position: relative;
+  padding: 0 0 14px 20px;
+  font-size: 14px;
+  color: var(--encre-2);
+}
+
+.deroule li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--marque);
+}
+
+.deroule li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 17px;
+  bottom: 0;
+  width: 1px;
+  background: var(--filet-fort);
+}
+
+.deroule b {
+  color: var(--encre);
+}
+
+.deroule p {
+  margin: 3px 0 0;
+}
+
+/* ------------------------------------------------------------------- photos */
+.sous-titre {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--encre-2);
+}
+
+.photos + .photos {
+  margin-top: 6px;
+}
+
+.mosaique {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+  gap: 8px;
+}
+
+.vignette,
+.ajout {
+  aspect-ratio: 1;
+  border-radius: var(--rayon-2);
+  overflow: hidden;
+}
+
+.vignette {
+  padding: 0;
+  border: 0;
+  cursor: zoom-in;
+  transition: transform var(--courte) var(--courbe);
+}
+
+.vignette:hover {
+  transform: scale(1.04);
+}
+
+.vignette fact-photo-securisee {
+  width: 100%;
+  height: 100%;
+}
+
+.ajout {
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 4px;
+  border: 2px dashed var(--filet-fort);
+  color: var(--marque);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color var(--courte) var(--courbe), background var(--courte) var(--courbe);
+}
+
+.ajout:hover {
+  border-color: var(--marque);
+  background: var(--nuit-clair);
+}
+
+.ajout.occupe fact-icone {
+  animation: tourne 1s linear infinite;
+}
+
+.ajout input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- visionneuse */
+.visionneuse {
+  position: fixed;
+  inset: 0;
+  z-index: 2600;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(10, 16, 26, 0.9);
+  animation: fondu var(--standard) var(--courbe);
+  cursor: zoom-out;
+}
+
+.visionneuse .grande {
+  width: min(1100px, 100%);
+  height: min(80vh, 100%);
+  background: transparent;
+  animation: grandit var(--standard) var(--courbe);
+}
+
+.visionneuse .grande ::ng-deep img {
+  object-fit: contain;
+}
+
+@keyframes grandit {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+.visionneuse .fermer {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.squelette span {
+  display: block;
+  height: 14px;
+  margin-bottom: 12px;
+  border-radius: 7px;
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.squelette span:nth-child(2) {
+  width: 70%;
+}
+
+.squelette span:nth-child(3) {
+  width: 45%;
+}

@@ -1,0 +1,13 @@
+node_modules/
+frontend/.angular/
+backend/.gradle/
+backend/build/
+backend/bin/
+backend/src/main/resources/static/
+backend/comptes_provisoires.txt
+*.log
+.idea/
+.vscode/
+uploads/
+__pycache__/
+.env

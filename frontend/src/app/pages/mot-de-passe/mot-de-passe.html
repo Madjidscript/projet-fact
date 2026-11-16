@@ -1,0 +1,70 @@
+<div class="ecran">
+  <aside class="marque" aria-hidden="true">
+    <div class="plan"></div>
+    <fact-logo class="logo-volet" variante="sombre" [largeur]="230" />
+    <div class="texte">
+      <h2>
+        <span class="ligne">Un mot de passe</span>
+        <span class="ligne">que vous seul connaissez.</span>
+      </h2>
+      <ul>
+        <li><fact-icone nom="cle" /> Il n'est jamais conservé en clair</li>
+        <li><fact-icone nom="horloge" /> La session se ferme après 30 minutes d'inactivité</li>
+        <li><fact-icone nom="document" /> Chaque action est tracée à votre nom</li>
+      </ul>
+    </div>
+    <p class="pied">Agence immobilière agréée · membre de la CDAIM · Abidjan</p>
+  </aside>
+
+  <main class="volet">
+    <form class="formulaire" (ngSubmit)="changer()" novalidate>
+      <fact-logo class="logo" [variante]="theme.theme() === 'sombre' ? 'sombre' : 'clair'" [largeur]="170" />
+      <h1>{{ auth.compte()?.doitChanger ? 'Choisissez votre mot de passe' : 'Changer de mot de passe' }}</h1>
+      <p class="intro">
+        @if (auth.compte()?.doitChanger) {
+          Bienvenue {{ auth.compte()?.nom }}. Votre mot de passe est provisoire : remplacez-le pour continuer.
+        } @else {
+          Vos autres sessions ouvertes seront fermées.
+        }
+      </p>
+
+      <label class="champ">
+        <input [type]="visible() ? 'text' : 'password'" name="actuel" placeholder=" " autocomplete="current-password"
+               [ngModel]="actuel()" (ngModelChange)="actuel.set($event)" required>
+        <span>{{ auth.compte()?.doitChanger ? 'Mot de passe provisoire' : 'Mot de passe actuel' }}</span>
+      </label>
+      <label class="champ">
+        <input [type]="visible() ? 'text' : 'password'" name="nouveau" placeholder=" " autocomplete="new-password"
+               [ngModel]="nouveau()" (ngModelChange)="nouveau.set($event)" aria-describedby="regles" required>
+        <span>Nouveau mot de passe</span>
+      </label>
+      <label class="champ">
+        <input [type]="visible() ? 'text' : 'password'" name="confirmation" placeholder=" " autocomplete="new-password"
+               [ngModel]="confirmation()" (ngModelChange)="confirmation.set($event)" required>
+        <span>Nouveau mot de passe, à nouveau</span>
+      </label>
+
+      <label class="case"><input type="checkbox" [checked]="visible()" (change)="visible.set(!visible())"> Afficher les mots de passe</label>
+
+      <ul class="regles" id="regles">
+        @for (r of regles(); track r.texte) {
+          <li [class.remplie]="r.remplie">
+            <span class="rond"><fact-icone nom="coche" [taille]="12" /></span>
+            {{ r.texte }}<span class="sr">{{ r.remplie ? ' : rempli' : ' : à remplir' }}</span>
+          </li>
+        }
+      </ul>
+
+      @if (erreur()) {
+        <p class="message erreur" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p>
+      }
+
+      <button type="submit" class="btn principal large" [class.occupe]="occupe()" [disabled]="!pret() || occupe()">
+        Enregistrer le mot de passe
+      </button>
+      <button type="button" class="btn discret lien" (click)="retour()">
+        {{ auth.compte()?.doitChanger ? 'Se déconnecter' : 'Annuler' }}
+      </button>
+    </form>
+  </main>
+</div>

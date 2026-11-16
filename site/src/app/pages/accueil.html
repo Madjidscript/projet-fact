@@ -1,0 +1,137 @@
+<!-- ----------------------------------------------------------------- bandeau -->
+<section class="heros" #heros aria-labelledby="titre-accueil">
+  <div class="ciel" aria-hidden="true">
+    <span class="soleil"></span>
+    <svg class="plan-loin" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMax slice">
+      <path fill="rgba(255,255,255,.06)" d="M0 320V210h60v-40h40v40h30V120h70v90h40v-60h50v60h30V90h80v120h40v-50h60v50h30V140h70v70h50v-90h60v90h40v-40h50v40h30V100h80v110h40v-60h60v60h30v-30h50v30h40v110Z" />
+    </svg>
+    <svg class="plan-pres" viewBox="0 0 1440 320" preserveAspectRatio="xMidYMax slice">
+      <path fill="rgba(10,22,38,.55)" d="M0 320V250h90v-30h60v30h40v-70h90v70h30v-40h70v40h50v-90h100v90h40v-30h60v30h60v-60h80v60h40v-40h70v40h40v-80h90v80h50v-30h60v30h50v-50h80v50h40v70Z" />
+      <path fill="rgba(26, 99, 216, .35)" d="M0 300c120-12 240-12 360 0s240 12 360 0 240-12 360 0 240 12 360 0v20H0Z" />
+    </svg>
+  </div>
+
+  <div class="conteneur contenu-heros">
+    <p class="surtitre-heros">Agence immobilière à Abidjan depuis {{ agence.demarrage }}</p>
+    <h1 id="titre-accueil">
+      @for (l of lignes; track $index) {
+        <span class="ligne">@for (m of l; track $index) { <span class="mot">{{ m }}</span>{{ ' ' }} }</span>
+      }
+    </h1>
+    <p class="texte-heros">Trouvez un logement, confiez-nous la gestion de votre bien, construisez ou rénovez : une seule équipe, sérieuse et présente sur le terrain.</p>
+
+    <form class="recherche" (ngSubmit)="rechercher()" role="search" aria-label="Rechercher un bien">
+      <div class="onglets" role="tablist" aria-label="Louer ou acheter">
+        <span class="curseur" [class.droite]="operation() === 'acheter'" aria-hidden="true"></span>
+        <button type="button" role="tab" [attr.aria-selected]="operation() === 'louer'" [class.actif]="operation() === 'louer'" (click)="operation.set('louer')">Louer</button>
+        <button type="button" role="tab" [attr.aria-selected]="operation() === 'acheter'" [class.actif]="operation() === 'acheter'" (click)="operation.set('acheter')">Acheter</button>
+      </div>
+      <div class="champs">
+        <fact-choix name="type" libelle="Type de bien" vide="Tous les types" [options]="optionsTypes" [(ngModel)]="type" />
+        <fact-choix name="commune" libelle="Commune" vide="Toutes les communes" [seuilRecherche]="0" [options]="optionsCommunes()" [(ngModel)]="commune" />
+        <label class="champ">
+          <input type="number" name="budget" placeholder=" " min="0" step="25000" [(ngModel)]="budget">
+          <span>{{ operation() === 'louer' ? 'Loyer maximum (FCFA)' : 'Budget maximum (FCFA)' }}</span>
+        </label>
+        <button type="submit" class="btn accent grand" siteAimant><fact-icone nom="recherche" [taille]="20" /> Rechercher</button>
+      </div>
+    </form>
+
+    <p class="ruban" aria-label="Nos services">
+      @for (m of metiers; track m.slug) { <span><fact-icone [nom]="m.icone" [taille]="16" /> {{ m.court }}</span> }
+    </p>
+  </div>
+  <a href="#chiffres" class="defiler" aria-label="Découvrir la suite"><span></span></a>
+</section>
+
+<!-- ----------------------------------------------------------- chiffres clés -->
+<section class="chiffres" id="chiffres" aria-label="L'agence en chiffres">
+  @if (chiffres().length) {
+    <div class="conteneur grille-chiffres" [class.cinq]="chiffres().length > 3" siteLot>
+      @for (c of chiffres(); track c.libelle) {
+        <div class="chiffre" siteInclinaison="5"><strong><span [siteCompteur]="c.valeur">0</span></strong><span>{{ c.libelle }}</span></div>
+      }
+    </div>
+  }
+</section>
+
+<!-- ----------------------------------------------------------------- métiers -->
+<section class="section" aria-labelledby="titre-metiers">
+  <div class="conteneur">
+    <div class="tete" siteRevele>
+      <p class="surtitre">Nos métiers</p>
+      <h2 class="titre-section" id="titre-metiers" siteTitre>Tout votre patrimoine, entre de bonnes mains</h2>
+      <p class="chapeau">De la recherche d’un locataire à la construction de votre maison, nous vous accompagnons à chaque étape.</p>
+    </div>
+    <ul class="metiers" siteLot>
+      @for (m of metiers; track m.slug; let i = $index) {
+        <li siteInclinaison>
+          <a class="metier" [routerLink]="['/services', m.slug]">
+            <span class="numero">0{{ i + 1 }}</span>
+            <span class="pictogramme"><fact-icone [nom]="m.icone" [taille]="40" [dessin]="true" /></span>
+            <h3>{{ m.titre }}</h3>
+            <p>{{ m.accroche }}</p>
+            <span class="suite">Découvrir <fact-icone nom="droite" [taille]="16" /></span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ biens à la une -->
+<section class="section une" aria-labelledby="titre-une">
+  <div class="conteneur">
+    <div class="tete ligne-tete" siteRevele>
+      <div>
+        <p class="surtitre">À la une</p>
+        <h2 class="titre-section" id="titre-une" siteTitre>Nos biens disponibles</h2>
+      </div>
+      <a class="btn" routerLink="/louer">Voir tous les biens <fact-icone nom="droite" [taille]="18" /></a>
+    </div>
+    @if (une(); as l) {
+      @if (l.length) {
+        <ul class="grille-biens" siteLot>
+          @for (b of l; track b.id) { <li siteInclinaison><site-vignette-bien [bien]="b" /></li> }
+        </ul>
+      } @else {
+        <p class="chapeau">Nos prochains biens arrivent bientôt. <a routerLink="/contact">Décrivez-nous votre recherche</a> : nous vous prévenons.</p>
+      }
+    } @else {
+      <ul class="grille-biens">@for (i of [1, 2, 3]; track i) { <li class="squelette-bien"></li> }</ul>
+    }
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ valeurs -->
+<section class="section valeurs" aria-labelledby="titre-valeurs">
+  <div class="conteneur deux-colonnes">
+    <div siteRevele>
+      <p class="surtitre">Pourquoi FACT Immobilier</p>
+      <h2 class="titre-section" id="titre-valeurs" siteTitre>Un partenaire de confiance, depuis 2013</h2>
+      <p class="chapeau">Créée en {{ agence.creation }}, active depuis {{ agence.demarrage }}, l’agence est membre de la CDAIM. Propriétaires comme locataires trouvent chez nous des interlocuteurs qui connaissent leur quartier.</p>
+      <a class="btn principal grand lien-agence" routerLink="/agence">Découvrir l’agence</a>
+    </div>
+    <ul class="liste-valeurs" siteLot>
+      @for (v of agence.valeurs; track v.titre) {
+        <li>
+          <span class="rond"><fact-icone [nom]="v.icone" [taille]="24" [dessin]="true" /></span>
+          <div><h3>{{ v.titre }}</h3><p>{{ v.texte }}</p></div>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------- propriétaires -->
+<section class="section" aria-labelledby="titre-proprio">
+  <div class="conteneur">
+    <div class="appel" siteRevele>
+      <div>
+        <h2 id="titre-proprio">Propriétaire ? Confiez-nous votre bien.</h2>
+        <p>Nous trouvons vos locataires, encaissons vos loyers et entretenons votre bien. Vous recevez un relevé clair de ce qui a été encaissé, dépensé et reversé.</p>
+      </div>
+      <a class="btn grand" routerLink="/confier-mon-bien" siteAimant>Confier mon bien <fact-icone nom="droite" [taille]="18" /></a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,131 @@
+<header class="entete">
+  <div>
+    <p class="date">{{ aujourdhui }}</p>
+    <h1>Bonjour {{ prenom() }}</h1>
+    <p class="accroche">{{ perimetre() }}</p>
+  </div>
+  <div class="raccourcis">
+    <a class="btn" routerLink="/carte"><fact-icone nom="carte" [taille]="18" /> Ouvrir la carte</a>
+    @if (peutCreer()) {
+      <a class="btn principal" routerLink="/patrimoine" [queryParams]="{ nouveau: 1 }"><fact-icone nom="plus" [taille]="18" /> Nouveau bâtiment</a>
+    }
+  </div>
+</header>
+
+@if (chargement()) {
+  <section class="kpi">@for (i of [1, 2, 3, 4]; track i) { <div class="squelette"></div> }</section>
+  <section class="deux"><div class="squelette haut"></div><div class="squelette haut"></div></section>
+} @else if (!batiments().length) {
+  <fact-etat-vide icone="batiment" titre="Aucun bâtiment pour le moment"
+                  [message]="peutCreer() ? 'Créez le premier bâtiment, ou importez le fichier du patrimoine de l\'agence.' : 'Les bâtiments qui vous seront confiés apparaîtront ici.'">
+    @if (peutCreer()) {
+      <a class="btn principal" routerLink="/patrimoine" [queryParams]="{ nouveau: 1 }">Nouveau bâtiment</a>
+    }
+    @if (direction()) {
+      <a class="btn" routerLink="/import">Importer un fichier Excel</a>
+    }
+  </fact-etat-vide>
+} @else {
+  @let c = chiffres();
+  <!-- ------------------------------------------------------------ chiffres clés -->
+  <section class="kpi" aria-label="Chiffres clés">
+    <a class="carte indicateur" routerLink="/patrimoine" [factApparition]="0">
+      <span class="pictogramme"><fact-icone nom="batiment" /></span>
+      <p class="valeur"><fact-compteur [valeur]="c.batiments" /></p>
+      <p class="libelle">Bâtiments · {{ c.communes }} commune{{ c.communes > 1 ? 's' : '' }}</p>
+    </a>
+    <a class="carte indicateur" routerLink="/patrimoine" [factApparition]="1">
+      <span class="pictogramme"><fact-icone nom="cle" /></span>
+      <p class="valeur"><fact-compteur [valeur]="c.lots" /></p>
+      <p class="libelle">Lots gérés</p>
+    </a>
+    <a class="carte indicateur" routerLink="/carte" [factApparition]="2">
+      <span class="pictogramme" [class]="tonOccupation()"><fact-icone nom="tableau" /></span>
+      <p class="valeur" [class]="tonOccupation()"><fact-compteur [valeur]="c.taux" [decimales]="1" suffixe=" %" /></p>
+      <p class="libelle">Taux d'occupation · {{ c.occupes }} lots occupés</p>
+    </a>
+    <a class="carte indicateur" routerLink="/patrimoine" [factApparition]="3">
+      <span class="pictogramme" [class.attention]="c.vacants > 0"><fact-icone nom="alerte" /></span>
+      <p class="valeur" [class.attention]="c.vacants > 0"><fact-compteur [valeur]="c.vacants" /></p>
+      <p class="libelle">Lots vacants ou à louer</p>
+    </a>
+  </section>
+
+  @if (moisLoyers(); as ml) {
+    <a class="bande loyers" routerLink="/loyers" factApparition>
+      <fact-icone nom="monnaie" />
+      <div class="trio">
+        <p><small>Attendu ce mois</small><strong class="donnee"><fact-compteur [valeur]="ml.attendu" suffixe=" FCFA" /></strong></p>
+        <p><small>Recouvré</small><strong class="donnee" [class.ok]="ml.taux >= 90"><fact-compteur [valeur]="ml.taux" [decimales]="1" suffixe=" %" /></strong></p>
+        <p><small>Impayés en retard</small><strong class="donnee" [class.ko]="loyers()!.synthese.impaye > 0"><fact-compteur [valeur]="loyers()!.synthese.impaye" suffixe=" FCFA" /></strong></p>
+      </div>
+      <fact-icone nom="droite" />
+    </a>
+  } @else {
+    <section class="bande" factApparition>
+      <fact-icone nom="monnaie" />
+      <p>Loyers de référence du patrimoine : <strong class="donnee"><fact-compteur [valeur]="c.loyers" suffixe=" FCFA" /></strong> par mois</p>
+    </section>
+  }
+
+  <div class="deux">
+    <!-- --------------------------------------------------------------- à traiter -->
+    <section class="carte" factApparition>
+      <h2>À traiter</h2>
+      @if (actions().length) {
+        <ul class="actions">
+          @for (a of actions(); track a.texte) {
+            <li>
+              <a [routerLink]="a.lien" [queryParams]="a.params ?? {}" class="action">
+                <span class="rond" [class]="a.ton"><fact-icone [nom]="a.icone" [taille]="18" /></span>
+                <span><strong>{{ a.nombre }}</strong> {{ a.texte }}</span>
+                <fact-icone nom="droite" [taille]="18" />
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="tout-va"><fact-icone nom="coche" /> Rien en attente.</p>
+      }
+    </section>
+
+    <!-- --------------------------------------------------------------- occupation -->
+    <section class="carte" factApparition>
+      <h2>Occupation des lots</h2>
+      @if (occupation().length) {
+        <fact-anneau [parts]="occupation()" />
+      } @else {
+        <p class="aide">Aucun lot saisi.</p>
+      }
+    </section>
+  </div>
+
+  <div class="deux">
+    <section class="carte" factApparition>
+      <h2>Lots vacants par commune</h2>
+      @if (vacantsParCommune().length) {
+        <fact-barres [parts]="vacantsParCommune()" titre="Lots vacants par commune" />
+      } @else {
+        <p class="tout-va"><fact-icone nom="coche" /> Aucun lot vacant.</p>
+      }
+    </section>
+
+    <section class="carte" factApparition>
+      <h2>Bâtiments avec le plus de lots libres</h2>
+      @if (plusVacants().length) {
+        <ul class="classement">
+          @for (b of plusVacants(); track b.id) {
+            <li>
+              <a [routerLink]="['/patrimoine', b.id]">
+                <span class="texte"><strong>{{ b.nom }}</strong><small>{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }}</small></span>
+                <span class="pastille attention">{{ b.lotsVacants }} / {{ b.lots }} libres</span>
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="tout-va"><fact-icone nom="coche" /> Tous les lots sont occupés.</p>
+      }
+    </section>
+  </div>
+}

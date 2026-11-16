@@ -1,0 +1,241 @@
+<header class="entete">
+  <div>
+    <h1>{{ auth.compte()?.profil === 'PROPRIETAIRE' ? 'Ma fiche' : 'Propriétaires' }}</h1>
+    <p class="accroche">
+      @if (chargement()) { Chargement… } @else { {{ visibles().length }} propriétaire{{ visibles().length > 1 ? 's' : '' }}{{ archives() ? ', archives comprises' : '' }} }
+    </p>
+  </div>
+  <div class="actions-entete">
+    @if (peutEcrire()) {
+      <button type="button" class="btn" (click)="basculerArchives()" [attr.aria-pressed]="archives()">
+        <fact-icone nom="archive" [taille]="18" /> {{ archives() ? 'Masquer les archives' : 'Voir les archives' }}
+      </button>
+      <button type="button" class="btn principal" (click)="creer()"><fact-icone nom="plus" /> Nouveau propriétaire</button>
+    }
+  </div>
+</header>
+
+@if (proprietaires().length > 6) {
+  <div class="outils">
+    <label class="cherche">
+      <fact-icone nom="recherche" [taille]="18" />
+      <input type="search" placeholder="Nom, référence, téléphone…" [ngModel]="recherche()" (ngModelChange)="recherche.set($event)"
+             aria-label="Rechercher un propriétaire">
+    </label>
+  </div>
+}
+
+@if (chargement()) {
+  <ul class="grille" aria-busy="true" style="margin-top: 20px">@for (i of [1, 2, 3]; track i) { <li class="squelette-carte" style="height: 110px"></li> }</ul>
+} @else {
+  <ul class="grille" style="margin-top: 20px">
+    @for (p of visibles(); track p.id; let i = $index) {
+      <li [factApparition]="i">
+        <button type="button" class="carte bat pro" [class.modifie]="modifie() === p.id" (click)="ouvrirFiche(p.id)">
+          <span class="avatar" aria-hidden="true">{{ initiales(p) }}</span>
+          <div>
+            <h2>{{ p.nomComplet }}</h2>
+            <p class="ref donnee">{{ p.reference }} · {{ libelle('TYPE_PERSONNE', p.typePersonne) }}</p>
+          </div>
+          <div class="bas">
+            <span><fact-icone nom="batiment" [taille]="16" /> {{ p.batiments }} bâtiment{{ p.batiments > 1 ? 's' : '' }}</span>
+            @if (p.telephone) { <span class="donnee">{{ p.telephone }}</span> }
+            @if (p.archiveLe) { <span class="pastille neutre">Archivé</span> }
+            @if (p.origine === 'SITE') { <span class="pastille attention">À préciser</span> }
+            @if (p.idCompte) { <span class="pastille info">Espace ouvert</span> }
+          </div>
+        </button>
+      </li>
+    } @empty {
+      <li class="plein">
+        @if (proprietaires().length) {
+          <fact-etat-vide icone="recherche" titre="Aucun propriétaire ne correspond" message="Modifiez la recherche." />
+        } @else {
+          <fact-etat-vide icone="utilisateur" titre="Aucun propriétaire" message="Créez la fiche d'un mandant, ou importez le fichier du patrimoine.">
+            @if (peutEcrire()) { <button type="button" class="btn principal" (click)="creer()">Nouveau propriétaire</button> }
+          </fact-etat-vide>
+        }
+      </li>
+    }
+  </ul>
+}
+
+
+<!-- ------------------------------------------------------------------ fiche -->
+<fact-panneau-lateral [page]="true" [titre]="courant()?.nomComplet ?? 'Propriétaire'" [ouvert]="ouvert() === 'fiche'" (fermer)="fermer()">
+  @if (courant(); as p) {
+    <dl class="fiche-liste">
+      <div><dt>Référence</dt><dd class="donnee">{{ p.reference }}</dd></div>
+      <div><dt>Type</dt><dd>{{ libelle('TYPE_PERSONNE', p.typePersonne) }}</dd></div>
+      @if (p.telephone !== undefined) {
+        <div><dt>Téléphone</dt><dd class="donnee">{{ p.telephone || '-' }}@if (p.telephone2) { · {{ p.telephone2 }} }</dd></div>
+        <div><dt>E-mail</dt><dd>{{ p.email || '-' }}</dd></div>
+        <div><dt>Adresse</dt><dd>{{ p.adresse || '-' }}</dd></div>
+        <div><dt>Pièce d'identité</dt><dd>{{ p.pieceType || '-' }}@if (p.pieceNumero) { · <span class="donnee">{{ p.pieceNumero }}</span> }</dd></div>
+        <div><dt>Reversement</dt><dd>{{ p.reversementMode ? libelle('MODE_PAIEMENT', p.reversementMode) : '-' }}@if (p.reversementCoordonnees) { · <span class="donnee">{{ p.reversementCoordonnees }}</span> }</dd></div>
+        @if (p.notes) { <div><dt>Notes</dt><dd>{{ p.notes }}</dd></div> }
+      }
+      <div><dt>Espace propriétaire</dt><dd>{{ p.idCompte ? 'Ouvert' : 'Non ouvert' }}</dd></div>
+    </dl>
+
+    <div class="espace-en-ligne">
+      <div>
+        <strong>Espace en ligne</strong>
+        <small>{{ p.idCompte ? 'Le propriétaire suit ses biens, ses loyers et ses travaux, et donne son accord sur les devis.'
+          : 'Donnez-lui un accès pour suivre ses biens et approuver les devis.' }}</small>
+      </div>
+      <div class="boutons">
+        <a class="btn petit" [routerLink]="['/espace']" [queryParams]="{ proprietaire: p.id }"><fact-icone nom="oeil" [taille]="16" /> Voir son espace</a>
+        @if (!p.idCompte && direction() && !p.archiveLe) {
+          <button type="button" class="btn petit principal" [class.occupe]="occupe()" [disabled]="occupe()" (click)="ouvrirEspace(p)">
+            <fact-icone nom="cle" [taille]="16" /> Ouvrir son espace</button>
+        }
+      </div>
+      @if (acces(); as a) {
+        <div class="acces" role="status">
+          <p>Espace ouvert. Transmettez ces informations au propriétaire : il changera le mot de passe à sa première connexion.</p>
+          <dl>
+            <div><dt>Connexion</dt><dd class="donnee">{{ a.email }}</dd></div>
+            <div><dt>Mot de passe provisoire</dt><dd class="donnee">{{ a.motDePasseProvisoire }}</dd></div>
+          </dl>
+          <button type="button" class="btn petit" (click)="copierAcces(a)"><fact-icone nom="copier" [taille]="16" /> Copier le message</button>
+        </div>
+      }
+    </div>
+
+    <h3 style="margin: 18px 0 10px; font-size: 15px">Ses bâtiments</h3>
+    <ul class="liste-bat">
+      @for (b of batimentsCourant(); track b.id) {
+        <li><a [routerLink]="['/patrimoine', b.id]"><span>{{ b.nom }}<br><small>{{ b.quartier ? b.quartier + ', ' : '' }}{{ b.commune }}</small></span>
+          <small class="donnee">{{ b.lots }} lots</small></a></li>
+      } @empty {
+        <li class="aide">Aucun bâtiment visible.</li>
+      }
+    </ul>
+
+
+    @if (peutEcrire() && p.telephone !== undefined) {
+      <div class="pied" style="margin-top: 20px">
+        @if (direction()) {
+          <button type="button" class="btn discret gauche" (click)="aArchiver.set(p)">
+            <fact-icone nom="archive" [taille]="16" /> {{ p.archiveLe ? 'Restaurer' : 'Archiver' }}
+          </button>
+        }
+        <button type="button" class="btn principal" (click)="modifier()"><fact-icone nom="crayon" [taille]="16" /> Modifier la fiche</button>
+      </div>
+    }
+
+    <fact-mandats [idProprietaire]="p.id" [reference]="p.reference" [idCompte]="p.idCompte" [batiments]="batimentsCourant()"
+                  [mandats]="mandatsCourant()" (change)="ouvrirFiche(p.id)" />
+  }
+</fact-panneau-lateral>
+
+<!-- ------------------------------------------------------------- formulaire -->
+<fact-panneau-lateral [page]="true" [titre]="s.id ? 'Modifier le propriétaire' : 'Nouveau propriétaire'" [ouvert]="ouvert() === 'formulaire'" (fermer)="fermer()">
+  @if (ouvert() === 'formulaire') {
+    <form class="formulaire" (ngSubmit)="enregistrer()" novalidate>
+      <fieldset>
+        <legend>Identité</legend>
+        <label class="champ">
+          <select name="typePersonne" [(ngModel)]="s.typePersonne">
+            @for (v of ref.liste('TYPE_PERSONNE'); track v.code) { <option [value]="v.code">{{ v.libelle }}</option> }
+          </select>
+          <span>Type</span>
+        </label>
+        <div class="duo">
+          <label class="champ">
+            <input type="text" name="nom" placeholder=" " [(ngModel)]="s.nom" autocomplete="off" required>
+            <span>{{ s.typePersonne === 'MORALE' ? 'Raison sociale' : 'Nom' }}</span>
+          </label>
+          <label class="champ">
+            <input type="text" name="prenoms" placeholder=" " [(ngModel)]="s.prenoms" autocomplete="off" [disabled]="s.typePersonne === 'MORALE'">
+            <span>Prénoms</span>
+          </label>
+        </div>
+        <div class="duo">
+          <label class="champ">
+            <input type="text" name="pieceType" placeholder=" " [(ngModel)]="s.pieceType" autocomplete="off">
+            <span>Pièce d'identité</span>
+          </label>
+          <label class="champ">
+            <input type="text" name="pieceNumero" placeholder=" " [(ngModel)]="s.pieceNumero" autocomplete="off">
+            <span>Numéro</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Contacts</legend>
+        <div class="duo">
+          <label class="champ">
+            <input type="tel" name="telephone" placeholder=" " [(ngModel)]="s.telephone" autocomplete="off">
+            <span>Téléphone</span>
+          </label>
+          <label class="champ">
+            <input type="tel" name="telephone2" placeholder=" " [(ngModel)]="s.telephone2" autocomplete="off">
+            <span>Second téléphone</span>
+          </label>
+        </div>
+        <label class="champ">
+          <input type="email" name="email" placeholder=" " [(ngModel)]="s.email" autocomplete="off">
+          <span>E-mail</span>
+        </label>
+        <label class="champ">
+          <input type="text" name="adresse" placeholder=" " [(ngModel)]="s.adresse" autocomplete="off">
+          <span>Adresse</span>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Reversement des loyers</legend>
+        <div class="duo">
+          <label class="champ">
+            <select name="reversementMode" [(ngModel)]="s.reversementMode">
+              <option [ngValue]="null">Non précisé</option>
+              @for (v of ref.liste('MODE_PAIEMENT'); track v.code) { <option [ngValue]="v.code">{{ v.libelle }}</option> }
+            </select>
+            <span>Mode</span>
+          </label>
+          <label class="champ">
+            <input type="text" name="reversementCoordonnees" placeholder=" " [(ngModel)]="s.reversementCoordonnees" autocomplete="off">
+            <span>Numéro ou RIB</span>
+          </label>
+        </div>
+      </fieldset>
+
+      @if (direction()) {
+        <div class="champ">
+          <fact-choix name="idCompte" [seuilRecherche]="0" libelle="Compte de l'espace propriétaire" vide="Aucun" [options]="comptes() | options : opt.compte : s.id"
+                      [(ngModel)]="s.idCompte" />
+          <small class="aide-champ">Créez d'abord un compte de profil « Propriétaire » dans la rubrique Comptes.</small>
+        </div>
+      }
+
+      <label class="champ">
+        <textarea name="notes" placeholder=" " [(ngModel)]="s.notes"></textarea>
+        <span>Notes</span>
+      </label>
+
+      @if (erreur()) {
+        <p class="message" role="alert"><fact-icone nom="alerte" [taille]="18" /> {{ erreur() }}</p>
+      }
+
+      <div class="pied">
+        <button type="button" class="btn" (click)="s.id ? ouvert.set('fiche') : fermer()">Annuler</button>
+        <button type="submit" class="btn principal" [class.occupe]="occupe()" [disabled]="occupe()">
+          {{ s.id ? 'Enregistrer' : 'Créer le propriétaire' }}
+        </button>
+      </div>
+    </form>
+  }
+</fact-panneau-lateral>
+
+<fact-confirmation
+  [ouvert]="aArchiver() !== null"
+  [danger]="!aArchiver()?.archiveLe"
+  [titre]="aArchiver()?.archiveLe ? 'Restaurer ce propriétaire ?' : 'Archiver ce propriétaire ?'"
+  [message]="aArchiver()?.archiveLe ? 'Sa fiche reviendra dans la liste des propriétaires.'
+    : 'Sa fiche sort de la liste mais reste consultable. Un propriétaire qui possède encore des bâtiments actifs ne peut pas être archivé.'"
+  [action]="aArchiver()?.archiveLe ? 'Restaurer' : 'Archiver'"
+  (confirmer)="archiver()"
+  (annuler)="aArchiver.set(null)" />

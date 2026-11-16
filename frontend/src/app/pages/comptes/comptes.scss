@@ -1,0 +1,379 @@
+/* Comptes et Journal partagent cette feuille. Téléphone d'abord (§ 5.1). */
+
+:host {
+  display: block;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  animation: montee var(--longue) var(--courbe) both;
+}
+
+h1 {
+  font-size: clamp(26px, 5vw, 34px);
+  color: var(--marque);
+}
+
+.accroche {
+  margin: 4px 0 0;
+  color: var(--encre-2);
+}
+
+/* ------------------------------------------------------------------- outils */
+.outils {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 16px;
+}
+
+.cherche {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tactile);
+  padding: 0 14px;
+  border: 1px solid var(--filet-fort);
+  border-radius: var(--rayon-2);
+  background: var(--surface);
+  color: var(--discret);
+}
+
+.cherche:focus-within {
+  border-color: var(--marque);
+}
+
+.cherche input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--encre);
+}
+
+.filtre select {
+  min-height: var(--tactile);
+  padding: 0 12px;
+  border: 1px solid var(--filet-fort);
+  border-radius: var(--rayon-2);
+  background: var(--surface);
+}
+
+/* -------------------------------------------------------------------- liste */
+.scene {
+  position: relative;
+  min-height: 320px;
+}
+
+.liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.compte {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 14px;
+  align-items: center;
+  transition: border-color var(--courte) var(--courbe), opacity var(--standard) var(--courbe);
+}
+
+.compte:hover {
+  border-color: var(--filet-fort);
+}
+
+.compte.inactif .avatar,
+.compte.inactif .qui {
+  opacity: 0.55;
+}
+
+/* Une ligne enregistrée clignote brièvement (§ 6.3) */
+.compte.modifie {
+  animation: surbrillance 1.4s var(--courbe);
+}
+
+@keyframes surbrillance {
+  0%,
+  40% {
+    background: var(--ocre-clair);
+    border-color: var(--ocre);
+  }
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--nuit-clair);
+  color: var(--marque);
+  font: 700 15px var(--titre);
+}
+
+.qui h2 {
+  font-size: 16px;
+}
+
+.qui p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.qui .texte {
+  font-family: var(--texte);
+}
+
+.etiquettes,
+.actions,
+.connexion {
+  grid-column: 1 / -1;
+}
+
+.etiquettes,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.connexion {
+  margin: 0;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+.plein {
+  grid-column: 1 / -1;
+}
+
+.squelette span {
+  display: block;
+  height: 14px;
+  width: 60%;
+  margin-bottom: 10px;
+  border-radius: 7px;
+  background: var(--surface-3);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.squelette span:last-child {
+  width: 35%;
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------- formulaire */
+.formulaire {
+  display: grid;
+  gap: 14px;
+}
+
+.profil {
+  padding: 12px 14px;
+  border-radius: var(--rayon-2);
+  background: var(--nuit-clair);
+  font-size: 13.5px;
+  animation: fondu var(--standard) var(--courbe);
+}
+
+.profil p {
+  margin: 0 0 8px;
+}
+
+.profil ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  color: var(--encre-2);
+}
+
+.profil li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.profil fact-icone {
+  margin-top: 3px;
+  color: var(--bon);
+}
+
+fieldset {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--filet);
+  border-radius: var(--rayon-2);
+  display: grid;
+}
+
+legend {
+  padding: 0 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.aide {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--discret);
+}
+
+fieldset .case {
+  font-size: 14px;
+  min-height: 38px;
+}
+
+.message {
+  display: flex;
+  gap: 9px;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: var(--rayon-2);
+  background: var(--critique-clair);
+  color: var(--critique-texte);
+  font-size: 14px;
+}
+
+.pied-formulaire {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ------------------------------------------------------- mot de passe provisoire */
+.voile {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: var(--voile);
+  animation: fondu var(--standard) var(--courbe);
+}
+
+.provisoire {
+  width: min(460px, 100%);
+  padding: 24px;
+  display: grid;
+  gap: 12px;
+  border-radius: 20px;
+  border: 1px solid var(--filet);
+  background: var(--surface);
+  animation: ouverture var(--standard) var(--courbe);
+}
+
+@keyframes ouverture {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+.provisoire .rond {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--ocre-clair);
+  color: var(--ocre-texte);
+}
+
+.provisoire h2 {
+  font-size: 19px;
+}
+
+.provisoire p {
+  margin: 0;
+  color: var(--encre-2);
+}
+
+.secret {
+  padding: 14px;
+  border-radius: var(--rayon-2);
+  border: 1px dashed var(--filet-fort);
+  background: var(--surface-3);
+  color: var(--encre) !important;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-align: center;
+  user-select: all;
+}
+
+/* ------------------------------------------------------------------ journal */
+.detail {
+  margin-top: 16px;
+}
+
+.detail h2 {
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+
+.comparaison {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+
+.comparaison th,
+.comparaison td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--filet);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.comparaison thead th {
+  font: 600 12.5px var(--titre);
+  color: var(--marque);
+  background: var(--surface-3);
+}
+
+.comparaison tr.change td:last-child {
+  background: var(--ocre-clair);
+  font-weight: 500;
+}
+
+/* ------------------------------------------------- points de rupture (§ 5.3) */
+@media (min-width: 768px) {
+  :host {
+    padding: 32px 28px 72px;
+  }
+
+  .compte {
+    grid-template-columns: auto minmax(0, 1.2fr) minmax(0, 1.4fr);
+  }
+
+  .etiquettes {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 1200px) {
+  .liste {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
