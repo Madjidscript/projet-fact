@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci",
+  "buildCommand": "npx ng build --output-path dist/vercel",
+  "outputDirectory": "dist/vercel/browser",
+  "rewrites": [
+    {
+      "source": "/api/:chemin*",
+      "destination": "https://fact-immobilier-api.onrender.com/api/:chemin*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -11,3 +11,6 @@ backend/comptes_provisoires.txt
 uploads/
 __pycache__/
 .env
+frontend/dist/
+site/dist/
+site/.angular/

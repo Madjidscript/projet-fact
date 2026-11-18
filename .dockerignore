@@ -1,0 +1,13 @@
+**/node_modules
+**/.angular
+**/dist
+backend/build
+backend/bin
+backend/.gradle
+backend/src/main/resources/static
+backend/comptes_provisoires.txt
+frontend
+site
+uploads
+.env
+*.log
