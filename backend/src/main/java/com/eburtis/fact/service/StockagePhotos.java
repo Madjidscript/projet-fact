@@ -11,6 +11,7 @@ import java.util.UUID;
 import com.eburtis.fact.exception.ErreurMetier;
 import com.eburtis.fact.utils.ImageUtils;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +21,15 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * Le dossier des photos, hors de l'application ({@code file.upload.base-dir}/{@code file.upload.photo-dir}),
- * à sauvegarder avec la base. Une photo y est redressée d'après son orientation EXIF, réduite à
+ * Les photos et pièces jointes. Deux rangements possibles :
+ * <ul>
+ * <li>un bucket Cloudflare R2 privé, quand {@code fact.stockage.r2.*} est renseigné (en ligne : le
+ * disque du serveur est effacé à chaque redémarrage) ; la clé d'un fichier y reprend son chemin
+ * sur disque, {@code photos/dossier/objet/uuid.jpg} ;</li>
+ * <li>sinon le dossier local ({@code file.upload.base-dir}/{@code file.upload.photo-dir}), à
+ * sauvegarder avec la base.</li>
+ * </ul>
+ * Dans les deux cas, une photo est redressée d'après son orientation EXIF, réduite à
  * 2 048 pixels et réécrite en JPEG, ce qui retire aussi ses métadonnées (dont la position GPS de
  * l'appareil). Elle est rangée sous {@code dossier/objet/uuid.jpg} ; la base ne garde que ce chemin.
  * Un fichier écrit pendant une transaction annulée est effacé : il ne reste pas d'orphelin.
@@ -44,17 +52,40 @@ public class StockagePhotos {
     @Value("${file.upload.photo-dir:photos}")
     private String photoDir;
 
+    @Value("${fact.stockage.r2.endpoint:}")
+    private String r2Endpoint;
+    @Value("${fact.stockage.r2.bucket:}")
+    private String r2Bucket;
+    @Value("${fact.stockage.r2.cle-acces:}")
+    private String r2CleAcces;
+    @Value("${fact.stockage.r2.cle-secrete:}")
+    private String r2CleSecrete;
+
     private Path racine;
+    /** Le bucket R2, ou {@code null} : les fichiers vont alors sur le disque. */
+    private DepotR2 r2;
 
     @PostConstruct
     public void init() {
         racine = Paths.get(baseDir, photoDir).toAbsolutePath().normalize();
+        if (!DepotR2.blanc(r2Endpoint) || !DepotR2.blanc(r2Bucket)) {
+            r2 = new DepotR2(r2Endpoint, r2Bucket, r2CleAcces, r2CleSecrete);
+            LOG.info("Photos et pièces jointes : bucket Cloudflare R2 « {} »", r2.bucket());
+            return;
+        }
         try {
             Files.createDirectories(racine);
         } catch (IOException e) {
             throw new IllegalStateException("Impossible de créer le répertoire des photos : " + racine, e);
         }
         LOG.info("Répertoire des photos : {}", racine);
+    }
+
+    @PreDestroy
+    void fermer() {
+        if (r2 != null) {
+            r2.close();
+        }
     }
 
     /** Range une photo ; refuse ce qui n'est pas une image lisible (JPEG, PNG, GIF, BMP). */
@@ -69,27 +100,7 @@ public class StockagePhotos {
         byte[] jpeg = ImageUtils.jpegSous(image, COTE, POIDS_MAX);
         BufferedImage finale = ImageUtils.lire(jpeg);
         String chemin = dossier + "/" + objet + "/" + UUID.randomUUID() + ".jpg";
-        Path fichier = resoudre(chemin);
-        try {
-            Files.createDirectories(fichier.getParent());
-            Files.write(fichier, jpeg);
-        } catch (IOException e) {
-            throw new UncheckedIOException("La photo n'a pas pu être écrite dans " + fichier.getParent(), e);
-        }
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCompletion(int statut) {
-                    if (statut != STATUS_COMMITTED) {
-                        try {
-                            Files.deleteIfExists(fichier);
-                        } catch (IOException e) {
-                            LOG.warn("Photo orpheline non effacée : {}", fichier);
-                        }
-                    }
-                }
-            });
-        }
+        ecrire(chemin, jpeg, "image/jpeg");
         return new Rangee(chemin, finale == null ? 0 : finale.getWidth(), finale == null ? 0 : finale.getHeight(), jpeg.length);
     }
 
@@ -102,12 +113,61 @@ public class StockagePhotos {
             throw new IllegalArgumentException("Chemin de fichier invalide : " + dossier + "/" + objet);
         }
         String chemin = dossier + "/" + objet + "/" + UUID.randomUUID() + "." + extension;
-        Path fichier = resoudre(chemin);
+        ecrire(chemin, contenu, typeDe(extension));
+        return chemin;
+    }
+
+    public byte[] lire(String chemin) {
+        if (r2 != null) {
+            byte[] contenu;
+            try {
+                contenu = r2.lire(cleR2(chemin));
+            } catch (RuntimeException e) {
+                LOG.error("Lecture impossible dans le bucket R2 : {}", chemin, e);
+                throw ErreurMetier.introuvable("Ce fichier est momentanément indisponible.");
+            }
+            if (contenu == null) {
+                throw ErreurMetier.introuvable("Photo introuvable.");
+            }
+            return contenu;
+        }
         try {
-            Files.createDirectories(fichier.getParent());
-            Files.write(fichier, contenu);
+            return Files.readAllBytes(resoudre(chemin));
         } catch (IOException e) {
-            throw new UncheckedIOException("Le fichier n'a pas pu être écrit dans " + fichier.getParent(), e);
+            throw ErreurMetier.introuvable("Photo introuvable sur le disque.");
+        }
+    }
+
+    /**
+     * Écrit un fichier (bucket ou disque) ; s'il est écrit pendant une transaction ensuite annulée,
+     * il est effacé : il ne reste pas d'orphelin.
+     */
+    private void ecrire(String chemin, byte[] contenu, String type) {
+        Runnable effacer;
+        if (r2 != null) {
+            String cle = cleR2(chemin);
+            try {
+                r2.ecrire(cle, contenu, type);
+            } catch (RuntimeException e) {
+                LOG.error("Écriture impossible dans le bucket R2 : {}", cle, e);
+                throw new IllegalStateException("Le fichier n'a pas pu être enregistré. Réessayez dans un instant.", e);
+            }
+            effacer = () -> r2.effacer(cle);
+        } else {
+            Path fichier = resoudre(chemin);
+            try {
+                Files.createDirectories(fichier.getParent());
+                Files.write(fichier, contenu);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Le fichier n'a pas pu être écrit dans " + fichier.getParent(), e);
+            }
+            effacer = () -> {
+                try {
+                    Files.deleteIfExists(fichier);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            };
         }
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -115,23 +175,33 @@ public class StockagePhotos {
                 public void afterCompletion(int statut) {
                     if (statut != STATUS_COMMITTED) {
                         try {
-                            Files.deleteIfExists(fichier);
-                        } catch (IOException e) {
-                            LOG.warn("Fichier orphelin non effacé : {}", fichier);
+                            effacer.run();
+                        } catch (RuntimeException e) {
+                            LOG.warn("Fichier orphelin non effacé : {}", chemin);
                         }
                     }
                 }
             });
         }
-        return chemin;
     }
 
-    public byte[] lire(String chemin) {
-        try {
-            return Files.readAllBytes(resoudre(chemin));
-        } catch (IOException e) {
-            throw ErreurMetier.introuvable("Photo introuvable sur le disque.");
+    /** Le type d'un fichier d'après son extension. */
+    static String typeDe(String extension) {
+        return switch (extension.toLowerCase()) {
+            case "jpg", "jpeg" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "pdf" -> "application/pdf";
+            default -> "application/octet-stream";
+        };
+    }
+
+    /** La clé d'un fichier dans le bucket : son chemin sur disque, sous le dossier des photos. */
+    private String cleR2(String chemin) {
+        String c = chemin.replace('\\', '/');
+        if (c.startsWith("/") || c.contains("..")) {
+            throw new IllegalArgumentException("Chemin de photo invalide : " + chemin);
         }
+        return photoDir + "/" + c;
     }
 
     /** Le fichier d'un chemin, sans jamais sortir du dossier des photos. */

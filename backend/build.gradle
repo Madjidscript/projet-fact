@@ -45,6 +45,14 @@ dependencies {
 	// Quittances de loyer en PDF
 	implementation "com.github.librepdf:openpdf:$openpdfVersion"
 
+	// Stockage des photos et pièces jointes dans Cloudflare R2 (compatible S3) quand il est configuré.
+	// Client HTTP le plus léger (celui du JDK) : Netty et Apache sont écartés pour économiser la mémoire.
+	implementation('software.amazon.awssdk:s3:2.25.60') {
+		exclude group: 'software.amazon.awssdk', module: 'netty-nio-client'
+		exclude group: 'software.amazon.awssdk', module: 'apache-client'
+	}
+	implementation 'software.amazon.awssdk:url-connection-client:2.25.60'
+
 	// Tomcat embarque pour java -jar, fourni par le serveur une fois le .war deploye
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 
@@ -103,4 +111,14 @@ jar {
 }
 war {
 	enabled = false
+}
+
+// Envoi des fichiers du disque local vers Cloudflare R2 (une fois, à la mise en ligne) :
+// gradlew envoyerFichiersR2, avec R2_ENDPOINT, R2_BUCKET, R2_CLE_ACCES et R2_CLE_SECRETE dans l'environnement.
+tasks.register('envoyerFichiersR2', JavaExec) {
+	group = 'fact'
+	description = 'Copie le dossier local des fichiers dans le bucket Cloudflare R2.'
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'com.eburtis.fact.service.EnvoiFichiersR2'
+	args = [(project.findProperty('dossier') ?: "${System.getProperty('user.home')}/fact-immobilier/uploads").toString()]
 }
